@@ -2,9 +2,12 @@ name: Build Obsidian Style PDF
 
 on:
   push:
+    branches:
+      - main
     paths:
       - '**/*.md'
       - 'style.css'
+      - 'themes/**'
       - 'scripts/**'
       - 'package.json'
       - '.github/workflows/build-pdf.yml'
@@ -21,38 +24,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Record workflow run id
-        run: |
-          mkdir -p .github
-          echo "${{ github.run_id }}" > .github/latest-run-id.txt
-          echo "${{ github.run_attempt }}" > .github/latest-run-attempt.txt
-          echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" > .github/latest-run-url.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/latest-run-id.txt .github/latest-run-attempt.txt .github/latest-run-url.txt
-          if ! git diff --cached --quiet; then
-            git commit -m "Record latest workflow run id [skip ci]"
-            git push
-          fi
-
       - name: Setup Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
           node-version: 24
+
+      - name: Record run start
+        run: node scripts/record-run-state.mjs start
+
+      - name: Commit run start
+        run: node scripts/git-commit-state.mjs "Record workflow start [skip ci]"
 
       - name: Install dependencies, fonts, and Chrome
         run: |
           set -o pipefail
+          mkdir -p .github
           : > .github/latest-build-log.txt
           echo "## apt install CJK fonts" | tee -a .github/latest-build-log.txt
           sudo apt-get update 2>&1 | tee -a .github/latest-build-log.txt
           sudo apt-get install -y fonts-noto-cjk 2>&1 | tee -a .github/latest-build-log.txt
           fc-cache -f 2>&1 | tee -a .github/latest-build-log.txt
-
           echo "" | tee -a .github/latest-build-log.txt
           echo "## npm install" | tee -a .github/latest-build-log.txt
           npm install 2>&1 | tee -a .github/latest-build-log.txt
-
           echo "" | tee -a .github/latest-build-log.txt
           echo "## Chrome setup" | tee -a .github/latest-build-log.txt
           CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
@@ -66,27 +60,37 @@ jobs:
           fi
 
       - name: Build PDF
-        run: |
-          set -o pipefail
-          echo "" | tee -a .github/latest-build-log.txt
-          echo "## npm run build:pdf" | tee -a .github/latest-build-log.txt
-          npm run build:pdf 2>&1 | tee -a .github/latest-build-log.txt
+        id: build_pdf
+        continue-on-error: true
+        run: npm run ci:build
 
       - name: Upload PDF artifact
-        if: success()
+        id: upload_artifact
+        if: steps.build_pdf.outcome == 'success'
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: obsidian-style-pdf
           path: |
             dist/notes.pdf
             dist/notes.html
+            .github/latest-build-log.txt
 
-      - name: Commit latest build log
+      - name: Record run finish
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build_pdf.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.upload_artifact.outcome }}
+        run: node scripts/record-run-state.mjs finish
+
+      - name: Commit run finish
         if: always()
         continue-on-error: true
-        run: |
-          git add .github/latest-build-log.txt
-          if ! git diff --cached --quiet; then
-            git commit -m "Record latest build log [skip ci]"
-            git push
-          fi
+        run: node scripts/git-commit-state.mjs "Record workflow finish [skip ci]"
+
+      - name: Fail if build failed
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build_pdf.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.upload_artifact.outcome }}
+        run: node -e "process.exit(process.env.BUILD_OUTCOME === 'success' && process.env.ARTIFACT_OUTCOME === 'success' ? 0 : 1)"
