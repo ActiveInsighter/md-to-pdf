@@ -144,7 +144,7 @@ function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss 
   <style>${highlightCss}</style>
   <style>${customCss}</style>
 </head>
-<body>
+<body class="theme-light minimal-light minimal-light-white">
   <main class="markdown-preview-view markdown-rendered">
 ${renderedMarkdown}
   </main>
@@ -190,9 +190,9 @@ async function main() {
   const md = createMarkdownRenderer();
   const renderedMarkdown = restoreMath(md.render(protectedMath.markdown), protectedMath.mathItems);
 
-  const themeCss = await readOptionalFile(themePath);
   const styleCss = await readOptionalFile(stylePath);
-  const customCss = `${themeCss}\n\n${styleCss}`;
+  const themeCss = await readOptionalFile(themePath);
+  const customCss = `${styleCss}\n\n${themeCss}`;
   const rawKatexCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/katex/dist/katex.min.css'), 'utf8');
   const katexCss = rewriteKatexCssUrls(rawKatexCss);
   const highlightCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/highlight.js/styles/github-dark.min.css'), 'utf8');
