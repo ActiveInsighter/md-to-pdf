@@ -1,70 +1,74 @@
 /*
-  Polished neutral PDF theme for Markdown notes.
-  Goal: print-friendly, clean, readable, and comprehensive enough for study notes.
+  ChatGPT-like neutral print/PDF theme.
+  Restored to the previous compact neutral style, with only a heading-anchor fix.
 */
 
 @page {
   size: A4;
-  margin: 14mm 16mm 16mm 16mm;
+  margin: 13mm 15mm;
 }
 
-:root,
 :is(.print, .markdown-preview-view, .markdown-rendered) {
-  --pdf-font-body: "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", "Times New Roman", serif;
-  --pdf-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
-  --pdf-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", "Noto Sans Mono CJK SC", monospace;
-  --pdf-font-math: "Latin Modern Math", "STIX Two Math", "Cambria Math", "Noto Serif Math", "Times New Roman", serif;
+  --ky-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  --ky-font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  --ky-font-math: "Latin Modern Math", "STIX Two Math", "Cambria Math", "Noto Serif Math", "Times New Roman", serif;
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
 
-  --pdf-text: #202124;
-  --pdf-text-strong: #111214;
-  --pdf-muted: #63676d;
-  --pdf-faint: #8b9096;
-  --pdf-bg: #ffffff;
-  --pdf-panel: #f7f8fa;
-  --pdf-panel-2: #f1f3f5;
-  --pdf-code-bg: #f6f8fa;
-  --pdf-inline-code-bg: #eef1f4;
-  --pdf-border: #dfe3e8;
-  --pdf-border-soft: #eceff3;
-  --pdf-border-strong: #b8c0ca;
-  --pdf-accent: #2f3437;
-  --pdf-accent-soft: #e9ecef;
-  --pdf-blue: #3b6ea8;
-  --pdf-green: #4d7f5f;
-  --pdf-orange: #a8662d;
-  --pdf-purple: #7560a8;
-  --pdf-red: #a8584f;
+  --ky-text: #111111;
+  --ky-text-soft: #242424;
+  --ky-muted: #646464;
+  --ky-faint: #8a8a8a;
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f7f8;
+  --ky-bg-mute: #f1f1f2;
+  --ky-bg-code: #f7f7f8;
+  --ky-bg-inline-code: #eeeeef;
+  --ky-border-soft: #e5e5e7;
+  --ky-border: #d5d5d8;
+  --ky-border-strong: #a0a0a5;
+  --ky-radius-s: 5px;
+  --ky-radius-m: 8px;
+  --ky-radius-l: 12px;
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.48;
+  --ky-block-gap: 0.48em;
+  --ky-para-gap: 0.2em;
+  --ky-tight-gap: 0.1em;
+  --ky-table-font-size: 0.92em;
+  --ky-table-line-height: 1.32;
+  --ky-image-max-height: 64mm;
 
-  --pdf-radius-s: 5px;
-  --pdf-radius-m: 9px;
-  --pdf-radius-l: 14px;
-  --pdf-font-size: 15.2px;
-  --pdf-line-height: 1.68;
-  --pdf-para-gap: 0.42em;
-  --pdf-block-gap: 0.78em;
-  --pdf-heading-gap-top: 1.2em;
-  --pdf-heading-gap-bottom: 0.48em;
-  --pdf-table-font-size: 0.92em;
-  --pdf-code-font-size: 0.88em;
-  --pdf-image-max-height: 72mm;
+  --inline-code-color: #3b4654;
+  --code-normal: #2f3742;
+  --code-comment: #777b80;
+  --code-keyword: #8a5f9e;
+  --code-string: #4f7f63;
+  --code-function: #3f7f91;
+  --code-property: #8a6f45;
+  --code-tag: #6875a8;
+  --code-operator: #7a6572;
+  --code-punctuation: #747c86;
+  --code-important: #a85f50;
+  --code-value: #4f6fa8;
+  --table-text: var(--ky-text-soft);
+  --table-head-text: var(--ky-text);
+  --table-head-bg: #f5f5f6;
+  --table-border-strong: var(--ky-border);
+  --table-border-soft: var(--ky-border-soft);
+  --table-formula-text: var(--ky-text);
 
-  color: var(--pdf-text) !important;
-  background: var(--pdf-bg) !important;
+  color: var(--ky-text) !important;
+  background: var(--ky-bg) !important;
   color-scheme: light !important;
-  font-family: var(--pdf-font-body) !important;
-  font-size: var(--pdf-font-size) !important;
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
   font-weight: 400 !important;
-  line-height: var(--pdf-line-height) !important;
-  letter-spacing: 0.006em !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0.004em !important;
   line-break: strict !important;
   word-break: normal !important;
-  overflow-wrap: break-word !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
-}
-
-* {
-  box-sizing: border-box !important;
 }
 
 html,
@@ -72,24 +76,15 @@ body,
 body.theme-light,
 body.minimal-light,
 body.minimal-light-white {
-  margin: 0 !important;
-  color: var(--pdf-text) !important;
-  background: var(--pdf-bg) !important;
+  background: #ffffff !important;
+  color: #111111 !important;
 }
 
 body {
-  font-family: var(--pdf-font-body) !important;
-  font-size: var(--pdf-font-size) !important;
-  line-height: var(--pdf-line-height) !important;
-}
-
-.markdown-preview-view {
-  counter-reset: section-counter !important;
-  max-width: none !important;
-  color: var(--pdf-text) !important;
-  background: var(--pdf-bg) !important;
-  border: 0 !important;
-  box-shadow: none !important;
+  margin: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif !important;
+  font-size: 15.6px !important;
+  line-height: 1.48 !important;
 }
 
 .markdown-preview-view .markdown-preview-sizer {
@@ -98,302 +93,222 @@ body {
   padding: 0 !important;
 }
 
-.markdown-preview-view > :first-child {
-  margin-top: 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) p {
+  margin: var(--ky-para-gap) 0 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) p {
-  margin: var(--pdf-para-gap) 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--ky-text) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.16em !important;
+  text-decoration-thickness: 0.06em !important;
+  font-weight: 500 !important;
+}
+
+/* Fix markdown-it-anchor: heading anchors should inherit the heading, not link styling. */
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) :is(a, .header-anchor) {
+  color: inherit !important;
+  text-decoration: none !important;
+  border: 0 !important;
+  font: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) :is(strong, b) {
-  color: var(--pdf-text-strong) !important;
+  color: var(--ky-text) !important;
   font-weight: 700 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) em {
-  color: #50545a !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) mark {
-  color: var(--pdf-text-strong) !important;
-  background: #fff2ac !important;
-  border-radius: var(--pdf-radius-s) !important;
-  padding: 0.02em 0.22em !important;
+  color: var(--ky-muted) !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) u {
-  color: var(--pdf-text-strong) !important;
+  color: var(--ky-text) !important;
   text-decoration: underline !important;
-  text-decoration-thickness: 0.08em !important;
+  text-decoration-thickness: 0.06em !important;
   text-underline-offset: 0.16em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
-  color: #1f5f9f !important;
-  text-decoration: none !important;
-  border-bottom: 1px solid rgba(31, 95, 159, 0.32) !important;
   font-weight: 500 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link):hover {
-  color: #174a7c !important;
-  border-bottom-color: rgba(23, 74, 124, 0.55) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) mark {
+  color: var(--ky-text) !important;
+  background: #ededee !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.02em 0.2em !important;
 }
 
-/* markdown-it-anchor wraps headings in an anchor. Do not make headings look like hyperlinks. */
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) :is(a, .header-anchor) {
-  color: inherit !important;
-  text-decoration: none !important;
-  border-bottom: 0 !important;
-  font: inherit !important;
-  letter-spacing: inherit !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) hr {
+  border: 0 !important;
+  border-top: 1px solid var(--ky-border-soft) !important;
+  margin: 0.8em 0 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
-  color: var(--pdf-text-strong) !important;
-  font-family: var(--pdf-font-sans) !important;
+  color: var(--ky-text) !important;
+  font-family: var(--ky-font-heading) !important;
   letter-spacing: 0 !important;
-  line-height: 1.24 !important;
+  line-height: 1.2 !important;
+  margin: 0.58em 0 0.2em !important;
   break-after: avoid !important;
   page-break-after: avoid !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h1 {
-  font-size: 1.9em !important;
-  font-weight: 780 !important;
-  margin: 0 0 0.82em !important;
-  padding: 0.54em 0.68em 0.58em !important;
-  background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%) !important;
-  border: 1px solid var(--pdf-border) !important;
-  border-left: 6px solid var(--pdf-accent) !important;
-  border-radius: var(--pdf-radius-l) !important;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.055) !important;
+  font-size: 1.42em !important;
+  font-weight: 750 !important;
+  padding-bottom: 0.14em !important;
+  border-bottom: 1px solid var(--ky-border-soft) !important;
   break-before: auto !important;
   page-break-before: auto !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h2 {
-  counter-increment: section-counter !important;
-  font-size: 1.34em !important;
-  font-weight: 740 !important;
-  margin: 1.2em 0 0.52em !important;
-  padding: 0.34em 0.68em 0.35em !important;
-  background: linear-gradient(90deg, #f3f5f7 0%, #ffffff 92%) !important;
-  border: 0 !important;
-  border-left: 4px solid var(--pdf-accent) !important;
-  border-radius: var(--pdf-radius-m) !important;
+  font-size: 1.26em !important;
+  font-weight: 720 !important;
+  border-left: 0 !important;
+  padding-left: 0 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h3 {
   font-size: 1.15em !important;
-  font-weight: 700 !important;
-  margin: 1em 0 0.42em !important;
-  padding-bottom: 0.12em !important;
-  color: #2d3339 !important;
-  border-bottom: 1px dashed var(--pdf-border-soft) !important;
+  font-weight: 680 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h4 {
-  font-size: 1.05em !important;
-  font-weight: 700 !important;
-  margin: 0.92em 0 0.34em !important;
-  color: #383e45 !important;
+  font-size: 1.08em !important;
+  font-weight: 650 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h5 {
-  font-size: 0.98em !important;
-  font-weight: 680 !important;
-  margin: 0.78em 0 0.28em !important;
-  color: var(--pdf-muted) !important;
-  text-transform: none !important;
+  font-size: 1.03em !important;
+  font-weight: 620 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h6 {
-  font-size: 0.94em !important;
-  font-weight: 650 !important;
-  margin: 0.7em 0 0.24em !important;
-  color: var(--pdf-faint) !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) hr {
-  border: 0 !important;
-  border-top: 1px solid var(--pdf-border-soft) !important;
-  margin: 1em 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
-  margin: 0.38em 0 0.52em !important;
-  padding-left: 1.62em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) li {
-  margin: 0.08em 0 !important;
-  line-height: 1.56 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) li > p {
-  margin: 0.1em 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
-  margin: 0.12em 0 0.18em !important;
-  padding-left: 1.42em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
-  color: #565c63 !important;
+  color: var(--ky-muted) !important;
+  font-size: 1em !important;
   font-weight: 600 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
-  width: 0.95em !important;
-  height: 0.95em !important;
-  margin-right: 0.35em !important;
-  accent-color: var(--pdf-accent) !important;
-  transform: translateY(0.08em) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
+  margin: 0.16em 0 0.24em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ul {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol {
+  padding-left: 0 !important;
+  list-style-position: inside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol > li > p:first-child {
+  display: inline !important;
+  margin: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li {
+  margin: 0.06em 0 !important;
+  line-height: 1.44 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
+  color: #555555 !important;
+  font-weight: 500 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
-  margin: var(--pdf-block-gap) 0 !important;
-  padding: 0.56em 0.82em 0.58em 0.92em !important;
-  color: #4f555c !important;
-  background: #fafbfc !important;
-  border: 1px solid var(--pdf-border-soft) !important;
-  border-left: 4px solid var(--pdf-border-strong) !important;
-  border-radius: 0 var(--pdf-radius-m) var(--pdf-radius-m) 0 !important;
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.3em 0.68em 0.32em 0.78em !important;
+  color: var(--ky-muted) !important;
+  background: #fafafa !important;
+  border: 0 !important;
+  border-left: 3px solid var(--ky-border) !important;
+  border-radius: 0 var(--ky-radius-s) var(--ky-radius-s) 0 !important;
   box-shadow: none !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote :is(strong, b) {
+  color: var(--ky-text-soft) !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) blockquote p {
-  margin: 0.16em 0 !important;
+  margin: var(--ky-tight-gap) 0 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
-  --callout-accent: var(--pdf-blue);
-  margin: var(--pdf-block-gap) 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  color: var(--pdf-text) !important;
-  background: #fbfcfd !important;
-  border: 1px solid var(--pdf-border-soft) !important;
-  border-left: 5px solid var(--callout-accent) !important;
-  border-radius: var(--pdf-radius-m) !important;
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035) !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
-  display: block !important;
-  color: var(--pdf-text-strong) !important;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0)) !important;
-  border: 0 !important;
-  padding: 0.46em 0.74em 0.16em !important;
-  font-family: var(--pdf-font-sans) !important;
-  font-size: 0.98em !important;
-  font-weight: 760 !important;
-  line-height: 1.28 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
-  color: var(--pdf-text) !important;
-  padding-left: 0.74em !important;
-  padding-right: 0.74em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :last-child {
-  padding-bottom: 0.55em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout p {
-  margin: 0.18em 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-note,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-info {
-  --callout-accent: var(--pdf-blue);
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-tip,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-success {
-  --callout-accent: var(--pdf-green);
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-important,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-warning,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-caution {
-  --callout-accent: var(--pdf-orange);
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-danger,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-bug,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-failure {
-  --callout-accent: var(--pdf-red);
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-question,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-example,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-quote {
-  --callout-accent: var(--pdf-purple);
+:is(.print, .markdown-preview-view, .markdown-rendered) a.tag {
+  color: #3f3f3f !important;
+  background: var(--ky-bg-mute) !important;
+  border: 1px solid var(--ky-border-soft) !important;
+  border-radius: 999px !important;
+  padding: 0.12em 0.55em !important;
+  font-size: 0.82em !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) code {
-  color: #344054 !important;
-  background: var(--pdf-inline-code-bg) !important;
-  border: 1px solid #e1e6eb !important;
-  border-radius: var(--pdf-radius-s) !important;
-  padding: 0.06em 0.28em !important;
-  font-family: var(--pdf-font-mono) !important;
-  font-size: 0.88em !important;
+  color: var(--inline-code-color) !important;
+  background: var(--ky-bg-inline-code) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.08em 0.28em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.9em !important;
   letter-spacing: 0 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) pre,
 :is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs {
-  color: #24292f !important;
-  background: var(--pdf-code-bg) !important;
-  border: 1px solid #d8dee4 !important;
-  border-radius: var(--pdf-radius-l) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-  margin: 0.72em 0 0.86em !important;
-  padding: 0.78em 0.92em !important;
-  font-family: var(--pdf-font-mono) !important;
-  font-size: var(--pdf-code-font-size) !important;
-  line-height: 1.52 !important;
+  color: var(--code-normal) !important;
+  background: var(--ky-bg-code) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-l) !important;
+  box-shadow: none !important;
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.62em 0.78em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.91em !important;
+  line-height: 1.42 !important;
   letter-spacing: 0 !important;
   white-space: pre-wrap !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
   font-variant-ligatures: none !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) pre code {
-  color: inherit !important;
+  color: var(--code-normal) !important;
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
   padding: 0 !important;
   font: inherit !important;
-  white-space: inherit !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-comment,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-quote {
-  color: #6e7781 !important;
+  color: var(--code-comment) !important;
   font-style: italic !important;
+  font-weight: 400 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-keyword,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-tag,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-built_in,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-name {
-  color: #8250df !important;
+  color: var(--code-keyword) !important;
   font-weight: 650 !important;
 }
 
@@ -401,41 +316,86 @@ body {
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-char,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-attr,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-template-variable {
-  color: #116329 !important;
+  color: var(--code-string) !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title.function_,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title.class_ {
-  color: #0550ae !important;
+  color: var(--code-function) !important;
   font-weight: 560 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-attribute,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-variable,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-params {
-  color: #953800 !important;
+  color: var(--code-property) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-tag,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-id,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-class {
+  color: var(--code-tag) !important;
+  font-weight: 560 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-operator,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-link {
+  color: var(--code-operator) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-punctuation {
+  color: var(--code-punctuation) !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-number,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-literal,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-symbol,
 :is(.print, .markdown-preview-view, .markdown-rendered) .hljs-bullet {
-  color: #0550ae !important;
+  color: var(--code-value) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) img {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  object-fit: contain !important;
+  border-radius: var(--ky-radius-l) !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: high-quality !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) svg[role="img"] {
+  display: block !important;
+  max-width: none !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  border-radius: var(--ky-radius-l) !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table {
   width: 100% !important;
   table-layout: auto !important;
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
-  margin: 0.76em 0 0.9em !important;
-  background: #ffffff !important;
-  border: 1px solid var(--pdf-border) !important;
-  border-radius: var(--pdf-radius-m) !important;
-  overflow: hidden !important;
-  font-size: var(--pdf-table-font-size) !important;
-  line-height: 1.42 !important;
+  border-collapse: collapse !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  margin: 0.5em 0 !important;
+  background: transparent !important;
+  font-size: var(--ky-table-font-size) !important;
+  line-height: var(--ky-table-line-height) !important;
+  box-shadow: none !important;
+  overflow: visible !important;
   break-inside: auto !important;
   page-break-inside: auto !important;
 }
@@ -451,41 +411,33 @@ body {
 :is(.print, .markdown-preview-view, .markdown-rendered) table th,
 :is(.print, .markdown-preview-view, .markdown-rendered) table td {
   min-width: 0 !important;
-  padding: 0.42em 0.58em !important;
+  padding: 0.3em 0.46em !important;
+  text-align: left !important;
   vertical-align: top !important;
   white-space: normal !important;
   overflow-wrap: break-word !important;
   word-break: normal !important;
   line-break: strict !important;
   hyphens: auto !important;
+  text-wrap: pretty !important;
   border: 0 !important;
-  border-right: 1px solid var(--pdf-border-soft) !important;
-  border-bottom: 1px solid var(--pdf-border-soft) !important;
+  border-bottom: 1px solid var(--table-border-soft) !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) table th:last-child,
-:is(.print, .markdown-preview-view, .markdown-rendered) table td:last-child {
-  border-right: 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  background: var(--table-head-bg) !important;
+  border-bottom: 1.5px solid var(--table-border-strong) !important;
+  color: var(--table-head-text) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+  color: var(--table-text) !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table tr:last-child td {
   border-bottom: 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table th {
-  color: var(--pdf-text-strong) !important;
-  background: #f3f5f7 !important;
-  font-family: var(--pdf-font-sans) !important;
-  font-weight: 720 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table td {
-  color: #31363d !important;
-  background: #ffffff !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table tr:nth-child(even) td {
-  background: #fcfdff !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table :is(a, code) {
@@ -498,107 +450,85 @@ body {
   margin-bottom: 0 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) table th[style*="text-align:center"],
-:is(.print, .markdown-preview-view, .markdown-rendered) table td[style*="text-align:center"] {
-  text-align: center !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table th[style*="text-align:right"],
-:is(.print, .markdown-preview-view, .markdown-rendered) table td[style*="text-align:right"] {
-  text-align: right !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) img {
-  display: block !important;
-  max-width: 100% !important;
-  max-height: var(--pdf-image-max-height) !important;
-  width: auto !important;
-  height: auto !important;
-  margin: 0.84em auto !important;
-  object-fit: contain !important;
-  background: #ffffff !important;
-  border: 1px solid var(--pdf-border-soft) !important;
-  border-radius: var(--pdf-radius-l) !important;
-  padding: 0.28em !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-  image-rendering: -webkit-optimize-contrast !important;
-  image-rendering: high-quality !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol):not(:last-child) {
+  margin-bottom: 0.16em !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) :is(.katex-display, mjx-container[display="true"], .math-block) {
   max-width: 100% !important;
-  margin: 0.54em 0 !important;
-  padding: 0.08em 0 !important;
+  margin: 0.38em 0 !important;
   overflow: visible !important;
-  color: var(--pdf-text-strong) !important;
-  font-family: var(--pdf-font-math) !important;
-  font-size: 1em !important;
+  color: var(--ky-text) !important;
+  font-family: var(--ky-font-math) !important;
+  font-size: 0.98em !important;
   letter-spacing: 0 !important;
   break-inside: avoid !important;
   page-break-inside: avoid !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) :is(.katex, mjx-container, .math, .math-inline) {
-  font-family: var(--pdf-font-math) !important;
+  font-family: var(--ky-font-math) !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table :is(.katex, mjx-container, .math, .math-inline) {
-  color: var(--pdf-text-strong) !important;
+  color: var(--table-formula-text) !important;
   line-height: 1.05 !important;
   overflow-wrap: normal !important;
   word-break: normal !important;
   vertical-align: middle !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) kbd {
-  display: inline-block !important;
-  color: #24292f !important;
-  background: #f6f8fa !important;
-  border: 1px solid #c9d1d9 !important;
-  border-bottom-color: #9da7b1 !important;
-  border-radius: 5px !important;
-  padding: 0.08em 0.34em !important;
-  font-family: var(--pdf-font-sans) !important;
-  font-size: 0.82em !important;
-  line-height: 1.15 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: var(--ky-text) !important;
+  background: var(--ky-bg-soft) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-m) !important;
+  box-shadow: none !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) details {
-  margin: var(--pdf-block-gap) 0 !important;
-  padding: 0.55em 0.72em !important;
-  border: 1px solid var(--pdf-border-soft) !important;
-  border-radius: var(--pdf-radius-m) !important;
-  background: #fbfcfd !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) summary {
-  cursor: default !important;
-  color: var(--pdf-text-strong) !important;
-  font-family: var(--pdf-font-sans) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45em !important;
+  color: var(--ky-text-soft) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0.34em 0.64em 0.12em !important;
+  font-size: 0.98em !important;
   font-weight: 700 !important;
+  line-height: 1.25 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .task-list-item {
-  list-style-type: none !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
+  color: var(--ky-text) !important;
+  padding: 0.12em 0.64em 0.4em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content p,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
+  accent-color: var(--ky-text) !important;
 }
 
 @media screen {
-  html,
-  body {
-    background: #f2f4f7 !important;
-  }
-
   .markdown-preview-view {
-    max-width: 920px !important;
+    max-width: 900px !important;
     margin: 28px auto !important;
-    padding: 38px 48px !important;
+    padding: 34px 44px !important;
     background: #ffffff !important;
-    border: 1px solid var(--pdf-border) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.08) !important;
+    border: 1px solid var(--ky-border-soft) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06) !important;
   }
 }
 
@@ -619,14 +549,9 @@ body {
 
   pre,
   blockquote,
+  table,
   img,
-  .callout,
-  details {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  table tr {
+  .callout {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
