@@ -36,7 +36,7 @@ jobs:
           fi
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -72,15 +72,6 @@ jobs:
           echo "## npm run build:pdf" | tee -a .github/latest-build-log.txt
           npm run build:pdf 2>&1 | tee -a .github/latest-build-log.txt
 
-      - name: Commit latest build log
-        if: always()
-        run: |
-          git add .github/latest-build-log.txt
-          if ! git diff --cached --quiet; then
-            git commit -m "Record latest build log [skip ci]"
-            git push
-          fi
-
       - name: Upload PDF artifact
         if: success()
         uses: actions/upload-artifact@v7
@@ -89,3 +80,13 @@ jobs:
           path: |
             dist/notes.pdf
             dist/notes.html
+
+      - name: Commit latest build log
+        if: always()
+        continue-on-error: true
+        run: |
+          git add .github/latest-build-log.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Record latest build log [skip ci]"
+            git push
+          fi
