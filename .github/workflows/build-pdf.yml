@@ -46,9 +46,18 @@ jobs:
           : > .github/latest-build-log.txt
           echo "## npm install" | tee -a .github/latest-build-log.txt
           npm install 2>&1 | tee -a .github/latest-build-log.txt
+
           echo "" | tee -a .github/latest-build-log.txt
-          echo "## npx puppeteer browsers install chrome" | tee -a .github/latest-build-log.txt
-          npx puppeteer browsers install chrome 2>&1 | tee -a .github/latest-build-log.txt
+          echo "## Chrome setup" | tee -a .github/latest-build-log.txt
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -n "$CHROME_PATH" ]; then
+            echo "Using system Chrome: $CHROME_PATH" | tee -a .github/latest-build-log.txt
+            echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          else
+            echo "System Chrome not found. Cleaning Puppeteer Chrome cache and installing pinned Chrome." | tee -a .github/latest-build-log.txt
+            rm -rf ~/.cache/puppeteer/chrome
+            npx puppeteer browsers install chrome --install-deps 2>&1 | tee -a .github/latest-build-log.txt
+          fi
 
       - name: Build PDF
         run: |
