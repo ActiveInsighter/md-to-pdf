@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" role="img" aria-label="Markdown PDF test diagram">
+  <rect width="920" height="360" rx="24" fill="#ffffff"/>
+  <rect x="28" y="28" width="864" height="304" rx="18" fill="#f7f7f8" stroke="#d9d9de" stroke-width="2"/>
+  <text x="460" y="72" text-anchor="middle" font-family="Noto Sans CJK SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="700" fill="#202124">Markdown PDF 渲染流程测试</text>
+  <g font-family="Noto Sans CJK SC, Microsoft YaHei, sans-serif">
+    <rect x="76" y="120" width="200" height="86" rx="14" fill="#ffffff" stroke="#cfd2d8" stroke-width="2"/>
+    <text x="176" y="155" text-anchor="middle" font-size="22" font-weight="700" fill="#202124">Markdown</text>
+    <text x="176" y="184" text-anchor="middle" font-size="15" fill="#666b73">标题 / 表格 / 公式 / 代码</text>
+    <rect x="360" y="120" width="200" height="86" rx="14" fill="#ffffff" stroke="#cfd2d8" stroke-width="2"/>
+    <text x="460" y="155" text-anchor="middle" font-size="22" font-weight="700" fill="#202124">HTML</text>
+    <text x="460" y="184" text-anchor="middle" font-size="15" fill="#666b73">KaTeX / Highlight / CSS</text>
+    <rect x="644" y="120" width="200" height="86" rx="14" fill="#ffffff" stroke="#cfd2d8" stroke-width="2"/>
+    <text x="744" y="155" text-anchor="middle" font-size="22" font-weight="700" fill="#202124">PDF</text>
+    <text x="744" y="184" text-anchor="middle" font-size="15" fill="#666b73">打印 / 阅读 / 复习</text>
+    <path d="M292 163 H344" stroke="#8a8f98" stroke-width="4" stroke-linecap="round"/>
+    <path d="M576 163 H628" stroke="#8a8f98" stroke-width="4" stroke-linecap="round"/>
+    <path d="M335 153 L348 163 L335 173" fill="none" stroke="#8a8f98" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M619 153 L632 163 L619 173" fill="none" stroke="#8a8f98" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="116" y="250" width="688" height="44" rx="12" fill="#ffffff" stroke="#d9d9de"/>
+    <text x="460" y="279" text-anchor="middle" font-size="18" font-weight="600" fill="#30343a">检查点：清晰、克制、稳定、不溢出、适合打印</text>
+  </g>
+</svg>
