@@ -1,6 +1,14 @@
+import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const message = process.argv.slice(2).join(' ') || 'Record workflow state [skip ci]';
+const stateFiles = [
+  '.github/latest-run-id.txt',
+  '.github/latest-run-url.txt',
+  '.github/latest-run.json',
+  '.github/build-history.json',
+  '.github/latest-build-log.txt'
+];
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -13,7 +21,14 @@ function run(command, args, options = {}) {
 
 run('git', ['config', 'user.name', 'github-actions[bot]']);
 run('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
-run('git', ['add', '.github/latest-run-id.txt', '.github/latest-run-url.txt', '.github/latest-run.json', '.github/build-history.json', '.github/latest-build-log.txt']);
+
+const existingFiles = stateFiles.filter((file) => existsSync(file));
+if (existingFiles.length === 0) {
+  console.log('No workflow state files exist yet.');
+  process.exit(0);
+}
+
+run('git', ['add', ...existingFiles]);
 
 const diffStatus = run('git', ['diff', '--cached', '--quiet'], { stdio: 'ignore' });
 if (diffStatus === 0) {
