@@ -1,6 +1,73 @@
+## apt install CJK fonts
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
+Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [187 kB]
+Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [156 kB]
+Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1041 kB]
+Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [261 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [181 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.5 kB]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1656 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [326 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.8 kB]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1134 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [257 kB]
+Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [788 kB]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [179 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.6 kB]
+Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1171 kB]
+Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [229 kB]
+Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.1 kB]
+Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1071 kB]
+Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [245 kB]
+Get:34 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1211 B]
+Fetched 9881 kB in 1s (7399 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Suggested packages:
+  fonts-noto-cjk-extra
+The following NEW packages will be installed:
+  fonts-noto-cjk
+0 upgraded, 1 newly installed, 0 to remove and 16 not upgraded.
+Need to get 61.2 MB of archives.
+After this operation, 93.2 MB of additional disk space will be used.
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
+Fetched 61.2 MB in 2s (28.9 MB/s)
+Selecting previously unselected package fonts-noto-cjk.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202407 files and directories currently installed.)
+Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
+Unpacking fonts-noto-cjk (1:20230817+repack1-3) ...
+Setting up fonts-noto-cjk (1:20230817+repack1-3) ...
+Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
 ## npm install
 
-added 113 packages, and audited 114 packages in 8s
+added 113 packages, and audited 114 packages in 9s
 
 12 packages are looking for funding
   run `npm fund` for details
