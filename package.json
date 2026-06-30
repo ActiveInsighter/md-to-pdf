@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build:pdf": "node scripts/build-pdf.mjs notes.md dist/notes.pdf",
-    "build:html": "node scripts/build-pdf.mjs notes.md dist/notes.pdf --html-only"
+    "build:html": "node scripts/build-pdf.mjs notes.md dist/notes.pdf --html-only",
+    "ci:build": "node scripts/build-with-log.mjs"
   },
   "devDependencies": {
     "highlight.js": "^11.11.1",
