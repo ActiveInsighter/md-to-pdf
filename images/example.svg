@@ -1,0 +1,19 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='900' height='360' viewBox='0 0 900 360' role='img' aria-label='PDF style test diagram'>
+  <rect width='900' height='360' rx='28' fill='#ffffff'/>
+  <rect x='24' y='24' width='852' height='312' rx='22' fill='#f7f8fa' stroke='#dfe3e8' stroke-width='2'/>
+  <rect x='64' y='74' width='210' height='82' rx='16' fill='#ffffff' stroke='#cfd6df' stroke-width='2'/>
+  <rect x='344' y='74' width='210' height='82' rx='16' fill='#ffffff' stroke='#cfd6df' stroke-width='2'/>
+  <rect x='624' y='74' width='210' height='82' rx='16' fill='#ffffff' stroke='#cfd6df' stroke-width='2'/>
+  <path d='M282 115 H336' stroke='#8b9096' stroke-width='4' stroke-linecap='round'/>
+  <path d='M562 115 H616' stroke='#8b9096' stroke-width='4' stroke-linecap='round'/>
+  <circle cx='309' cy='115' r='8' fill='#2f3437'/>
+  <circle cx='589' cy='115' r='8' fill='#2f3437'/>
+  <text x='169' y='108' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='24' font-weight='700' fill='#202124'>Markdown</text>
+  <text x='169' y='138' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='16' fill='#63676d'>文本 / 表格 / 公式</text>
+  <text x='449' y='108' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='24' font-weight='700' fill='#202124'>HTML</text>
+  <text x='449' y='138' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='16' fill='#63676d'>KaTeX / Highlight</text>
+  <text x='729' y='108' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='24' font-weight='700' fill='#202124'>PDF</text>
+  <text x='729' y='138' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='16' fill='#63676d'>打印 / 阅读 / 复习</text>
+  <rect x='84' y='222' width='732' height='54' rx='14' fill='#ffffff' stroke='#dfe3e8'/>
+  <text x='450' y='256' text-anchor='middle' font-family='Noto Sans CJK SC, Microsoft YaHei, sans-serif' font-size='20' font-weight='600' fill='#2f3437'>目标：白底、清爽、克制、有层次</text>
+</svg>
