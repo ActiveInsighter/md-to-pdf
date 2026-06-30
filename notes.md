@@ -14,6 +14,7 @@
 - 支持普通列表
 - 支持任务列表
 - 支持中文内容
+- 支持 Obsidian-inspired 主题样式
 
 - [x] 写 Markdown
 - [x] 自动转 HTML
