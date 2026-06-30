@@ -1,319 +1,526 @@
 /*
-  Minimal Light PDF theme
-  Adapted for this repository's Markdown -> HTML -> PDF pipeline.
-  Design reference: Minimal Theme by @kepano, MIT licensed.
-  This is not a full Obsidian app theme copy; it is a print/PDF stylesheet.
+  ChatGPT-like neutral print/PDF theme.
+  Adapted from the user-provided KaoYan Math Practice CSS reference for this
+  repository's Markdown -> HTML -> Chromium -> PDF pipeline.
 */
 
-:root {
-  --minimal-bg: #ffffff;
-  --minimal-bg-2: #f7f7f7;
-  --minimal-bg-3: #eeeeee;
-  --minimal-ui-1: #e6e6e6;
-  --minimal-ui-2: #d6d6d6;
-  --minimal-ui-3: #b8b8b8;
-  --minimal-text: #1f1f1f;
-  --minimal-muted: #6f6f6f;
-  --minimal-faint: #9a9a9a;
-  --minimal-accent: #5f7f95;
-  --minimal-red: #d04255;
-  --minimal-orange: #d5763f;
-  --minimal-yellow: #b9852f;
-  --minimal-green: #75975e;
-  --minimal-cyan: #4c9188;
-  --minimal-blue: #5f7f95;
-  --minimal-purple: #806aa8;
-  --minimal-pink: #a6537a;
-  --minimal-radius: 7px;
-  --minimal-line-width: 40rem;
+@page {
+  size: A4;
+  margin: 13mm 15mm;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  --ky-font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  --ky-font-math: "Latin Modern Math", "STIX Two Math", "Cambria Math", "Noto Serif Math", "Times New Roman", serif;
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
+
+  --ky-text: #111111;
+  --ky-text-soft: #242424;
+  --ky-muted: #646464;
+  --ky-faint: #8a8a8a;
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f7f8;
+  --ky-bg-mute: #f1f1f2;
+  --ky-bg-code: #f7f7f8;
+  --ky-bg-inline-code: #eeeeef;
+  --ky-border-soft: #e5e5e7;
+  --ky-border: #d5d5d8;
+  --ky-border-strong: #a0a0a5;
+  --ky-radius-s: 5px;
+  --ky-radius-m: 8px;
+  --ky-radius-l: 12px;
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.48;
+  --ky-block-gap: 0.48em;
+  --ky-para-gap: 0.2em;
+  --ky-tight-gap: 0.1em;
+  --ky-table-font-size: 0.92em;
+  --ky-table-line-height: 1.32;
+  --ky-image-max-height: 64mm;
+
+  --inline-code-color: #3b4654;
+  --code-normal: #2f3742;
+  --code-comment: #777b80;
+  --code-keyword: #8a5f9e;
+  --code-string: #4f7f63;
+  --code-function: #3f7f91;
+  --code-property: #8a6f45;
+  --code-tag: #6875a8;
+  --code-operator: #7a6572;
+  --code-punctuation: #747c86;
+  --code-important: #a85f50;
+  --code-value: #4f6fa8;
+  --table-text: var(--ky-text-soft);
+  --table-head-text: var(--ky-text);
+  --table-head-bg: #f5f5f6;
+  --table-border-strong: var(--ky-border);
+  --table-border-soft: var(--ky-border-soft);
+  --table-formula-text: var(--ky-text);
+
+  color: var(--ky-text) !important;
+  background: var(--ky-bg) !important;
+  color-scheme: light !important;
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  font-weight: 400 !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0.004em !important;
+  line-break: strict !important;
+  word-break: normal !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 html,
 body,
 body.theme-light,
-body.minimal-light {
-  background: var(--minimal-bg) !important;
+body.minimal-light,
+body.minimal-light-white {
+  background: #ffffff !important;
+  color: #111111 !important;
 }
 
 body {
-  color: var(--minimal-text) !important;
-  font-family: "Noto Serif CJK SC", "Noto Sans CJK SC", "Source Han Serif SC", "Microsoft YaHei", "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-  font-size: 15px !important;
-  line-height: 1.62 !important;
+  margin: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif !important;
+  font-size: 15.6px !important;
+  line-height: 1.48 !important;
 }
 
-.markdown-preview-view {
-  max-width: var(--minimal-line-width) !important;
-  margin: 0 auto !important;
-  padding: 28px 0 34px !important;
-  background: var(--minimal-bg) !important;
+.markdown-preview-view .markdown-preview-sizer {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) p {
+  margin: var(--ky-para-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--ky-text) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.16em !important;
+  text-decoration-thickness: 0.06em !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(strong, b) {
+  color: var(--ky-text) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) em {
+  color: var(--ky-muted) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) u {
+  color: var(--ky-text) !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 0.06em !important;
+  text-underline-offset: 0.16em !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) mark {
+  color: var(--ky-text) !important;
+  background: #ededee !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.02em 0.2em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) hr {
   border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  border-top: 1px solid var(--ky-border-soft) !important;
+  margin: 0.8em 0 !important;
 }
 
-.markdown-preview-view > :first-child {
-  margin-top: 0 !important;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  color: var(--minimal-text) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ky-text) !important;
+  font-family: var(--ky-font-heading) !important;
   letter-spacing: 0 !important;
-  line-height: 1.35 !important;
-  font-style: normal !important;
+  line-height: 1.2 !important;
+  margin: 0.58em 0 0.2em !important;
   break-after: avoid !important;
   page-break-after: avoid !important;
 }
 
-h1 {
-  font-size: 1.35em !important;
-  font-weight: 650 !important;
-  margin: 0 0 1.2rem !important;
-  padding-bottom: 0.45rem !important;
-  border-bottom: 1px solid var(--minimal-ui-1) !important;
-  page-break-before: always !important;
-}
-
-h1:first-child {
+:is(.print, .markdown-preview-view, .markdown-rendered) h1 {
+  font-size: 1.42em !important;
+  font-weight: 750 !important;
+  padding-bottom: 0.14em !important;
+  border-bottom: 1px solid var(--ky-border-soft) !important;
+  break-before: auto !important;
   page-break-before: auto !important;
 }
 
-h2 {
-  font-size: 1.15em !important;
-  font-weight: 620 !important;
-  margin-top: 2rem !important;
-  margin-bottom: 0.7rem !important;
-  padding-left: 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) h2 {
+  font-size: 1.26em !important;
+  font-weight: 720 !important;
   border-left: 0 !important;
-  border-bottom: 1px solid var(--minimal-ui-1) !important;
-  padding-bottom: 0.25rem !important;
+  padding-left: 0 !important;
 }
 
-h3 {
+:is(.print, .markdown-preview-view, .markdown-rendered) h3 {
+  font-size: 1.15em !important;
+  font-weight: 680 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h4 {
+  font-size: 1.08em !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h5 {
   font-size: 1.03em !important;
-  font-weight: 580 !important;
-  color: var(--minimal-blue) !important;
-  margin-top: 1.6rem !important;
+  font-weight: 620 !important;
 }
 
-h4 {
-  font-size: 0.95em !important;
-  font-weight: 560 !important;
-  color: var(--minimal-muted) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) h6 {
+  color: var(--ky-muted) !important;
+  font-size: 1em !important;
+  font-weight: 600 !important;
 }
 
-h5, h6 {
-  font-size: 0.88em !important;
-  font-weight: 520 !important;
-  color: var(--minimal-muted) !important;
-  font-variant: small-caps !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
+  margin: 0.16em 0 0.24em !important;
 }
 
-p {
-  margin: 0.72rem 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) ul {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
 }
 
-strong {
-  color: var(--minimal-text) !important;
-  font-weight: 650 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) ol {
+  padding-left: 0 !important;
+  list-style-position: inside !important;
 }
 
-em {
-  color: inherit !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) ol > li > p:first-child {
+  display: inline !important;
+  margin: 0 !important;
 }
 
-mark {
-  background: rgba(255, 225, 0, 0.45) !important;
-  color: inherit !important;
-  padding: 0.03em 0.15em !important;
-  border-radius: 3px !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
 }
 
-a {
-  color: var(--minimal-accent) !important;
-  text-decoration: none !important;
-  border-bottom: 1px solid rgba(95, 127, 149, 0.28) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) li {
+  margin: 0.06em 0 !important;
+  line-height: 1.44 !important;
 }
 
-ul, ol {
-  padding-left: 1.65em !important;
-  margin: 0.7rem 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
+  color: #555555 !important;
+  font-weight: 500 !important;
 }
 
-li + li {
-  margin-top: 0.075em !important;
-}
-
-li::marker {
-  color: var(--minimal-muted) !important;
-}
-
-input[type="checkbox"] {
-  accent-color: var(--minimal-accent) !important;
-  width: 0.95em !important;
-  height: 0.95em !important;
-  transform: translateY(1px) !important;
-}
-
-blockquote {
-  margin: 1rem 0 !important;
-  padding: 0.75rem 0.95rem !important;
-  border-left: 2px solid var(--minimal-ui-3) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  color: var(--minimal-muted) !important;
-  break-inside: avoid !important;
-}
-
-.callout {
-  border: 1px solid var(--minimal-ui-1) !important;
-  border-left: 4px solid var(--minimal-accent) !important;
-  border-radius: var(--minimal-radius) !important;
-  background: var(--minimal-bg-2) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.3em 0.68em 0.32em 0.78em !important;
+  color: var(--ky-muted) !important;
+  background: #fafafa !important;
+  border: 0 !important;
+  border-left: 3px solid var(--ky-border) !important;
+  border-radius: 0 var(--ky-radius-s) var(--ky-radius-s) 0 !important;
   box-shadow: none !important;
-  padding: 0.82rem 0.95rem !important;
 }
 
-.callout-title {
-  color: var(--minimal-text) !important;
-  font-size: 0.95em !important;
-  font-weight: 650 !important;
-  margin-bottom: 0.28rem !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote :is(strong, b) {
+  color: var(--ky-text-soft) !important;
 }
 
-.callout p {
-  margin: 0.45rem 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote p {
+  margin: var(--ky-tight-gap) 0 !important;
 }
 
-.callout-note,
-.callout-info {
-  border-left-color: var(--minimal-blue) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) a.tag {
+  color: #3f3f3f !important;
+  background: var(--ky-bg-mute) !important;
+  border: 1px solid var(--ky-border-soft) !important;
+  border-radius: 999px !important;
+  padding: 0.12em 0.55em !important;
+  font-size: 0.82em !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
 }
 
-.callout-tip,
-.callout-success {
-  border-left-color: var(--minimal-green) !important;
-}
-
-.callout-important,
-.callout-warning,
-.callout-caution,
-.callout-danger {
-  border-left-color: var(--minimal-orange) !important;
-}
-
-.callout-question,
-.callout-example {
-  border-left-color: var(--minimal-purple) !important;
-}
-
-code {
-  font-family: "JetBrains Mono", "Cascadia Code", "Consolas", "SFMono-Regular", monospace !important;
-  background: var(--minimal-bg-2) !important;
-  color: #333333 !important;
-  border: 1px solid var(--minimal-ui-1) !important;
-  border-radius: 4px !important;
-  padding: 0.08em 0.28em !important;
-  font-size: 0.88em !important;
-}
-
-pre.hljs {
-  background: #f6f6f6 !important;
-  color: #242424 !important;
-  border: 1px solid var(--minimal-ui-1) !important;
-  border-radius: var(--minimal-radius) !important;
-  padding: 0.95rem 1rem !important;
-  margin: 1rem 0 !important;
-  line-height: 1.52 !important;
-  font-size: 0.86em !important;
-  overflow-x: auto !important;
-  break-inside: avoid !important;
-}
-
-pre code {
-  background: transparent !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) code {
+  color: var(--inline-code-color) !important;
+  background: var(--ky-bg-inline-code) !important;
   border: 0 !important;
-  color: inherit !important;
-  padding: 0 !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.08em 0.28em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.9em !important;
+  letter-spacing: 0 !important;
 }
 
-.hljs-keyword,
-.hljs-selector-tag,
-.hljs-built_in {
-  color: var(--minimal-purple) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) pre,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs {
+  color: var(--code-normal) !important;
+  background: var(--ky-bg-code) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-l) !important;
+  box-shadow: none !important;
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.62em 0.78em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.91em !important;
+  line-height: 1.42 !important;
+  letter-spacing: 0 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  font-variant-ligatures: none !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
 }
 
-.hljs-string,
-.hljs-attr,
-.hljs-title {
-  color: var(--minimal-green) !important;
-}
-
-.hljs-number,
-.hljs-literal {
-  color: var(--minimal-orange) !important;
-}
-
-.hljs-comment {
-  color: var(--minimal-faint) !important;
-}
-
-table {
-  width: 100% !important;
-  margin: 1rem 0 !important;
-  border-collapse: collapse !important;
-  border-spacing: 0 !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) pre code {
+  color: var(--code-normal) !important;
+  background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
-  overflow: visible !important;
-  font-size: 0.92em !important;
-  break-inside: avoid !important;
+  padding: 0 !important;
+  font: inherit !important;
 }
 
-th, td {
-  padding: 0.42rem 0.55rem !important;
-  border: 0 !important;
-  border-bottom: 1px solid var(--minimal-ui-1) !important;
-  vertical-align: top !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-comment,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-quote {
+  color: var(--code-comment) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
 }
 
-th {
-  background: transparent !important;
-  color: var(--minimal-text) !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-keyword,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-tag,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-built_in,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-name {
+  color: var(--code-keyword) !important;
   font-weight: 650 !important;
 }
 
-tr:nth-child(even) td {
-  background: transparent !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-string,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-char,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-attr,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-template-variable {
+  color: var(--code-string) !important;
 }
 
-img {
-  max-width: 100% !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title.function_,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title.class_ {
+  color: var(--code-function) !important;
+  font-weight: 560 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-attribute,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-variable,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-params {
+  color: var(--code-property) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-tag,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-id,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-class {
+  color: var(--code-tag) !important;
+  font-weight: 560 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-operator,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-link {
+  color: var(--code-operator) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-punctuation {
+  color: var(--code-punctuation) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-number,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-literal,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-symbol,
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-bullet {
+  color: var(--code-value) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) img {
   display: block !important;
-  margin: 1rem auto !important;
-  border-radius: var(--minimal-radius) !important;
+  max-width: 100% !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  object-fit: contain !important;
+  border-radius: var(--ky-radius-l) !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: high-quality !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
 }
 
-hr {
+:is(.print, .markdown-preview-view, .markdown-rendered) svg[role="img"] {
+  display: block !important;
+  max-width: none !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  border-radius: var(--ky-radius-l) !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table {
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
   border: 0 !important;
-  border-top: 1px solid var(--minimal-ui-1) !important;
-  margin: 2rem 0 !important;
+  border-radius: 0 !important;
+  margin: 0.5em 0 !important;
+  background: transparent !important;
+  font-size: var(--ky-table-font-size) !important;
+  line-height: var(--ky-table-line-height) !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
 }
 
-.katex-display {
-  margin: 0.9rem 0 !important;
-  padding: 0.15rem 0 !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) thead {
+  display: table-header-group !important;
 }
 
-.katex {
-  font-size: 1.02em !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) tfoot {
+  display: table-footer-group !important;
 }
 
-@page {
-  size: A4;
-  margin: 18mm 22mm 18mm 22mm;
+:is(.print, .markdown-preview-view, .markdown-rendered) table th,
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  min-width: 0 !important;
+  padding: 0.3em 0.46em !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  line-break: strict !important;
+  hyphens: auto !important;
+  text-wrap: pretty !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--table-border-soft) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  background: var(--table-head-bg) !important;
+  border-bottom: 1.5px solid var(--table-border-strong) !important;
+  color: var(--table-head-text) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+  color: var(--table-text) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(a, code) {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol):not(:last-child) {
+  margin-bottom: 0.16em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.katex-display, mjx-container[display="true"], .math-block) {
+  max-width: 100% !important;
+  margin: 0.38em 0 !important;
+  overflow: visible !important;
+  color: var(--ky-text) !important;
+  font-family: var(--ky-font-math) !important;
+  font-size: 0.98em !important;
+  letter-spacing: 0 !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.katex, mjx-container, .math, .math-inline) {
+  font-family: var(--ky-font-math) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(.katex, mjx-container, .math, .math-inline) {
+  color: var(--table-formula-text) !important;
+  line-height: 1.05 !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  vertical-align: middle !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: var(--ky-text) !important;
+  background: var(--ky-bg-soft) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-m) !important;
+  box-shadow: none !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45em !important;
+  color: var(--ky-text-soft) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0.34em 0.64em 0.12em !important;
+  font-size: 0.98em !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
+  color: var(--ky-text) !important;
+  padding: 0.12em 0.64em 0.4em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content p,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
+  accent-color: var(--ky-text) !important;
+}
+
+@media screen {
+  .markdown-preview-view {
+    max-width: 900px !important;
+    margin: 28px auto !important;
+    padding: 34px 44px !important;
+    background: #ffffff !important;
+    border: 1px solid var(--ky-border-soft) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06) !important;
+  }
 }
 
 @media print {
@@ -326,6 +533,9 @@ hr {
     max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
 
   pre,
@@ -334,10 +544,6 @@ hr {
   img,
   .callout {
     break-inside: avoid !important;
-  }
-
-  a {
-    color: inherit !important;
-    border-bottom: 0 !important;
+    page-break-inside: avoid !important;
   }
 }
