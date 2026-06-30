@@ -19,6 +19,7 @@ const outputPdfPath = path.resolve(projectRoot, outputPdf);
 const outputDir = path.dirname(outputPdfPath);
 const outputHtmlPath = outputPdfPath.replace(/\.pdf$/i, '.html');
 const stylePath = path.resolve(projectRoot, 'style.css');
+const themePath = path.resolve(projectRoot, 'themes/obsidian-inspired.css');
 
 function escapeHtml(str) {
   return String(str)
@@ -189,7 +190,9 @@ async function main() {
   const md = createMarkdownRenderer();
   const renderedMarkdown = restoreMath(md.render(protectedMath.markdown), protectedMath.mathItems);
 
-  const customCss = await readOptionalFile(stylePath);
+  const themeCss = await readOptionalFile(themePath);
+  const styleCss = await readOptionalFile(stylePath);
+  const customCss = `${themeCss}\n\n${styleCss}`;
   const rawKatexCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/katex/dist/katex.min.css'), 'utf8');
   const katexCss = rewriteKatexCssUrls(rawKatexCss);
   const highlightCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/highlight.js/styles/github-dark.min.css'), 'utf8');
