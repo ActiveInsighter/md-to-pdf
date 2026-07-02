@@ -1,0 +1,14 @@
+version: 1
+title: ChatGPT Light Theme PDF Test
+date: 2026-07-02
+theme: chatgpt-light
+jobs:
+  - id: chatgpt-light-theme-test
+    type: single
+    title: ChatGPT Light Markdown/PDF Theme Test
+    inputs:
+      - md/001-chatgpt-light-theme-test.md
+    output: chatgpt-light-theme-test.pdf
+    theme: chatgpt-light
+consume:
+  delete_after_success: true
