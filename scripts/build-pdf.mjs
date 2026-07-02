@@ -18,6 +18,7 @@ const inputPath = path.resolve(projectRoot, inputFile);
 const outputPdfPath = path.resolve(projectRoot, outputPdf);
 const outputDir = path.dirname(outputPdfPath);
 const outputHtmlPath = outputPdfPath.replace(/\.pdf$/i, '.html');
+const inputBaseDir = path.dirname(inputPath);
 const stylePath = path.resolve(projectRoot, 'style.css');
 const themePath = path.resolve(projectRoot, 'themes/obsidian-inspired.css');
 
@@ -147,7 +148,22 @@ function createMarkdownRenderer() {
 }
 
 function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss }) {
-  const baseHref = pathToFileURL(projectRoot + path.sep).href;
+  const baseHref = pathToFileURL(inputBaseDir + path.sep).href;
+  const queueCss = `
+.page-break {
+  break-after: page;
+  page-break-after: always;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+@media print {
+  .page-break {
+    break-after: page;
+    page-break-after: always;
+  }
+}
+`;
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -159,6 +175,7 @@ function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss 
   <style>${katexCss}</style>
   <style>${highlightCss}</style>
   <style>${customCss}</style>
+  <style>${queueCss}</style>
 </head>
 <body class="theme-light minimal-light minimal-light-white">
   <main class="markdown-preview-view markdown-rendered">
