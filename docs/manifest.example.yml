@@ -1,0 +1,33 @@
+version: 1
+date: 2026-07-02
+title: 2026-07-02 机器学习复习
+
+jobs:
+  # 处理某一个 Markdown，输出一个 PDF。
+  - id: entropy-single
+    type: single
+    title: 条件熵与信息增益
+    inputs:
+      - md/001-条件熵与信息增益.md
+    output: 条件熵与信息增益.pdf
+
+  # 处理几个指定 Markdown，分别输出多个 PDF。
+  - id: selected-singles
+    type: single
+    inputs:
+      - md/001-条件熵与信息增益.md
+      - md/002-PCA协方差矩阵.md
+    output_dir: selected
+
+  # 处理这一天 md/ 里的所有 Markdown，并按文件名合并成一个 PDF。
+  - id: daily-merged
+    type: merge
+    title: 2026-07-02 机器学习复习合集
+    inputs: all
+    sort: filename
+    page_break: true
+    output: 2026-07-02-机器学习复习合集.pdf
+
+consume:
+  # 只有构建、上传 artifact、发布 output 分支都成功后，Action 才会删除这个 inbox 日期目录。
+  delete_after_success: true

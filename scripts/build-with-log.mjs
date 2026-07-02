@@ -5,6 +5,9 @@ import { spawn } from 'node:child_process';
 
 const projectRoot = process.cwd();
 const logPath = path.resolve(projectRoot, '.github/latest-build-log.txt');
+const mode = (process.env.BUILD_MODE || 'queue').trim() || 'queue';
+const source = (process.env.BUILD_SOURCE || '').trim();
+const day = (process.env.BUILD_DAY || '').trim();
 
 await fsp.mkdir(path.dirname(logPath), { recursive: true });
 
@@ -20,11 +23,43 @@ function writeErr(chunk) {
   logStream.write(chunk);
 }
 
+function commandForMode() {
+  if (mode === 'notes') {
+    return ['scripts/build-pdf.mjs', 'notes.md', 'dist/notes.pdf'];
+  }
+
+  if (mode === 'single') {
+    if (!source) throw new Error('BUILD_SOURCE is required when BUILD_MODE=single.');
+    return ['scripts/build-single.mjs', source];
+  }
+
+  if (mode === 'day') {
+    const target = day || source;
+    if (!target) throw new Error('BUILD_DAY or BUILD_SOURCE is required when BUILD_MODE=day.');
+    return ['scripts/build-day.mjs', target];
+  }
+
+  if (mode === 'queue') {
+    return ['scripts/build-queue.mjs'];
+  }
+
+  if (mode === 'validate') {
+    const target = day || source;
+    if (!target) throw new Error('BUILD_DAY or BUILD_SOURCE is required when BUILD_MODE=validate.');
+    return ['scripts/validate-manifest.mjs', target];
+  }
+
+  throw new Error(`Unsupported BUILD_MODE: ${mode}`);
+}
+
+const commandArgs = commandForMode();
+
 write(`\n## PDF build\n`);
 write(`started_at=${new Date().toISOString()}\n`);
-write(`command=node scripts/build-pdf.mjs notes.md dist/notes.pdf\n\n`);
+write(`mode=${mode}\n`);
+write(`command=node ${commandArgs.join(' ')}\n\n`);
 
-const child = spawn(process.execPath, ['scripts/build-pdf.mjs', 'notes.md', 'dist/notes.pdf'], {
+const child = spawn(process.execPath, commandArgs, {
   cwd: projectRoot,
   env: process.env,
   stdio: ['ignore', 'pipe', 'pipe']
