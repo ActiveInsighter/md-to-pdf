@@ -1,5 +1,13 @@
 {
-  "status": "skipped",
-  "reason": "No inbox manifest found for this change set.",
-  "manifests": []
+  "status": "success",
+  "manifests": [
+    {
+      "manifest": "inbox/2026/07/2026-07-02/manifest.yml",
+      "root": "inbox/2026/07/2026-07-02",
+      "date": "2026-07-02"
+    }
+  ],
+  "consumed": [
+    "inbox/2026/07/2026-07-02"
+  ]
 }

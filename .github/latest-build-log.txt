@@ -4,11 +4,11 @@ Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
 Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
 Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
 Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
-Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
-Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [197 kB]
-Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [165 kB]
+Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [165 kB]
+Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [197 kB]
 Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1073 kB]
 Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [266 kB]
 Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
@@ -19,23 +19,23 @@ Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Compo
 Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
 Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
 Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
+Get:23 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1201 B]
 Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
 Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
-Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
-Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.6 kB]
-Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [820 kB]
-Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [185 kB]
-Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
-Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.7 kB]
-Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
-Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
-Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
-Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
-Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
-Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
-Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
-Get:36 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1201 B]
-Fetched 10.2 MB in 1s (7642 kB/s)
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.6 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [820 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [185 kB]
+Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
+Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.7 kB]
+Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
+Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
+Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
+Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
+Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
+Fetched 10.2 MB in 1s (8218 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -44,14 +44,14 @@ Suggested packages:
   fonts-noto-cjk-extra
 The following NEW packages will be installed:
   fonts-noto-cjk
-0 upgraded, 1 newly installed, 0 to remove and 17 not upgraded.
+0 upgraded, 1 newly installed, 0 to remove and 25 not upgraded.
 Need to get 61.2 MB of archives.
 After this operation, 93.2 MB of additional disk space will be used.
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
-Fetched 61.2 MB in 2s (39.2 MB/s)
+Fetched 61.2 MB in 0s (152 MB/s)
 Selecting previously unselected package fonts-noto-cjk.
-(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202513 files and directories currently installed.)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202407 files and directories currently installed.)
 Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
 Unpacking fonts-noto-cjk (1:20230817+repack1-3) ...
 Setting up fonts-noto-cjk (1:20230817+repack1-3) ...
@@ -69,41 +69,50 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 
 ## npm install
 
-added 113 packages, and audited 114 packages in 9s
+added 113 packages, and audited 114 packages in 5s
 
 12 packages are looking for funding
   run `npm fund` for details
 
 found 0 vulnerabilities
-npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
-npm warn allow-scripts   puppeteer@24.43.1 (postinstall: node install.mjs)
-npm warn allow-scripts
-npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
 
 ## Chrome setup
 Using system Chrome: /usr/bin/google-chrome
 
 ## PDF build
-started_at=2026-07-02T05:40:38.419Z
+started_at=2026-07-02T05:42:25.485Z
 mode=queue
 command=node scripts/build-queue.mjs
 
 Changed files:
-- inbox/2026/07/2026-07-02/img/queue-test.svg
 - inbox/2026/07/2026-07-02/manifest.yml
-- inbox/2026/07/2026-07-02/md/001-test-overview.md
-- inbox/2026/07/2026-07-02/md/002-test-math-and-image.md
 Queue manifests:
 - inbox/2026/07/2026-07-02/manifest.yml
-Error: manifest.date must use YYYY-MM-DD format, or the manifest must live under inbox/YYYY/MM/YYYY-MM-DD/.
-    at loadManifest (file:///home/runner/work/obsidian-pdf-action/obsidian-pdf-action/scripts/lib/manifest.mjs:169:11)
-    at async buildManifest (file:///home/runner/work/obsidian-pdf-action/obsidian-pdf-action/scripts/build-day.mjs:79:20)
-    at async main (file:///home/runner/work/obsidian-pdf-action/obsidian-pdf-action/scripts/build-day.mjs:134:19)
-Error: scripts/build-day.mjs exited with code 1
-    at ChildProcess.<anonymous> (file:///home/runner/work/obsidian-pdf-action/obsidian-pdf-action/scripts/build-queue.mjs:38:19)
-    at ChildProcess.emit (node:events:509:28)
-    at maybeClose (node:internal/child_process:1124:16)
-    at ChildProcess._handle.onexit (node:internal/child_process:306:5)
+Manifest: inbox/2026/07/2026-07-02/manifest.yml
+Date: 2026-07-02
 
-finished_at=2026-07-02T05:40:38.864Z
-exit_code=1
+Job selected-singles (single)
+Inputs: inbox/2026/07/2026-07-02/md/001-test-overview.md, inbox/2026/07/2026-07-02/md/002-test-math-and-image.md
+Build single: inbox/2026/07/2026-07-02/md/001-test-overview.md -> dist/queue/2026/07/2026-07-02/singles/001-test-overview.pdf
+HTML written to dist/queue/2026/07/2026-07-02/singles/001-test-overview.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-02/singles/001-test-overview.pdf
+Build single: inbox/2026/07/2026-07-02/md/002-test-math-and-image.md -> dist/queue/2026/07/2026-07-02/singles/002-test-math-and-image.pdf
+HTML written to dist/queue/2026/07/2026-07-02/singles/002-test-math-and-image.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-02/singles/002-test-math-and-image.pdf
+
+Job daily-merged (merge)
+Inputs: inbox/2026/07/2026-07-02/md/001-test-overview.md, inbox/2026/07/2026-07-02/md/002-test-math-and-image.md
+Build merged: .tmp/combined/2026/07/2026-07-02/daily-merged.md -> dist/queue/2026/07/2026-07-02/2026-07-02-manifest-queue-actual-test.pdf
+HTML written to dist/queue/2026/07/2026-07-02/2026-07-02-manifest-queue-actual-test.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-02/2026-07-02-manifest-queue-actual-test.pdf
+
+Built 3 output(s) from inbox/2026/07/2026-07-02/manifest.yml.
+Built 1 manifest(s).
+Will consume after successful publish:
+- inbox/2026/07/2026-07-02
+
+finished_at=2026-07-02T05:42:37.814Z
+exit_code=0
