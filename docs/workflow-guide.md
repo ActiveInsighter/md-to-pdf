@@ -44,6 +44,8 @@ version: 1
 date: 2026-07-02
 title: 2026-07-02 综合测试
 
+theme: clean
+
 jobs:
   - id: merged
     type: merge
@@ -55,6 +57,35 @@ jobs:
 ```
 
 默认情况下，构建成功后会删除对应的 `inbox` 日期目录；也就是说 `main` 不保存这些临时内容。
+
+## 主题选择
+
+CSS 加载顺序是：
+
+```text
+themes/base.css
+  -> themes/<theme>.css
+  -> style.css
+```
+
+推荐默认主题：
+
+```yaml
+theme: clean
+```
+
+也可以在某个 job 上覆盖：
+
+```yaml
+jobs:
+  - id: soft-preview
+    type: merge
+    theme: soft
+    inputs: all
+    output: soft-preview.pdf
+```
+
+`theme` 对应 `themes/<theme>.css`。例如 `theme: clean` 会加载 `themes/clean.css`，`theme: soft` 会加载 `themes/soft.css`。
 
 ## 临时保留 inbox
 

@@ -1,0 +1,55 @@
+/*
+  Soft variant. It reuses themes/base.css and only changes tokens.
+  Select with: theme: soft
+*/
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-page-margin: 14mm 15mm 17mm 15mm;
+
+  --ky-font-body: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-heading: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --ky-text: #262b34;
+  --ky-text-soft: #384250;
+  --ky-muted: #747b87;
+  --ky-heading: #222b3a;
+  --ky-link: #42526d;
+
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f8f7f4;
+  --ky-bg-mute: #f1f0ec;
+  --ky-bg-inline-code: #f0efeb;
+  --ky-bg-code: #f7f7f8;
+  --ky-mark-bg: #fff0b3;
+
+  --ky-border-soft: #e8e3da;
+  --ky-border: #d8d1c6;
+  --ky-border-strong: #b8aea1;
+
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.56;
+  --ky-heading-line-height: 1.25;
+  --ky-para-gap: 0.36em;
+  --ky-block-gap: 0.76em;
+  --ky-list-gap: 0.11em;
+
+  --inline-code-color: #3f4652;
+  --code-normal: #303944;
+  --code-comment: #858079;
+  --code-keyword: #7460a8;
+  --code-string: #4f7656;
+  --code-function: #34748a;
+  --code-property: #876b3d;
+  --code-tag: #6371a3;
+  --code-operator: #77636d;
+  --code-punctuation: #737982;
+  --code-important: #a26050;
+  --code-value: #586ba0;
+
+  --table-head-bg: #f6f4ef;
+  --table-border-strong: #d8d1c6;
+  --table-border-soft: #e8e3da;
+  --callout-bg: #f8f7f4;
+  --callout-border: #d8d1c6;
+}

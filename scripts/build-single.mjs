@@ -3,9 +3,22 @@ import { spawn } from 'node:child_process';
 import { assertSafeRelativePath, ensureInside, pathExists, toPosix } from './lib/path-utils.mjs';
 
 const projectRoot = process.cwd();
-const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
+const rawArgs = process.argv.slice(2);
+const args = rawArgs.filter((arg) => !arg.startsWith('--'));
 const inputArg = args[0];
 const outputArg = args[1];
+
+function optionValue(name) {
+  const inline = rawArgs.find((arg) => arg.startsWith(`${name}=`));
+  if (inline) return inline.slice(name.length + 1).trim();
+
+  const index = rawArgs.indexOf(name);
+  if (index >= 0 && rawArgs[index + 1] && !rawArgs[index + 1].startsWith('--')) {
+    return rawArgs[index + 1].trim();
+  }
+
+  return '';
+}
 
 function inferOutput(inputRel) {
   const normalized = toPosix(inputRel);
@@ -37,7 +50,7 @@ function runNode(script, scriptArgs) {
 
 async function main() {
   if (!inputArg) {
-    throw new Error('Usage: node scripts/build-single.mjs <path/to/file.md> [dist/output.pdf]');
+    throw new Error('Usage: node scripts/build-single.mjs <path/to/file.md> [dist/output.pdf] [--theme clean]');
   }
 
   const inputRel = assertSafeRelativePath(inputArg, 'input');
@@ -59,7 +72,8 @@ async function main() {
   const outputPath = path.resolve(projectRoot, outputRel);
   ensureInside(path.resolve(projectRoot, 'dist'), outputPath, 'output');
 
-  await runNode('scripts/build-pdf.mjs', [inputRel, outputRel]);
+  const theme = optionValue('--theme') || process.env.PDF_THEME || 'clean';
+  await runNode('scripts/build-pdf.mjs', [inputRel, outputRel, '--theme', theme]);
 }
 
 main().catch((error) => {

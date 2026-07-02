@@ -1,0 +1,104 @@
+/*
+  Default clean PDF theme.
+  Goal: slightly more breathing room, stable Chinese typography, and soft code colors on the same light code background.
+*/
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-page-margin: 14mm 15mm 17mm 15mm;
+
+  --ky-font-body: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-heading: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
+
+  --ky-text: #20252d;
+  --ky-text-soft: #303946;
+  --ky-muted: #67707d;
+  --ky-faint: #8a93a0;
+  --ky-heading: #1f2937;
+  --ky-link: #334155;
+  --ky-marker: #667085;
+
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f8fa;
+  --ky-bg-mute: #f1f3f6;
+  --ky-bg-inline-code: #eef1f5;
+  --ky-bg-code: #f7f7f8;
+  --ky-mark-bg: #fff2b8;
+
+  --ky-border-soft: #e5e8ee;
+  --ky-border: #d4d9e2;
+  --ky-border-strong: #aeb7c4;
+  --ky-accent: #667085;
+
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  --inline-code-color: #3d4652;
+  --code-normal: #2f3742;
+  --code-comment: #858b94;
+  --code-keyword: #6b5fd6;
+  --code-string: #3f7a57;
+  --code-function: #2f7f9f;
+  --code-property: #8a6a35;
+  --code-tag: #5c6fa8;
+  --code-operator: #73606d;
+  --code-punctuation: #717b87;
+  --code-important: #a85f50;
+  --code-value: #516ba7;
+
+  --table-text: var(--ky-text-soft);
+  --table-head-text: var(--ky-text);
+  --table-head-bg: #f4f6f9;
+  --table-border-strong: #d1d7e0;
+  --table-border-soft: #e6e9ef;
+
+  --callout-bg: #f7f8fa;
+  --callout-border: #d1d7e0;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h2 {
+  color: #263241 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h3 {
+  color: #2b3645 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  background: #f8fafc !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-note,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-info {
+  --callout-bg: #f4f7fb;
+  --callout-border: #b8c7dd;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-tip,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-success {
+  --callout-bg: #f3faf6;
+  --callout-border: #b8d8c4;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-important,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-warning,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-caution,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-danger {
+  --callout-bg: #fff7f0;
+  --callout-border: #dfc0a8;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-question,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-example {
+  --callout-bg: #f7f5fb;
+  --callout-border: #c8bfdc;
+}

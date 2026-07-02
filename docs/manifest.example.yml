@@ -2,6 +2,10 @@ version: 1
 date: 2026-07-02
 title: 2026-07-02 机器学习复习
 
+# 可选。默认是 clean，对应 themes/clean.css。
+# 也可以写 soft，或者新增 themes/my-theme.css 后写 my-theme。
+theme: clean
+
 jobs:
   # 处理某一个 Markdown，输出一个 PDF。
   - id: entropy-single
@@ -27,6 +31,15 @@ jobs:
     sort: filename
     page_break: true
     output: 2026-07-02-机器学习复习合集.pdf
+
+  # 单个 job 也可以覆盖主题。
+  - id: daily-soft-preview
+    type: merge
+    theme: soft
+    title: 2026-07-02 机器学习复习合集 Soft 预览
+    inputs: all
+    sort: filename
+    output: 2026-07-02-机器学习复习合集-soft.pdf
 
 # main 只作为构建队列使用。默认情况下，构建、artifact 上传、output 分支发布都成功后，
 # 对应 inbox 日期目录会自动从 main 删除。

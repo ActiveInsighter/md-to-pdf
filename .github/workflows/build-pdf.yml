@@ -134,6 +134,14 @@ jobs:
         continue-on-error: true
         run: node scripts/git-commit-state.mjs "Record workflow finish [skip ci]"
 
+      - name: Cleanup merged temporary branches
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_PULLS: '200'
+        run: npm run cleanup:branches
+
       - name: Fail if build failed
         if: always()
         env:

@@ -12,6 +12,7 @@ const args = process.argv.slice(2);
 const inputFile = args[0] ?? 'notes.md';
 const outputPdf = args[1] ?? 'dist/notes.pdf';
 const htmlOnly = args.includes('--html-only');
+const THEME_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 const projectRoot = process.cwd();
 const inputPath = path.resolve(projectRoot, inputFile);
@@ -19,8 +20,28 @@ const outputPdfPath = path.resolve(projectRoot, outputPdf);
 const outputDir = path.dirname(outputPdfPath);
 const outputHtmlPath = outputPdfPath.replace(/\.pdf$/i, '.html');
 const inputBaseDir = path.dirname(inputPath);
-const stylePath = path.resolve(projectRoot, 'style.css');
-const themePath = path.resolve(projectRoot, 'themes/obsidian-inspired.css');
+
+function argValue(name) {
+  const inline = args.find((arg) => arg.startsWith(`${name}=`));
+  if (inline) return inline.slice(name.length + 1).trim();
+
+  const index = args.indexOf(name);
+  if (index >= 0 && args[index + 1] && !args[index + 1].startsWith('--')) {
+    return args[index + 1].trim();
+  }
+
+  return '';
+}
+
+function normalizeThemeName(value) {
+  const theme = String(value || '').trim() || 'clean';
+  if (!THEME_NAME_RE.test(theme)) {
+    throw new Error(`Theme name must start with a letter/number and contain only letters, numbers, dots, underscores, or hyphens: ${value}`);
+  }
+  return theme;
+}
+
+const selectedTheme = normalizeThemeName(argValue('--theme') || process.env.PDF_THEME || 'clean');
 
 function escapeHtml(str) {
   return String(str)
@@ -128,6 +149,28 @@ async function readOptionalFile(filePath) {
   }
 }
 
+async function readThemeCss(theme) {
+  const basePath = path.resolve(projectRoot, 'themes/base.css');
+  const themePath = path.resolve(projectRoot, 'themes', `${theme}.css`);
+  const legacyOverridePath = path.resolve(projectRoot, 'style.css');
+
+  const baseCss = await readOptionalFile(basePath);
+  const themeCss = await readOptionalFile(themePath);
+  if (!themeCss.trim()) {
+    throw new Error(`Theme CSS not found or empty: themes/${theme}.css`);
+  }
+
+  const legacyCss = await readOptionalFile(legacyOverridePath);
+  return [
+    '/* themes/base.css */',
+    baseCss,
+    `/* themes/${theme}.css */`,
+    themeCss,
+    '/* style.css optional project overrides */',
+    legacyCss
+  ].join('\n\n');
+}
+
 function createMarkdownRenderer() {
   return new MarkdownIt({
     html: true,
@@ -147,8 +190,9 @@ function createMarkdownRenderer() {
     .use(markdownItTaskLists, { enabled: true, label: true, labelAfter: true });
 }
 
-function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss }) {
+function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss, theme }) {
   const baseHref = pathToFileURL(inputBaseDir + path.sep).href;
+  const safeTheme = escapeHtml(theme);
   const queueCss = `
 .page-break {
   break-after: page;
@@ -172,12 +216,13 @@ function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <base href="${baseHref}">
   <title>${escapeHtml(title)}</title>
+  <meta name="pdf-theme" content="${safeTheme}">
   <style>${katexCss}</style>
   <style>${highlightCss}</style>
   <style>${customCss}</style>
   <style>${queueCss}</style>
 </head>
-<body class="theme-light minimal-light minimal-light-white">
+<body class="theme-light minimal-light minimal-light-white pdf-theme pdf-theme-${safeTheme}">
   <main class="markdown-preview-view markdown-rendered">
 ${renderedMarkdown}
   </main>
@@ -223,15 +268,14 @@ async function main() {
   const md = createMarkdownRenderer();
   const renderedMarkdown = restoreMath(md.render(protectedMath.markdown), protectedMath.mathItems);
 
-  const styleCss = await readOptionalFile(stylePath);
-  const themeCss = await readOptionalFile(themePath);
-  const customCss = `${styleCss}\n\n${themeCss}`;
+  const customCss = await readThemeCss(selectedTheme);
   const rawKatexCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/katex/dist/katex.min.css'), 'utf8');
   const katexCss = rewriteKatexCssUrls(rawKatexCss);
-  const highlightCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/highlight.js/styles/github-dark.min.css'), 'utf8');
+  const highlightCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/highlight.js/styles/github.min.css'), 'utf8');
 
-  const html = buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss });
+  const html = buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss, theme: selectedTheme });
   await fs.writeFile(outputHtmlPath, html, 'utf8');
+  console.log(`Theme: ${selectedTheme}`);
   console.log(`HTML written to ${path.relative(projectRoot, outputHtmlPath)}`);
 
   if (htmlOnly) return;

@@ -34,6 +34,10 @@ function runNode(script, scriptArgs) {
   });
 }
 
+function buildPdfArgs(inputRel, outputRel, theme) {
+  return [inputRel, outputRel, '--theme', theme || 'clean'];
+}
+
 function outputPathForSingle(manifest, job, inputPath, inputCount, outputBase) {
   if (inputCount === 1 && job.output) {
     return ensureInside(outputBase, path.resolve(outputBase, job.output), `${job.id}.output`);
@@ -83,10 +87,12 @@ async function buildManifest(manifestPath) {
   const results = [];
   console.log(`Manifest: ${manifest.manifestRel}`);
   console.log(`Date: ${manifest.date}`);
+  console.log(`Theme: ${manifest.theme}`);
 
   for (const job of manifest.jobs) {
     const inputs = await resolveJobInputs(manifest, job);
     console.log(`\nJob ${job.id} (${job.type})`);
+    console.log(`Theme: ${job.theme}`);
     console.log(`Inputs: ${inputs.map((file) => toPosix(path.relative(projectRoot, file))).join(', ')}`);
 
     if (job.type === 'single') {
@@ -96,10 +102,10 @@ async function buildManifest(manifestPath) {
         console.log(`Build single: ${toPosix(path.relative(projectRoot, inputFile))} -> ${outputRel}`);
 
         if (!dryRun) {
-          await runNode('scripts/build-pdf.mjs', [toPosix(path.relative(projectRoot, inputFile)), outputRel]);
+          await runNode('scripts/build-pdf.mjs', buildPdfArgs(toPosix(path.relative(projectRoot, inputFile)), outputRel, job.theme));
         }
 
-        results.push({ job: job.id, type: job.type, input: toPosix(path.relative(projectRoot, inputFile)), output: outputRel });
+        results.push({ job: job.id, type: job.type, theme: job.theme, input: toPosix(path.relative(projectRoot, inputFile)), output: outputRel });
       }
       continue;
     }
@@ -113,12 +119,13 @@ async function buildManifest(manifestPath) {
       console.log(`Build merged: ${combinedRel} -> ${outputRel}`);
 
       if (!dryRun) {
-        await runNode('scripts/build-pdf.mjs', [combinedRel, outputRel]);
+        await runNode('scripts/build-pdf.mjs', buildPdfArgs(combinedRel, outputRel, job.theme));
       }
 
       results.push({
         job: job.id,
         type: job.type,
+        theme: job.theme,
         inputs: inputs.map((file) => toPosix(path.relative(projectRoot, file))),
         combined: combinedRel,
         output: outputRel
@@ -126,7 +133,7 @@ async function buildManifest(manifestPath) {
     }
   }
 
-  return { manifest: manifest.manifestRel, root: manifest.rootRel, date: manifest.date, consume: manifest.consume, results };
+  return { manifest: manifest.manifestRel, root: manifest.rootRel, date: manifest.date, theme: manifest.theme, consume: manifest.consume, results };
 }
 
 async function main() {
