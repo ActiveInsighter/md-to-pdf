@@ -15,6 +15,7 @@ export const MANIFEST_FILENAMES = ['manifest.yml', 'manifest.yaml', 'manifest.js
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const JOB_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const JOB_TYPES = new Set(['single', 'merge']);
 const SORT_MODES = new Set(['manifest', 'filename']);
 
@@ -35,6 +36,21 @@ function normalizeManifestDate(value) {
     return value.toISOString().slice(0, 10);
   }
   return String(value).trim();
+}
+
+function normalizeThemeName(value, label) {
+  const theme = String(value ?? '').trim();
+  if (!theme) return 'clean';
+  if (!THEME_RE.test(theme)) {
+    throw new Error(`${label} must start with a letter/number and contain only letters, numbers, dots, underscores, or hyphens.`);
+  }
+  return theme;
+}
+
+function rawThemeValue(raw, fallback = null) {
+  if (raw.theme != null) return raw.theme;
+  if (raw.style != null) return raw.style;
+  return fallback;
 }
 
 export function inferDateFromManifestPath(manifestPath, projectRoot = process.cwd()) {
@@ -110,7 +126,7 @@ function normalizeInputs(value, label) {
   return value.map((item, index) => assertSafeRelativePath(item, `${label}.inputs[${index}]`));
 }
 
-function normalizeJob(rawJob, index) {
+function normalizeJob(rawJob, index, manifestTheme = 'clean') {
   const label = `jobs[${index}]`;
   if (!isPlainObject(rawJob)) {
     throw new Error(`${label} must be an object.`);
@@ -139,7 +155,8 @@ function normalizeJob(rawJob, index) {
     inputs: normalizeInputs(rawJob.inputs, label),
     sort,
     page_break: rawJob.page_break !== false,
-    add_title: rawJob.add_title !== false
+    add_title: rawJob.add_title !== false,
+    theme: normalizeThemeName(rawThemeValue(rawJob, manifestTheme), `${label}.theme`)
   };
 
   if (rawJob.output != null) {
@@ -189,7 +206,8 @@ export async function loadManifest(manifestPath, projectRoot = process.cwd()) {
     throw new Error('manifest.jobs must be a non-empty array.');
   }
 
-  const jobs = raw.jobs.map(normalizeJob).filter((job) => job.enabled);
+  const theme = normalizeThemeName(rawThemeValue(raw, 'clean'), 'manifest.theme');
+  const jobs = raw.jobs.map((rawJob, index) => normalizeJob(rawJob, index, theme)).filter((job) => job.enabled);
   if (jobs.length === 0) {
     throw new Error('manifest.jobs has no enabled jobs.');
   }
@@ -209,6 +227,7 @@ export async function loadManifest(manifestPath, projectRoot = process.cwd()) {
     title: raw.title == null ? '' : String(raw.title).trim(),
     date,
     ...parts,
+    theme,
     manifestPath: absoluteManifestPath,
     manifestRel: toPosix(path.relative(projectRoot, absoluteManifestPath)),
     rootDir: manifestRoot,
