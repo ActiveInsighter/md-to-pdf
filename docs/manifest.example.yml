@@ -28,6 +28,8 @@ jobs:
     page_break: true
     output: 2026-07-02-机器学习复习合集.pdf
 
+# main 只作为构建队列使用。默认情况下，构建、artifact 上传、output 分支发布都成功后，
+# 对应 inbox 日期目录会自动从 main 删除。
+# 通常不用写 consume；只有临时调试时才显式设置为 false。
 consume:
-  # 只有构建、上传 artifact、发布 output 分支都成功后，Action 才会删除这个 inbox 日期目录。
   delete_after_success: true
