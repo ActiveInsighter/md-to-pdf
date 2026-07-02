@@ -1,0 +1,17 @@
+version: 1
+date: 2026-07-02
+title: 2026-07-02 CSS 主题与排版测试
+
+theme: clean
+
+jobs:
+  - id: css-theme-clean-test
+    type: merge
+    title: 2026-07-02 CSS 主题与排版测试
+    inputs: all
+    sort: filename
+    page_break: true
+    output: 2026-07-02-CSS主题与排版测试-clean.pdf
+
+consume:
+  delete_after_success: true
