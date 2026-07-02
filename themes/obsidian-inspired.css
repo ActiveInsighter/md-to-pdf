@@ -1,6 +1,11 @@
 /*
-  ChatGPT-like neutral print/PDF theme.
-  Restored to the previous compact neutral style, with only a heading-anchor fix.
+  Compact neutral gray PDF theme.
+
+  This is the original simple gray style, rewritten for the new theme architecture:
+  themes/base.css -> themes/obsidian-inspired.css -> style.css
+
+  Keep it compact, neutral, borderless for code blocks, and close to a ChatGPT-like
+  readable document feel.
 */
 
 @page {
@@ -8,67 +13,76 @@
   margin: 13mm 15mm;
 }
 
+:root,
 :is(.print, .markdown-preview-view, .markdown-rendered) {
-  --ky-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
-  --ky-font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
-  --ky-font-math: "Latin Modern Math", "STIX Two Math", "Cambria Math", "Noto Serif Math", "Times New Roman", serif;
+  --ky-page-margin: 13mm 15mm;
+
+  --ky-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  --ky-font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
   --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
 
   --ky-text: #111111;
   --ky-text-soft: #242424;
   --ky-muted: #646464;
   --ky-faint: #8a8a8a;
+  --ky-heading: #111111;
+  --ky-link: #111111;
+  --ky-marker: #555555;
+
   --ky-bg: #ffffff;
   --ky-bg-soft: #f7f7f8;
   --ky-bg-mute: #f1f1f2;
-  --ky-bg-code: #f7f7f8;
   --ky-bg-inline-code: #eeeeef;
+  --ky-bg-code: #f7f7f8;
+  --ky-mark-bg: #ededee;
+
   --ky-border-soft: #e5e5e7;
   --ky-border: #d5d5d8;
   --ky-border-strong: #a0a0a5;
+  --ky-accent: #6f747d;
+
   --ky-radius-s: 5px;
   --ky-radius-m: 8px;
   --ky-radius-l: 12px;
+
   --ky-font-size: 15.6px;
   --ky-line-height: 1.48;
+  --ky-heading-line-height: 1.2;
   --ky-block-gap: 0.48em;
   --ky-para-gap: 0.2em;
   --ky-tight-gap: 0.1em;
+  --ky-list-gap: 0.06em;
   --ky-table-font-size: 0.92em;
   --ky-table-line-height: 1.32;
   --ky-image-max-height: 64mm;
 
-  --inline-code-color: #3b4654;
+  /* Compact gray theme code palette: subtle, coordinated, and readable on #f7f7f8. */
+  --inline-code-color: #3a4350;
   --code-normal: #2f3742;
-  --code-comment: #777b80;
-  --code-keyword: #8a5f9e;
-  --code-string: #4f7f63;
-  --code-function: #3f7f91;
-  --code-property: #8a6f45;
-  --code-tag: #6875a8;
-  --code-operator: #7a6572;
+  --code-comment: #858a91;
+  --code-keyword: #6f5eb2;
+  --code-string: #3d7655;
+  --code-function: #2f7188;
+  --code-property: #80683a;
+  --code-tag: #5e6fa4;
+  --code-operator: #6f6670;
   --code-punctuation: #747c86;
-  --code-important: #a85f50;
-  --code-value: #4f6fa8;
+  --code-important: #9d5a4b;
+  --code-value: #50689a;
+  --code-deletion: #a84b42;
+  --code-addition: #3f7a55;
+
+  --math-color: var(--ky-text);
+  --math-display-gap: 0.42em;
+
   --table-text: var(--ky-text-soft);
   --table-head-text: var(--ky-text);
   --table-head-bg: #f5f5f6;
   --table-border-strong: var(--ky-border);
   --table-border-soft: var(--ky-border-soft);
-  --table-formula-text: var(--ky-text);
 
-  color: var(--ky-text) !important;
-  background: var(--ky-bg) !important;
-  color-scheme: light !important;
-  font-family: var(--ky-font-body) !important;
-  font-size: var(--ky-font-size) !important;
-  font-weight: 400 !important;
-  line-height: var(--ky-line-height) !important;
-  letter-spacing: 0.004em !important;
-  line-break: strict !important;
-  word-break: normal !important;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  --callout-bg: #f7f7f8;
+  --callout-border: var(--ky-border);
 }
 
 html,
@@ -82,77 +96,16 @@ body.minimal-light-white {
 
 body {
   margin: 0 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", "Noto Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif !important;
-  font-size: 15.6px !important;
-  line-height: 1.48 !important;
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  line-height: var(--ky-line-height) !important;
 }
 
-.markdown-preview-view .markdown-preview-sizer {
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) p {
-  margin: var(--ky-para-gap) 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
-  color: var(--ky-text) !important;
-  text-decoration: underline !important;
-  text-underline-offset: 0.16em !important;
-  text-decoration-thickness: 0.06em !important;
-  font-weight: 500 !important;
-}
-
-/* Fix markdown-it-anchor: heading anchors should inherit the heading, not link styling. */
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) :is(a, .header-anchor) {
-  color: inherit !important;
-  text-decoration: none !important;
-  border: 0 !important;
-  font: inherit !important;
-  font-weight: inherit !important;
-  letter-spacing: inherit !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(strong, b) {
-  color: var(--ky-text) !important;
-  font-weight: 700 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) em {
-  color: var(--ky-muted) !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) u {
-  color: var(--ky-text) !important;
-  text-decoration: underline !important;
-  text-decoration-thickness: 0.06em !important;
-  text-underline-offset: 0.16em !important;
-  font-weight: 500 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) mark {
-  color: var(--ky-text) !important;
-  background: #ededee !important;
-  border-radius: var(--ky-radius-s) !important;
-  padding: 0.02em 0.2em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) hr {
-  border: 0 !important;
-  border-top: 1px solid var(--ky-border-soft) !important;
-  margin: 0.8em 0 !important;
-}
-
+/* Compact heading rhythm. */
 :is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
   color: var(--ky-text) !important;
-  font-family: var(--ky-font-heading) !important;
-  letter-spacing: 0 !important;
-  line-height: 1.2 !important;
+  line-height: var(--ky-heading-line-height) !important;
   margin: 0.58em 0 0.2em !important;
-  break-after: avoid !important;
-  page-break-after: avoid !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h1 {
@@ -160,8 +113,6 @@ body {
   font-weight: 750 !important;
   padding-bottom: 0.14em !important;
   border-bottom: 1px solid var(--ky-border-soft) !important;
-  break-before: auto !important;
-  page-break-before: auto !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) h2 {
@@ -192,38 +143,17 @@ body {
   font-weight: 600 !important;
 }
 
+:is(.print, .markdown-preview-view, .markdown-rendered) hr {
+  margin: 0.8em 0 !important;
+}
+
 :is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
   margin: 0.16em 0 0.24em !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) ul {
-  padding-left: 1.35em !important;
-  list-style-position: outside !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) ol {
-  padding-left: 0 !important;
-  list-style-position: inside !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) ol > li > p:first-child {
-  display: inline !important;
-  margin: 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
-  padding-left: 1.35em !important;
-  list-style-position: outside !important;
-}
-
 :is(.print, .markdown-preview-view, .markdown-rendered) li {
-  margin: 0.06em 0 !important;
+  margin: var(--ky-list-gap) 0 !important;
   line-height: 1.44 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
-  color: #555555 !important;
-  font-weight: 500 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
@@ -237,110 +167,55 @@ body {
   box-shadow: none !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) blockquote :is(strong, b) {
-  color: var(--ky-text-soft) !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) blockquote p {
-  margin: var(--ky-tight-gap) 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) a.tag {
-  color: #3f3f3f !important;
-  background: var(--ky-bg-mute) !important;
-  border: 1px solid var(--ky-border-soft) !important;
-  border-radius: 999px !important;
-  padding: 0.12em 0.55em !important;
-  font-size: 0.82em !important;
-  font-weight: 500 !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) code {
-  color: var(--inline-code-color) !important;
-  background: var(--ky-bg-inline-code) !important;
-  border: 0 !important;
-  border-radius: var(--ky-radius-s) !important;
-  padding: 0.08em 0.28em !important;
-  font-family: var(--ky-font-mono) !important;
-  font-size: 0.9em !important;
-  letter-spacing: 0 !important;
-}
-
+/* Keep gray code blocks borderless and on the original light gray background. */
 :is(.print, .markdown-preview-view, .markdown-rendered) pre,
 :is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs {
-  color: var(--code-normal) !important;
-  background: var(--ky-bg-code) !important;
+  background: #f7f7f8 !important;
   border: 0 !important;
   border-radius: var(--ky-radius-l) !important;
   box-shadow: none !important;
   margin: var(--ky-block-gap) 0 !important;
   padding: 0.62em 0.78em !important;
-  font-family: var(--ky-font-mono) !important;
   font-size: 0.91em !important;
   line-height: 1.42 !important;
-  letter-spacing: 0 !important;
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
-  font-variant-ligatures: none !important;
-  break-inside: auto !important;
-  page-break-inside: auto !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) pre code {
-  color: var(--code-normal) !important;
   background: transparent !important;
   border: 0 !important;
-  border-radius: 0 !important;
   padding: 0 !important;
-  font: inherit !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-comment,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-quote {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-comment, .hljs-quote) {
   color: var(--code-comment) !important;
   font-style: italic !important;
   font-weight: 400 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-keyword,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-tag,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-built_in,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-name {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-doctag) {
   color: var(--code-keyword) !important;
   font-weight: 650 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-string,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-char,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-attr,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-template-variable {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-string, .hljs-char, .hljs-regexp, .hljs-template-variable) {
   color: var(--code-string) !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title.function_,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-title.class_ {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-title, .hljs-title.function_, .hljs-function .hljs-title, .hljs-title.class_, .hljs-section) {
   color: var(--code-function) !important;
-  font-weight: 560 !important;
+  font-weight: 570 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-attribute,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-variable,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-params {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-attribute, .hljs-attr, .hljs-variable, .hljs-params, .hljs-property, .hljs-meta .hljs-keyword) {
   color: var(--code-property) !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-tag,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-id,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-selector-class {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-tag, .hljs-selector-id, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo) {
   color: var(--code-tag) !important;
   font-weight: 560 !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-operator,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-link {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-operator, .hljs-link, .hljs-meta) {
   color: var(--code-operator) !important;
 }
 
@@ -348,176 +223,76 @@ body {
   color: var(--code-punctuation) !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-number,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-literal,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-symbol,
-:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-bullet {
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-number, .hljs-literal, .hljs-symbol, .hljs-bullet) {
   color: var(--code-value) !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) img {
-  display: block !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-deletion {
+  color: var(--code-deletion) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-addition {
+  color: var(--code-addition) !important;
+}
+
+/* Math: preserve KaTeX native fonts while matching the compact gray rhythm. */
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  color: var(--math-color) !important;
+  text-rendering: geometricPrecision !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
   max-width: 100% !important;
-  max-height: var(--ky-image-max-height) !important;
-  width: auto !important;
-  height: auto !important;
-  margin: var(--ky-block-gap) auto !important;
-  object-fit: contain !important;
-  border-radius: var(--ky-radius-l) !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-  image-rendering: -webkit-optimize-contrast !important;
-  image-rendering: high-quality !important;
+  margin: var(--math-display-gap) 0 !important;
+  padding: 0.08em 0 0.12em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  line-height: 1.32 !important;
   break-inside: avoid !important;
   page-break-inside: avoid !important;
 }
 
-:is(.print, .markdown-preview-view, .markdown-rendered) svg[role="img"] {
-  display: block !important;
-  max-width: none !important;
-  max-height: var(--ky-image-max-height) !important;
-  width: auto !important;
-  height: auto !important;
-  margin: var(--ky-block-gap) auto !important;
-  border-radius: var(--ky-radius-l) !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  font-size: 1em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex-display {
+  margin: 0.24em 0 !important;
+  padding: 0.06em 0 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table {
-  width: 100% !important;
-  table-layout: auto !important;
-  border-collapse: collapse !important;
-  border: 0 !important;
-  border-radius: 0 !important;
   margin: 0.5em 0 !important;
-  background: transparent !important;
   font-size: var(--ky-table-font-size) !important;
   line-height: var(--ky-table-line-height) !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  break-inside: auto !important;
-  page-break-inside: auto !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) thead {
-  display: table-header-group !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) tfoot {
-  display: table-footer-group !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table th,
 :is(.print, .markdown-preview-view, .markdown-rendered) table td {
-  min-width: 0 !important;
   padding: 0.3em 0.46em !important;
-  text-align: left !important;
-  vertical-align: top !important;
-  white-space: normal !important;
-  overflow-wrap: break-word !important;
-  word-break: normal !important;
-  line-break: strict !important;
-  hyphens: auto !important;
-  text-wrap: pretty !important;
-  border: 0 !important;
-  border-bottom: 1px solid var(--table-border-soft) !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table th {
-  background: var(--table-head-bg) !important;
-  border-bottom: 1.5px solid var(--table-border-strong) !important;
-  color: var(--table-head-text) !important;
-  font-weight: 700 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table td {
-  background: transparent !important;
-  color: var(--table-text) !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table tr:last-child td {
-  border-bottom: 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table :is(a, code) {
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol) {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol):not(:last-child) {
-  margin-bottom: 0.16em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(.katex-display, mjx-container[display="true"], .math-block) {
-  max-width: 100% !important;
-  margin: 0.38em 0 !important;
-  overflow: visible !important;
-  color: var(--ky-text) !important;
-  font-family: var(--ky-font-math) !important;
-  font-size: 0.98em !important;
-  letter-spacing: 0 !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) :is(.katex, mjx-container, .math, .math-inline) {
-  font-family: var(--ky-font-math) !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) table :is(.katex, mjx-container, .math, .math-inline) {
-  color: var(--table-formula-text) !important;
-  line-height: 1.05 !important;
-  overflow-wrap: normal !important;
-  word-break: normal !important;
-  vertical-align: middle !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .callout,
 :is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
   margin: var(--ky-block-gap) 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  color: var(--ky-text) !important;
   background: var(--ky-bg-soft) !important;
   border: 0 !important;
   border-radius: var(--ky-radius-m) !important;
   box-shadow: none !important;
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.45em !important;
-  color: var(--ky-text-soft) !important;
-  background: transparent !important;
-  border: 0 !important;
   padding: 0.34em 0.64em 0.12em !important;
-  font-size: 0.98em !important;
-  font-weight: 700 !important;
   line-height: 1.25 !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .callout-content,
 :is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
-  color: var(--ky-text) !important;
   padding: 0.12em 0.64em 0.4em !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content p,
-:is(.print, .markdown-preview-view, .markdown-rendered) .callout > p {
-  margin: var(--ky-tight-gap) 0 !important;
-}
-
-:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
-  accent-color: var(--ky-text) !important;
 }
 
 @media screen {
@@ -545,14 +320,5 @@ body {
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-  }
-
-  pre,
-  blockquote,
-  table,
-  img,
-  .callout {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
   }
 }
