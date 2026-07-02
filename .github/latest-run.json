@@ -8,12 +8,12 @@
   "actor": "ActiveInsighter",
   "branch": "main",
   "head_sha": "a18a62237ca12b3ac6e9bb1855944d12d96a714b",
-  "status": "running",
+  "status": "success",
   "started_at": "2026-07-02T14:31:29.465Z",
-  "finished_at": null,
-  "duration_seconds": null,
-  "build_outcome": null,
-  "artifact_outcome": null,
+  "finished_at": "2026-07-02T14:32:20.309Z",
+  "duration_seconds": 51,
+  "build_outcome": "success",
+  "artifact_outcome": "success",
   "artifact_name": "obsidian-style-pdf",
   "log_file": ".github/latest-build-log.txt"
 }
