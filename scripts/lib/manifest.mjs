@@ -29,6 +29,14 @@ export function dateParts(date) {
   };
 }
 
+function normalizeManifestDate(value) {
+  if (value == null) return null;
+  if (value instanceof Date && Number.isFinite(value.valueOf())) {
+    return value.toISOString().slice(0, 10);
+  }
+  return String(value).trim();
+}
+
 export function inferDateFromManifestPath(manifestPath, projectRoot = process.cwd()) {
   const rel = toPosix(path.relative(projectRoot, path.resolve(manifestPath)));
   const match = rel.match(/^inbox\/(\d{4})\/(\d{2})\/(\d{4}-\d{2}-\d{2})\/(manifest\.(?:ya?ml|json))$/i);
@@ -164,7 +172,7 @@ export async function loadManifest(manifestPath, projectRoot = process.cwd()) {
   }
 
   const inferred = inferDateFromManifestPath(absoluteManifestPath, projectRoot);
-  const date = raw.date == null ? inferred?.day : String(raw.date).trim();
+  const date = raw.date == null ? inferred?.day : normalizeManifestDate(raw.date);
   if (!DATE_RE.test(date || '')) {
     throw new Error('manifest.date must use YYYY-MM-DD format, or the manifest must live under inbox/YYYY/MM/YYYY-MM-DD/.');
   }
