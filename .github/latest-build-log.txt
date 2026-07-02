@@ -1,41 +1,42 @@
 ## apt install CJK fonts
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
-Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
 Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
-Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
 Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
-Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
-Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [165 kB]
-Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [197 kB]
-Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1073 kB]
-Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [266 kB]
-Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
-Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.6 kB]
-Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1659 kB]
-Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
-Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
-Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
-Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
-Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
-Get:23 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1201 B]
-Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
-Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
-Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
-Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.6 kB]
-Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [820 kB]
-Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [185 kB]
-Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
-Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.7 kB]
-Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
-Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
-Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
-Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
-Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
-Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
-Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
-Fetched 10.2 MB in 1s (8218 kB/s)
+Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
+Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1073 kB]
+Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [266 kB]
+Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.6 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1659 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:21 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.6 kB]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [820 kB]
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [185 kB]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.7 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
+Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
+Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
+Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
+Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
+Get:34 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
+Get:35 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [197 kB]
+Get:36 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [165 kB]
+Get:37 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1201 B]
+Fetched 10.2 MB in 1s (7665 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -49,7 +50,7 @@ Need to get 61.2 MB of archives.
 After this operation, 93.2 MB of additional disk space will be used.
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
-Fetched 61.2 MB in 0s (152 MB/s)
+Fetched 61.2 MB in 1s (108 MB/s)
 Selecting previously unselected package fonts-noto-cjk.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202407 files and directories currently installed.)
 Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
@@ -80,39 +81,38 @@ found 0 vulnerabilities
 Using system Chrome: /usr/bin/google-chrome
 
 ## PDF build
-started_at=2026-07-02T05:42:25.485Z
+started_at=2026-07-02T08:58:42.796Z
 mode=queue
 command=node scripts/build-queue.mjs
 
 Changed files:
+- .github/workflows/cleanup-branches.yml
+- README.md
+- docs/branch-policy.md
+- docs/manifest.example.yml
+- docs/workflow-guide.md
+- inbox/2026/07/2026-07-02/img/pdf-render-pipeline.svg
 - inbox/2026/07/2026-07-02/manifest.yml
+- "inbox/2026/07/2026-07-02/md/001-\345\205\250\351\235\242Markdown\346\270\262\346\237\223\346\265\213\350\257\225.md"
+- package.json
+- scripts/cleanup-merged-branches.mjs
+- scripts/lib/manifest.mjs
 Queue manifests:
 - inbox/2026/07/2026-07-02/manifest.yml
 Manifest: inbox/2026/07/2026-07-02/manifest.yml
 Date: 2026-07-02
 
-Job selected-singles (single)
-Inputs: inbox/2026/07/2026-07-02/md/001-test-overview.md, inbox/2026/07/2026-07-02/md/002-test-math-and-image.md
-Build single: inbox/2026/07/2026-07-02/md/001-test-overview.md -> dist/queue/2026/07/2026-07-02/singles/001-test-overview.pdf
-HTML written to dist/queue/2026/07/2026-07-02/singles/001-test-overview.html
+Job comprehensive-markdown-test (merge)
+Inputs: inbox/2026/07/2026-07-02/md/001-全面Markdown渲染测试.md
+Build merged: .tmp/combined/2026/07/2026-07-02/comprehensive-markdown-test.md -> dist/queue/2026/07/2026-07-02/2026-07-02-Markdown-PDF-综合渲染测试.pdf
+HTML written to dist/queue/2026/07/2026-07-02/2026-07-02-Markdown-PDF-综合渲染测试.html
 Using Chrome executable: /usr/bin/google-chrome
-PDF written to dist/queue/2026/07/2026-07-02/singles/001-test-overview.pdf
-Build single: inbox/2026/07/2026-07-02/md/002-test-math-and-image.md -> dist/queue/2026/07/2026-07-02/singles/002-test-math-and-image.pdf
-HTML written to dist/queue/2026/07/2026-07-02/singles/002-test-math-and-image.html
-Using Chrome executable: /usr/bin/google-chrome
-PDF written to dist/queue/2026/07/2026-07-02/singles/002-test-math-and-image.pdf
+PDF written to dist/queue/2026/07/2026-07-02/2026-07-02-Markdown-PDF-综合渲染测试.pdf
 
-Job daily-merged (merge)
-Inputs: inbox/2026/07/2026-07-02/md/001-test-overview.md, inbox/2026/07/2026-07-02/md/002-test-math-and-image.md
-Build merged: .tmp/combined/2026/07/2026-07-02/daily-merged.md -> dist/queue/2026/07/2026-07-02/2026-07-02-manifest-queue-actual-test.pdf
-HTML written to dist/queue/2026/07/2026-07-02/2026-07-02-manifest-queue-actual-test.html
-Using Chrome executable: /usr/bin/google-chrome
-PDF written to dist/queue/2026/07/2026-07-02/2026-07-02-manifest-queue-actual-test.pdf
-
-Built 3 output(s) from inbox/2026/07/2026-07-02/manifest.yml.
+Built 1 output(s) from inbox/2026/07/2026-07-02/manifest.yml.
 Built 1 manifest(s).
 Will consume after successful publish:
 - inbox/2026/07/2026-07-02
 
-finished_at=2026-07-02T05:42:37.814Z
+finished_at=2026-07-02T08:58:53.819Z
 exit_code=0

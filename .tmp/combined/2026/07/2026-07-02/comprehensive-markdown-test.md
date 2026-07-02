@@ -1,3 +1,7 @@
+# 2026-07-02 Markdown PDF 综合渲染测试
+
+<!-- source: inbox/2026/07/2026-07-02/md/001-全面Markdown渲染测试.md -->
+
 # Markdown PDF 综合渲染测试
 
 > [!NOTE] 测试目的
@@ -209,7 +213,7 @@ npm run build:queue
 
 下面是本次测试附带的 SVG 图片。它用于检查相对路径、SVG 渲染、图片缩放、居中和页面边界。
 
-![Markdown 到 PDF 流程图](../img/pdf-render-pipeline.svg)
+![Markdown 到 PDF 流程图](../../../../../inbox/2026/07/2026-07-02/img/pdf-render-pipeline.svg)
 
 图片下方继续放一段文字，检查图片之后的段落间距是否正常。如果图片高度或宽度处理不当，这里可能会出现重叠、过大的留白或分页异常。
 
@@ -265,3 +269,4 @@ npm run build:queue
 
 > [!SUCCESS] 预期结果
 > 如果这份文档能成功导出 PDF，并且 `inbox/2026/07/2026-07-02/` 被自动清理，就说明当前队列模式、产物分支和临时分支策略基本打通。
+
