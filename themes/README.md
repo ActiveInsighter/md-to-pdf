@@ -12,6 +12,7 @@ themes/base.css
 
 - `base.css`: shared Markdown/PDF structure. It should contain common selectors, layout rules, table behavior, code token mapping, print rules, and reusable CSS variables.
 - `clean.css`: default visual theme. It gives the PDF slightly more breathing room, stable CJK typography, and soft code highlighting on a light code background.
+- `obsidian-inspired.css`: compact neutral gray theme. It keeps the original simple gray look, borderless light-gray code blocks, and a ChatGPT-like reading rhythm.
 - `soft.css`: alternate visual theme example. Use it as a template when adding more styles.
 - `style.css`: optional project-level overrides. Keep it small.
 
@@ -21,6 +22,12 @@ At manifest root:
 
 ```yaml
 theme: clean
+```
+
+Or use the compact gray theme:
+
+```yaml
+theme: obsidian-inspired
 ```
 
 Or per job:
