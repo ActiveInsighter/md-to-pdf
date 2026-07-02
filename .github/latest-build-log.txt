@@ -2,12 +2,12 @@
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
 Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
-Hit:6 https://packages.microsoft.com/repos/azure-cli noble InRelease
 Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
 Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
-Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1073 kB]
+Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1074 kB]
 Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [266 kB]
 Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
 Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.6 kB]
@@ -31,12 +31,12 @@ Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Comp
 Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
 Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
 Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
-Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
 Get:34 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [165 kB]
 Get:35 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
 Get:36 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [197 kB]
+Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
 Get:37 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1201 B]
-Fetched 10.2 MB in 1s (9204 kB/s)
+Fetched 10.2 MB in 1s (7724 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -50,7 +50,7 @@ Need to get 61.2 MB of archives.
 After this operation, 93.2 MB of additional disk space will be used.
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
-Fetched 61.2 MB in 1s (44.2 MB/s)
+Fetched 61.2 MB in 0s (133 MB/s)
 Selecting previously unselected package fonts-noto-cjk.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202407 files and directories currently installed.)
 Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
@@ -81,34 +81,31 @@ found 0 vulnerabilities
 Using system Chrome: /usr/bin/google-chrome
 
 ## PDF build
-started_at=2026-07-02T11:44:51.263Z
+started_at=2026-07-02T14:04:21.383Z
 mode=queue
 command=node scripts/build-queue.mjs
 
 Changed files:
 - inbox/2026/07/2026-07-02/manifest.yml
-- "inbox/2026/07/2026-07-02/md/001-\347\256\200\346\264\201\347\201\260\350\211\262\344\270\273\351\242\230\344\273\243\347\240\201\351\253\230\344\272\256\346\265\213\350\257\225.md"
-- themes/README.md
-- themes/obsidian-inspired.css
 Queue manifests:
 - inbox/2026/07/2026-07-02/manifest.yml
 Manifest: inbox/2026/07/2026-07-02/manifest.yml
 Date: 2026-07-02
-Theme: obsidian-inspired
+Theme: chatgpt-light
 
-Job gray-theme-code-test (merge)
-Theme: obsidian-inspired
-Inputs: inbox/2026/07/2026-07-02/md/001-简洁灰色主题代码高亮测试.md
-Build merged: .tmp/combined/2026/07/2026-07-02/gray-theme-code-test.md -> dist/queue/2026/07/2026-07-02/2026-07-02-简洁灰色主题代码高亮测试.pdf
-Theme: obsidian-inspired
-HTML written to dist/queue/2026/07/2026-07-02/2026-07-02-简洁灰色主题代码高亮测试.html
+Job chatgpt-light-theme-test (single)
+Theme: chatgpt-light
+Inputs: inbox/2026/07/2026-07-02/md/001-chatgpt-light-theme-test.md
+Build single: inbox/2026/07/2026-07-02/md/001-chatgpt-light-theme-test.md -> dist/queue/2026/07/2026-07-02/chatgpt-light-theme-test.pdf
+Theme: chatgpt-light
+HTML written to dist/queue/2026/07/2026-07-02/chatgpt-light-theme-test.html
 Using Chrome executable: /usr/bin/google-chrome
-PDF written to dist/queue/2026/07/2026-07-02/2026-07-02-简洁灰色主题代码高亮测试.pdf
+PDF written to dist/queue/2026/07/2026-07-02/chatgpt-light-theme-test.pdf
 
 Built 1 output(s) from inbox/2026/07/2026-07-02/manifest.yml.
 Built 1 manifest(s).
 Will consume after successful publish:
 - inbox/2026/07/2026-07-02
 
-finished_at=2026-07-02T11:44:58.011Z
+finished_at=2026-07-02T14:04:33.602Z
 exit_code=0
