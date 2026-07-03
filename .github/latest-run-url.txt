@@ -1,1 +1,1 @@
-https://github.com/ActiveInsighter/md-to-pdf/actions/runs/28672451765
+https://github.com/ActiveInsighter/md-to-pdf/actions/runs/28672528865
