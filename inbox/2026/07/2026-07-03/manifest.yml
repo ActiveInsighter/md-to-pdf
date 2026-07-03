@@ -1,0 +1,17 @@
+version: 1
+date: 2026-07-03
+title: 无穷级数和数列和式极限为什么能写成定积分
+
+theme: chatgpt-dark
+
+jobs:
+  - id: series-integral-dark
+    type: single
+    theme: chatgpt-dark
+    title: 无穷级数和数列和式极限为什么能写成定积分
+    inputs:
+      - md/001-无穷级数和数列和式极限为什么能写成定积分.md
+    output: 无穷级数和数列和式极限为什么能写成定积分-深色模式.pdf
+
+consume:
+  delete_after_success: true
