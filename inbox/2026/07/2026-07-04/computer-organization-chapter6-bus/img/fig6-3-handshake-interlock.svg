@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300">
+  <rect width="100%" height="100%" fill="white"/>
+  <style>text{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:18px}.wave{fill:none;stroke:#111;stroke-width:3}.arrow{stroke:#111;stroke-width:2;fill:none;marker-end:url(#arr)}.lab{font-size:16px}</style>
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
+  <g transform="translate(35,30)">
+    <text x="0" y="72">请求</text><path d="M45 70 H75 V20 H125 V70 H170" class="wave"/>
+    <text x="0" y="150">回答</text><path d="M45 150 H100 V110 H150 V150 H195" class="wave"/>
+    <path d="M80 18 H125" class="arrow"/><text x="100" y="10" text-anchor="middle" class="lab">t1</text>
+    <path d="M105 170 H150" class="arrow"/><text x="128" y="198" text-anchor="middle" class="lab">t2</text>
+    <path d="M95 78 C105 95 110 105 105 118" class="arrow"/>
+    <text x="105" y="225" text-anchor="middle">(a) 不互锁</text>
+  </g>
+  <g transform="translate(280,30)">
+    <text x="0" y="72">请求</text><path d="M45 70 H75 V20 H125 V70 H170" class="wave"/>
+    <text x="0" y="150">回答</text><path d="M45 150 H100 V110 H150 V150 H195" class="wave"/>
+    <path d="M112 78 C120 95 125 105 120 118" class="arrow"/>
+    <path d="M130 115 C145 95 155 80 160 65" class="arrow"/>
+    <path d="M105 170 H150" class="arrow"/><text x="128" y="198" text-anchor="middle" class="lab">t2</text>
+    <text x="105" y="225" text-anchor="middle">(b) 半互锁</text>
+  </g>
+  <g transform="translate(525,30)">
+    <text x="0" y="72">请求</text><path d="M45 70 H75 V20 H125 V70 H170" class="wave"/>
+    <text x="0" y="150">回答</text><path d="M45 150 H100 V110 H150 V150 H195" class="wave"/>
+    <path d="M112 78 C120 95 125 105 120 118" class="arrow"/>
+    <path d="M130 115 C145 95 155 80 160 65" class="arrow"/>
+    <path d="M155 120 C160 105 158 90 150 72" class="arrow"/>
+    <text x="105" y="225" text-anchor="middle">(c) 全互锁</text>
+  </g>
+  <text x="380" y="285" text-anchor="middle">图6.3 请求和回答信号的互锁</text>
+</svg>
