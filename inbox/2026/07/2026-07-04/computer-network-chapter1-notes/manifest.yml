@@ -1,0 +1,13 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 计算机网络第一章学习笔记
+theme: clean
+
+jobs:
+  - id: computer-network-chapter1-notes
+    type: merge
+    title: 计算机网络第一章学习笔记
+    inputs: all
+    sort: filename
+    page_break: true
+    output: 2026-07-04-计算机网络第一章学习笔记.pdf
