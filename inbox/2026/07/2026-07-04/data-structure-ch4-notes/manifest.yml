@@ -5,7 +5,9 @@ theme: clean
 
 jobs:
   - id: data-structure-ch4-notes
-    type: single
+    type: merge
     title: data-structure-chapter-4-notes
-    input: md/001-data-structure-chapter-4-notes.md
+    inputs: all
+    sort: filename
+    page_break: false
     output: 2026-07-04-data-structure-chapter-4-notes.pdf
