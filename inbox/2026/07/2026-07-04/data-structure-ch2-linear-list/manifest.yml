@@ -5,7 +5,9 @@ theme: clean
 
 jobs:
   - id: data-structure-ch2-linear-list
-    type: single
+    type: merge
     title: 数据结构第2章线性表学习笔记
-    input: md/001-数据结构第2章线性表学习笔记.md
+    inputs: all
+    sort: filename
+    page_break: true
     output: 数据结构第2章线性表学习笔记.pdf
