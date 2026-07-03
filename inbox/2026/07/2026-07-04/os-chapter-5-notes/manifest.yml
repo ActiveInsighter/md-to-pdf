@@ -1,0 +1,11 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 操作系统第五章学习笔记
+theme: clean
+
+jobs:
+  - id: os-chapter-5-notes
+    type: single
+    title: 操作系统第五章学习笔记
+    input: md/001-操作系统第五章学习笔记.md
+    output: 2026-07-04-操作系统第五章学习笔记.pdf
