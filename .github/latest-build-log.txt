@@ -7,9 +7,9 @@ Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
 Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
-Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [166 kB]
-Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [199 kB]
-Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
+Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [199 kB]
+Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
+Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [166 kB]
 Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1077 kB]
 Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [267 kB]
 Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
@@ -34,9 +34,9 @@ Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Comp
 Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
 Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
 Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
-Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
 Get:37 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1214 B]
-Fetched 10.2 MB in 1s (7609 kB/s)
+Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
+Fetched 10.2 MB in 1s (7948 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -50,7 +50,7 @@ Need to get 61.2 MB of archives.
 After this operation, 93.2 MB of additional disk space will be used.
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
-Fetched 61.2 MB in 1s (61.9 MB/s)
+Fetched 61.2 MB in 0s (152 MB/s)
 Selecting previously unselected package fonts-noto-cjk.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202513 files and directories currently installed.)
 Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
@@ -70,7 +70,7 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 
 ## npm install
 
-added 113 packages, and audited 114 packages in 8s
+added 113 packages, and audited 114 packages in 9s
 
 12 packages are looking for funding
   run `npm fund` for details
@@ -85,13 +85,13 @@ npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to revi
 Using system Chrome: /usr/bin/google-chrome
 
 ## PDF build
-started_at=2026-07-03T17:21:25.382Z
+started_at=2026-07-03T17:34:21.935Z
 mode=queue
 command=node scripts/build-queue.mjs
 
 Changed files:
-- inbox/2026/07/2026-07-04/data-structure-ch2-linear-list/manifest.yml
+- inbox/2026/07/2026-07-04/computer-organization-ch2-A2607040136-0245/manifest.yml
 No inbox manifest found for this change set.
 
-finished_at=2026-07-03T17:21:25.770Z
+finished_at=2026-07-03T17:34:22.139Z
 exit_code=0
