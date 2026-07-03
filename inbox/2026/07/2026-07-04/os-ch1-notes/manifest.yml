@@ -1,0 +1,11 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 操作系统第一章学习笔记
+theme: clean
+
+jobs:
+  - id: os-ch1-notes
+    type: single
+    title: 操作系统第一章学习笔记
+    input: md/001-操作系统第一章学习笔记.md
+    output: 2026-07-04-操作系统第一章学习笔记.pdf
