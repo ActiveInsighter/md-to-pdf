@@ -1,0 +1,11 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 计算机网络第二章物理层学习笔记
+theme: clean
+
+jobs:
+  - id: computer-network-ch2-physical-layer
+    type: single
+    title: 计算机网络第二章物理层学习笔记
+    input: md/001-计算机网络第二章学习笔记.md
+    output: 2026-07-04-计算机网络第二章物理层学习笔记.pdf
