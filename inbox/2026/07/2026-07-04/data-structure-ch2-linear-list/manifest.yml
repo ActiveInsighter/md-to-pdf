@@ -1,0 +1,11 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 数据结构第2章线性表学习笔记
+theme: clean
+
+jobs:
+  - id: data-structure-ch2-linear-list
+    type: single
+    title: 数据结构第2章线性表学习笔记
+    input: md/001-数据结构第2章线性表学习笔记.md
+    output: 数据结构第2章线性表学习笔记.pdf
