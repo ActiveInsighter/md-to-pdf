@@ -1,0 +1,11 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 data-structure-chapter-4-notes
+theme: clean
+
+jobs:
+  - id: data-structure-ch4-notes
+    type: single
+    title: data-structure-chapter-4-notes
+    input: md/001-data-structure-chapter-4-notes.md
+    output: 2026-07-04-data-structure-chapter-4-notes.pdf
