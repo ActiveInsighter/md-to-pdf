@@ -5,7 +5,9 @@ theme: clean
 
 jobs:
   - id: computer-network-ch5-notes
-    type: single
+    type: merge
     title: 计算机网络第五章学习笔记
-    input: md/001-计算机网络第五章学习笔记.md
+    inputs: all
+    sort: filename
+    page_break: true
     output: 2026-07-04-计算机网络第五章学习笔记.pdf
