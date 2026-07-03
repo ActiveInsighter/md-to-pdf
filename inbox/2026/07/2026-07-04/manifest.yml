@@ -1,0 +1,12 @@
+version: 1
+date: 2026-07-04
+title: 2026-07-04 数据结构第1章绪论学习笔记
+theme: clean
+
+jobs:
+  - id: ds-chapter-1-notes
+    type: single
+    title: 数据结构第1章绪论学习笔记
+    inputs:
+      - ds-chapter-1-notes/md/001-数据结构第1章绪论.md
+    output: ds-chapter-1-notes/2026-07-04-数据结构第1章绪论学习笔记.pdf
