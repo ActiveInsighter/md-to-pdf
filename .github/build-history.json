@@ -1,5 +1,24 @@
 [
   {
+    "run_id": "28674791373",
+    "run_attempt": "1",
+    "run_number": "76",
+    "run_url": "https://github.com/ActiveInsighter/md-to-pdf/actions/runs/28674791373",
+    "workflow": "Build Obsidian Style PDF",
+    "job": "build",
+    "actor": "ActiveInsighter",
+    "branch": "main",
+    "head_sha": "c02b714be50a995873603981683782df1373c708",
+    "status": "running",
+    "started_at": "2026-07-03T17:20:19.200Z",
+    "finished_at": null,
+    "duration_seconds": null,
+    "build_outcome": null,
+    "artifact_outcome": null,
+    "artifact_name": "obsidian-style-pdf",
+    "log_file": ".github/latest-build-log.txt"
+  },
+  {
     "run_id": "28674763601",
     "run_attempt": "1",
     "run_number": "75",
@@ -167,25 +186,6 @@
     "duration_seconds": null,
     "build_outcome": null,
     "artifact_outcome": null,
-    "artifact_name": "obsidian-style-pdf",
-    "log_file": ".github/latest-build-log.txt"
-  },
-  {
-    "run_id": "28673429525",
-    "run_attempt": "1",
-    "run_number": "66",
-    "run_url": "https://github.com/ActiveInsighter/md-to-pdf/actions/runs/28673429525",
-    "workflow": "Build Obsidian Style PDF",
-    "job": "build",
-    "actor": "ActiveInsighter",
-    "branch": "main",
-    "head_sha": "a4b561de6c00ccb01761fcc3764e517831223270",
-    "status": "success",
-    "started_at": "2026-07-03T16:46:53.597Z",
-    "finished_at": "2026-07-03T16:47:24.286Z",
-    "duration_seconds": 31,
-    "build_outcome": "success",
-    "artifact_outcome": "success",
     "artifact_name": "obsidian-style-pdf",
     "log_file": ".github/latest-build-log.txt"
   }
