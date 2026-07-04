@@ -65,3 +65,11 @@ jobs:
     sort: manifest
     page_break: true
     output: 408-计算机网络学习笔记.pdf
+
+  - id: computer-organization-merged-full
+    type: merge
+    title: 计算机组成原理合并稿
+    inputs:
+      - md/001-计算机组成原理_合并.md
+    page_break: true
+    output: 2026-07-04-计算机组成原理.pdf
