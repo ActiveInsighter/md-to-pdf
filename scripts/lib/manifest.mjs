@@ -16,6 +16,7 @@ export const MANIFEST_FILENAMES = ['manifest.yml', 'manifest.yaml', 'manifest.js
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const JOB_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const SHA256_RE = /^[a-f0-9]{64}$/i;
 const JOB_TYPES = new Set(['single', 'merge']);
 const SORT_MODES = new Set(['manifest', 'filename']);
 
@@ -51,6 +52,78 @@ function rawThemeValue(raw, fallback = null) {
   if (raw.theme != null) return raw.theme;
   if (raw.style != null) return raw.style;
   return fallback;
+}
+
+function normalizePositiveInteger(value, label) {
+  if (value == null || value === '') return null;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 0) {
+    throw new Error(`${label} must be a non-negative integer.`);
+  }
+  return number;
+}
+
+function normalizeStringArray(value, label) {
+  if (value == null) return [];
+  const rawItems = Array.isArray(value) ? value : [value];
+  return rawItems.map((item, index) => {
+    const text = String(item ?? '');
+    if (!text) throw new Error(`${label}[${index}] must not be empty.`);
+    return text;
+  });
+}
+
+function normalizeContentCheck(rawCheck, index) {
+  const label = `content_checks[${index}]`;
+  if (!isPlainObject(rawCheck)) {
+    throw new Error(`${label} must be an object.`);
+  }
+
+  const file = rawCheck.path ?? rawCheck.file;
+  if (file == null) {
+    throw new Error(`${label}.path is required.`);
+  }
+
+  const check = {
+    path: assertSafeRelativePath(file, `${label}.path`),
+    min_bytes: normalizePositiveInteger(rawCheck.min_bytes, `${label}.min_bytes`),
+    min_chars: normalizePositiveInteger(rawCheck.min_chars, `${label}.min_chars`),
+    must_contain: normalizeStringArray(rawCheck.must_contain, `${label}.must_contain`),
+    must_not_contain: normalizeStringArray(rawCheck.must_not_contain, `${label}.must_not_contain`)
+  };
+
+  if (rawCheck.must_end_with != null) {
+    check.must_end_with = String(rawCheck.must_end_with);
+    if (!check.must_end_with) throw new Error(`${label}.must_end_with must not be empty.`);
+  }
+
+  if (rawCheck.sha256 != null) {
+    check.sha256 = String(rawCheck.sha256).trim().toLowerCase();
+    if (!SHA256_RE.test(check.sha256)) {
+      throw new Error(`${label}.sha256 must be a 64-character hex SHA-256 digest.`);
+    }
+  }
+
+  const hasAnyRule = check.min_bytes != null
+    || check.min_chars != null
+    || check.must_contain.length > 0
+    || check.must_not_contain.length > 0
+    || check.must_end_with != null
+    || check.sha256 != null;
+
+  if (!hasAnyRule) {
+    throw new Error(`${label} must define at least one rule: min_bytes, min_chars, sha256, must_contain, must_not_contain, or must_end_with.`);
+  }
+
+  return check;
+}
+
+function normalizeContentChecks(value) {
+  if (value == null) return [];
+  if (!Array.isArray(value)) {
+    throw new Error('content_checks must be an array.');
+  }
+  return value.map((item, index) => normalizeContentCheck(item, index));
 }
 
 export function inferDateFromManifestPath(manifestPath, projectRoot = process.cwd()) {
@@ -233,6 +306,7 @@ export async function loadManifest(manifestPath, projectRoot = process.cwd()) {
     rootDir: manifestRoot,
     rootRel: toPosix(path.relative(projectRoot, manifestRoot)),
     jobs,
+    content_checks: normalizeContentChecks(raw.content_checks),
     consume: {
       // main is only the build queue. Unless a manifest explicitly opts out,
       // a successful build publishes the PDF/HTML to output and removes inbox files from main.
