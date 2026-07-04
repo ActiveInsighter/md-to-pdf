@@ -41,7 +41,7 @@ function normalizeManifestDate(value) {
 
 function normalizeThemeName(value, label) {
   const theme = String(value ?? '').trim();
-  if (!theme) return 'clean';
+  if (!theme) return 'chatgpt-light';
   if (!THEME_RE.test(theme)) {
     throw new Error(`${label} must start with a letter/number and contain only letters, numbers, dots, underscores, or hyphens.`);
   }
@@ -199,7 +199,7 @@ function normalizeInputs(value, label) {
   return value.map((item, index) => assertSafeRelativePath(item, `${label}.inputs[${index}]`));
 }
 
-function normalizeJob(rawJob, index, manifestTheme = 'clean') {
+function normalizeJob(rawJob, index, manifestTheme = 'chatgpt-light') {
   const label = `jobs[${index}]`;
   if (!isPlainObject(rawJob)) {
     throw new Error(`${label} must be an object.`);
@@ -279,7 +279,7 @@ export async function loadManifest(manifestPath, projectRoot = process.cwd()) {
     throw new Error('manifest.jobs must be a non-empty array.');
   }
 
-  const theme = normalizeThemeName(rawThemeValue(raw, 'clean'), 'manifest.theme');
+  const theme = normalizeThemeName(rawThemeValue(raw, 'chatgpt-light'), 'manifest.theme');
   const jobs = raw.jobs.map((rawJob, index) => normalizeJob(rawJob, index, theme)).filter((job) => job.enabled);
   if (jobs.length === 0) {
     throw new Error('manifest.jobs has no enabled jobs.');
