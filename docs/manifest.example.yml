@@ -6,6 +6,18 @@ title: 2026-07-02 机器学习复习
 # 也可以写 soft，或者新增 themes/my-theme.css 后写 my-theme。
 theme: clean
 
+# 可选。用于防止大 Markdown 通过 AI/连接器上传时被截断。
+# 构建 PDF 前会先执行这些检查；任意检查失败都会终止构建，避免生成残缺 PDF。
+content_checks:
+  - path: md/001-条件熵与信息增益.md
+    min_bytes: 1000
+    must_contain:
+      - 条件熵
+      - 信息增益
+    must_end_with: "<!-- END -->"
+    # 如果你知道原文件 SHA-256，也可以打开这一项做强校验。
+    # sha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
 jobs:
   # 处理某一个 Markdown，输出一个 PDF。
   - id: entropy-single
