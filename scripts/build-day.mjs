@@ -7,6 +7,7 @@ import {
   resolveJobInputs,
   resolveManifestTarget
 } from './lib/manifest.mjs';
+import { validateContentChecks } from './lib/content-checks.mjs';
 import {
   ensureInside,
   rewriteMarkdownResourcePaths,
@@ -81,6 +82,8 @@ async function writeCombinedMarkdown(manifest, job, inputFiles) {
 
 async function buildManifest(manifestPath) {
   const manifest = await loadManifest(manifestPath, projectRoot);
+  await validateContentChecks(manifest);
+
   const outputBase = outputBaseForManifest(manifest, projectRoot);
   await fs.mkdir(outputBase, { recursive: true });
 
