@@ -1,0 +1,140 @@
+## apt install CJK fonts
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Hit:3 https://packages.microsoft.com/repos/azure-cli noble InRelease
+Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:5 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:6 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [165 kB]
+Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
+Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [199 kB]
+Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1077 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [267 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [181 kB]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.7 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1658 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
+Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5776 B]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.6 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [825 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [186 kB]
+Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
+Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.8 kB]
+Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
+Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
+Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.2 kB]
+Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
+Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
+Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
+Get:37 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1214 B]
+Fetched 10.2 MB in 1s (9466 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Suggested packages:
+  fonts-noto-cjk-extra
+The following NEW packages will be installed:
+  fonts-noto-cjk
+0 upgraded, 1 newly installed, 0 to remove and 31 not upgraded.
+Need to get 61.2 MB of archives.
+After this operation, 93.2 MB of additional disk space will be used.
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
+Fetched 61.2 MB in 1s (50.0 MB/s)
+Selecting previously unselected package fonts-noto-cjk.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202513 files and directories currently installed.)
+Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
+Unpacking fonts-noto-cjk (1:20230817+repack1-3) ...
+Setting up fonts-noto-cjk (1:20230817+repack1-3) ...
+Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+## npm install
+
+added 113 packages, and audited 114 packages in 7s
+
+12 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn allow-scripts   puppeteer@24.43.1 (postinstall: node install.mjs)
+npm warn allow-scripts
+npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+
+## Chrome setup
+Using system Chrome: /usr/bin/google-chrome
+
+## PDF build
+started_at=2026-07-04T10:47:20.871Z
+mode=queue
+command=node scripts/build-queue.mjs
+
+Changed files:
+- inbox/2026/07/2026-07-04/computer-organization-chapter7-notes/manifest.yml
+Queue manifests:
+- inbox/2026/07/2026-07-04/manifest.yml
+Manifest: inbox/2026/07/2026-07-04/manifest.yml
+Date: 2026-07-04
+Theme: clean
+
+Job 408-data-structure-book (merge)
+Theme: clean
+Inputs: inbox/2026/07/2026-07-04/data-structure-chapter1-notes/md/001-数据结构第一章学习笔记.md, inbox/2026/07/2026-07-04/data-structure-ch2-linear-list/md/001-第2章线性表-定义与顺序表.md, inbox/2026/07/2026-07-04/data-structure-ch2-linear-list/md/002-第2章线性表-单链表.md, inbox/2026/07/2026-07-04/data-structure-ch2-linear-list/md/003-第2章线性表-链表扩展与比较.md, inbox/2026/07/2026-07-04/data-structure-ch2-linear-list/md/004-第2章线性表-归纳总结与思维拓展.md, inbox/2026/07/2026-07-04/data-structure-ch3-A2607040224-0296/md/001-数据结构第三章学习笔记.md, inbox/2026/07/2026-07-04/data-structure-ch4-notes/md/001-intro-and-string-basics.md, inbox/2026/07/2026-07-04/data-structure-ch4-notes/md/002-pattern-matching.md, inbox/2026/07/2026-07-04/data-structure-ch4-notes/md/003-kmp-next.md, inbox/2026/07/2026-07-04/data-structure-ch4-notes/md/004-kmp-nextval.md, inbox/2026/07/2026-07-04/data-structure-ch4-notes/md/005-summary.md
+Build merged: .tmp/combined/2026/07/2026-07-04/408-data-structure-book.md -> dist/queue/2026/07/2026-07-04/408-数据结构学习笔记.pdf
+Theme: clean
+HTML written to dist/queue/2026/07/2026-07-04/408-数据结构学习笔记.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-04/408-数据结构学习笔记.pdf
+
+Job 408-computer-organization-book (merge)
+Theme: clean
+Inputs: inbox/2026/07/2026-07-04/coa-ch1-notes/md/001-计算机组成原理第一章学习笔记.md, inbox/2026/07/2026-07-04/computer-organization-chapter6-bus/md/001-计算机组成原理第六章学习笔记.md, inbox/2026/07/2026-07-04/computer-organization-chapter-7/md/001-计算机组成原理第七章学习笔记.md
+Build merged: .tmp/combined/2026/07/2026-07-04/408-computer-organization-book.md -> dist/queue/2026/07/2026-07-04/408-计算机组成原理学习笔记.pdf
+Theme: clean
+HTML written to dist/queue/2026/07/2026-07-04/408-计算机组成原理学习笔记.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-04/408-计算机组成原理学习笔记.pdf
+
+Job 408-operating-system-book (merge)
+Theme: clean
+Inputs: inbox/2026/07/2026-07-04/os-ch1-notes/md/001-操作系统第一章学习笔记.md
+Build merged: .tmp/combined/2026/07/2026-07-04/408-operating-system-book.md -> dist/queue/2026/07/2026-07-04/408-操作系统学习笔记.pdf
+Theme: clean
+HTML written to dist/queue/2026/07/2026-07-04/408-操作系统学习笔记.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-04/408-操作系统学习笔记.pdf
+
+Job 408-computer-network-book (merge)
+Theme: clean
+Inputs: inbox/2026/07/2026-07-04/computer-network-chapter1-notes/md/001-计算机网络第一章-1.1概述.md, inbox/2026/07/2026-07-04/computer-network-chapter1-notes/md/002-计算机网络第一章-1.2.1至1.2.2.md, inbox/2026/07/2026-07-04/computer-network-chapter1-notes/md/003-计算机网络第一章-1.2.3.md, inbox/2026/07/2026-07-04/computer-network-chapter1-notes/md/004-计算机网络第一章-1.3小结疑难点.md, inbox/2026/07/2026-07-04/computer-network-ch2-physical-layer/md/001-计算机网络第二章学习笔记.md, inbox/2026/07/2026-07-04/computer-network-ch3/md/001-计算机网络第三章学习笔记.md, inbox/2026/07/2026-07-04/computer-network-ch5-notes-A2607040445-0442/md/001-5.1-传输层提供的服务.md, inbox/2026/07/2026-07-04/computer-network-ch5-notes-A2607040445-0442/md/002-5.2-UDP.md, inbox/2026/07/2026-07-04/computer-network-ch5-notes-A2607040445-0442/md/003-5.3.1-5.3.3-TCP基础与连接管理.md, inbox/2026/07/2026-07-04/computer-network-ch5-notes-A2607040445-0442/md/004-5.3.4-5.3.6-TCP可靠传输流量控制拥塞控制.md, inbox/2026/07/2026-07-04/computer-network-ch5-notes-A2607040445-0442/md/005-5.4-本章小结及疑难点.md, inbox/2026/07/2026-07-04/计算机网络第六章学习笔记整理/md/001-计算机网络第六章学习笔记.md
+Build merged: .tmp/combined/2026/07/2026-07-04/408-computer-network-book.md -> dist/queue/2026/07/2026-07-04/408-计算机网络学习笔记.pdf
+Theme: clean
+HTML written to dist/queue/2026/07/2026-07-04/408-计算机网络学习笔记.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-04/408-计算机网络学习笔记.pdf
+
+Built 4 output(s) from inbox/2026/07/2026-07-04/manifest.yml.
+Built 1 manifest(s).
+
+finished_at=2026-07-04T10:47:36.984Z
+exit_code=0
