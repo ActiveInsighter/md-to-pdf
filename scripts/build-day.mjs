@@ -36,7 +36,7 @@ function runNode(script, scriptArgs) {
 }
 
 function buildPdfArgs(inputRel, outputRel, theme) {
-  return [inputRel, outputRel, '--theme', theme || 'clean'];
+  return [inputRel, outputRel, '--theme', theme || 'chatgpt-light'];
 }
 
 function outputPathForSingle(manifest, job, inputPath, inputCount, outputBase) {
