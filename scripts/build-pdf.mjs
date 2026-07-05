@@ -192,47 +192,8 @@ function createMarkdownRenderer() {
 
 function buildFooterTemplate() {
   return `
-    <style>
-      .pdf-footer {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 0 15mm;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei UI", sans-serif;
-        font-size: 8.5px;
-        color: #8b929c;
-      }
-      .pdf-footer__inner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
-        width: 100%;
-        padding-top: 4px;
-        border-top: 1px solid rgba(13, 13, 13, 0.08);
-        letter-spacing: 0.03em;
-      }
-      .pdf-footer__page,
-      .pdf-footer__total {
-        min-width: 14px;
-        padding: 1px 5px 1.5px;
-        border: 1px solid rgba(13, 13, 13, 0.10);
-        border-radius: 999px;
-        background: rgba(13, 13, 13, 0.025);
-        color: #616975;
-        font-weight: 600;
-        line-height: 1.2;
-        text-align: center;
-      }
-      .pdf-footer__sep {
-        color: #b0b6bf;
-      }
-    </style>
-    <div class="pdf-footer">
-      <div class="pdf-footer__inner">
-        <span class="pdf-footer__page pageNumber"></span>
-        <span class="pdf-footer__sep">/</span>
-        <span class="pdf-footer__total totalPages"></span>
-      </div>
+    <div style="width:100%; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, &quot;Microsoft YaHei UI&quot;, sans-serif; font-size:8.5px; color:#8a8f98; text-align:center; padding:0 12mm;">
+      <span class="pageNumber"></span> / <span class="totalPages"></span>
     </div>`;
 }
 
