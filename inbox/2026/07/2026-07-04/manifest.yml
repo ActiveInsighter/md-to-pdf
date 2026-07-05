@@ -1,7 +1,7 @@
 version: 1
 date: 2026-07-04
 title: 408四门学习笔记按书合并导出
-theme: clean
+theme: chatgpt-light
 
 consume:
   delete_after_success: false
