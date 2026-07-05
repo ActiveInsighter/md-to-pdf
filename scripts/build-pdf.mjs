@@ -190,6 +190,52 @@ function createMarkdownRenderer() {
     .use(markdownItTaskLists, { enabled: true, label: true, labelAfter: true });
 }
 
+function buildFooterTemplate() {
+  return `
+    <style>
+      .pdf-footer {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0 15mm;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei UI", sans-serif;
+        font-size: 8.5px;
+        color: #8b929c;
+      }
+      .pdf-footer__inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        padding-top: 4px;
+        border-top: 1px solid rgba(13, 13, 13, 0.08);
+        letter-spacing: 0.03em;
+      }
+      .pdf-footer__page,
+      .pdf-footer__total {
+        min-width: 14px;
+        padding: 1px 5px 1.5px;
+        border: 1px solid rgba(13, 13, 13, 0.10);
+        border-radius: 999px;
+        background: rgba(13, 13, 13, 0.025);
+        color: #616975;
+        font-weight: 600;
+        line-height: 1.2;
+        text-align: center;
+      }
+      .pdf-footer__sep {
+        color: #b0b6bf;
+      }
+    </style>
+    <div class="pdf-footer">
+      <div class="pdf-footer__inner">
+        <span class="pdf-footer__page pageNumber"></span>
+        <span class="pdf-footer__sep">/</span>
+        <span class="pdf-footer__total totalPages"></span>
+      </div>
+    </div>`;
+}
+
 function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss, theme }) {
   const baseHref = pathToFileURL(inputBaseDir + path.sep).href;
   const safeTheme = escapeHtml(theme);
@@ -304,7 +350,7 @@ async function main() {
       preferCSSPageSize: true,
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
-      footerTemplate: '<div style="width:100%; font-size:9px; color:#8a8f98; text-align:center; padding:0 12mm;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>',
+      footerTemplate: buildFooterTemplate(),
       margin: {
         top: '16mm',
         right: '15mm',
