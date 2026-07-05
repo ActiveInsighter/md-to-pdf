@@ -1,0 +1,15 @@
+version: 1
+date: 2026-07-05
+title: PDF 书签自动识别验证
+theme: chatgpt-light
+
+jobs:
+  - id: outline-smoke-test
+    type: single
+    title: PDF 书签自动识别验证
+    inputs:
+      - md/outline-smoke-test.md
+    output: outline-smoke-test.pdf
+
+consume:
+  delete_after_success: false
