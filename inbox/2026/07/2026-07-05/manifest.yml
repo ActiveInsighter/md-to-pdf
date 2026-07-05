@@ -14,4 +14,4 @@ jobs:
 consume:
   delete_after_success: false
 
-# verification: outline-v1-log-check
+# verification: quote-table-style-trigger-20260705
