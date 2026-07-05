@@ -1,6 +1,6 @@
 version: 1
 date: 2026-07-05
-title: PDF 书签自动识别验证
+title: PDF 样式验证
 theme: chatgpt-light
 
 jobs:
@@ -11,7 +11,14 @@ jobs:
       - md/outline-smoke-test.md
     output: outline-smoke-test.pdf
 
+  - id: quote-table-style-check
+    type: single
+    title: 引用与表格样式验证
+    inputs:
+      - md/quote-table-style-check.md
+    output: quote-table-style-check.pdf
+
 consume:
   delete_after_success: false
 
-# verification: quote-table-style-trigger-20260705
+# verification: quote-table-sample-build-20260705
