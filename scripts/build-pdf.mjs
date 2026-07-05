@@ -348,6 +348,7 @@ async function main() {
       format: 'A4',
       printBackground: true,
       preferCSSPageSize: true,
+      outline: true,
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
       footerTemplate: buildFooterTemplate(),
