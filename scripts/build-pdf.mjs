@@ -236,6 +236,15 @@ function buildFooterTemplate() {
     </div>`;
 }
 
+async function verifyPdfOutline(pdfPath) {
+  const pdfBuffer = await fs.readFile(pdfPath);
+  const pdfText = pdfBuffer.toString('latin1');
+  const hasOutlines = /\/Outlines\b/.test(pdfText);
+  const titleCount = (pdfText.match(/\/Title\b/g) ?? []).length;
+  const pageModeUseOutlines = /\/PageMode\s*\/UseOutlines\b/.test(pdfText);
+  console.log(`PDF outline check: ${hasOutlines ? 'found /Outlines' : 'missing /Outlines'}; /Title entries=${titleCount}; ${pageModeUseOutlines ? 'PageMode=UseOutlines' : 'PageMode not UseOutlines'}`);
+}
+
 function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss, theme }) {
   const baseHref = pathToFileURL(inputBaseDir + path.sep).href;
   const safeTheme = escapeHtml(theme);
@@ -360,6 +369,7 @@ async function main() {
       }
     });
     console.log(`PDF written to ${path.relative(projectRoot, outputPdfPath)}`);
+    await verifyPdfOutline(outputPdfPath);
   } finally {
     await browser.close();
   }
