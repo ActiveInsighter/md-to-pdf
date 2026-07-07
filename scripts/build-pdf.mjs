@@ -4,14 +4,16 @@ import { pathToFileURL } from 'node:url';
 import MarkdownIt from 'markdown-it';
 import markdownItAnchor from 'markdown-it-anchor';
 import markdownItTaskLists from 'markdown-it-task-lists';
-import hljs from 'highlight.js';
 import katex from 'katex';
 import puppeteer from 'puppeteer';
+import { bundledLanguages, createHighlighter } from 'shiki';
 
 const args = process.argv.slice(2);
 const inputFile = args[0] ?? 'notes.md';
 const outputPdf = args[1] ?? 'dist/notes.pdf';
 const htmlOnly = args.includes('--html-only');
+const DEFAULT_THEME = 'chatgpt-light';
+const SHIKI_THEME = process.env.SHIKI_THEME || 'github-light';
 const THEME_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 const projectRoot = process.cwd();
@@ -20,6 +22,57 @@ const outputPdfPath = path.resolve(projectRoot, outputPdf);
 const outputDir = path.dirname(outputPdfPath);
 const outputHtmlPath = outputPdfPath.replace(/\.pdf$/i, '.html');
 const inputBaseDir = path.dirname(inputPath);
+const availableShikiLanguages = new Set(Object.keys(bundledLanguages));
+const SHIKI_FALLBACK_LANG = ['text', 'plaintext', 'txt'].find((lang) => availableShikiLanguages.has(lang)) || 'javascript';
+const SHIKI_LANG_ALIASES = new Map([
+  ['c++', 'cpp'],
+  ['cc', 'cpp'],
+  ['cxx', 'cpp'],
+  ['h', 'c'],
+  ['hpp', 'cpp'],
+  ['js', 'javascript'],
+  ['mjs', 'javascript'],
+  ['cjs', 'javascript'],
+  ['jsx', 'jsx'],
+  ['ts', 'typescript'],
+  ['mts', 'typescript'],
+  ['cts', 'typescript'],
+  ['tsx', 'tsx'],
+  ['py', 'python'],
+  ['rb', 'ruby'],
+  ['sh', 'shellscript'],
+  ['shell', 'shellscript'],
+  ['bash', 'shellscript'],
+  ['zsh', 'shellscript'],
+  ['powershell', 'powershell'],
+  ['ps1', 'powershell'],
+  ['yml', 'yaml'],
+  ['md', 'markdown'],
+  ['docker', 'dockerfile'],
+  ['dockerfile', 'dockerfile'],
+  ['html', 'html'],
+  ['vue', 'vue'],
+  ['xml', 'xml'],
+  ['svg', 'xml'],
+  ['json', 'json'],
+  ['jsonc', 'jsonc'],
+  ['css', 'css'],
+  ['scss', 'scss'],
+  ['less', 'less'],
+  ['java', 'java'],
+  ['go', 'go'],
+  ['rs', 'rust'],
+  ['rust', 'rust'],
+  ['sql', 'sql'],
+  ['toml', 'toml'],
+  ['ini', 'ini'],
+  ['diff', 'diff'],
+  ['patch', 'diff'],
+  ['text', SHIKI_FALLBACK_LANG],
+  ['txt', SHIKI_FALLBACK_LANG],
+  ['plain', SHIKI_FALLBACK_LANG],
+  ['plaintext', SHIKI_FALLBACK_LANG]
+]);
 
 function argValue(name) {
   const inline = args.find((arg) => arg.startsWith(`${name}=`));
@@ -34,14 +87,14 @@ function argValue(name) {
 }
 
 function normalizeThemeName(value) {
-  const theme = String(value || '').trim() || 'clean';
+  const theme = String(value || '').trim() || DEFAULT_THEME;
   if (!THEME_NAME_RE.test(theme)) {
     throw new Error(`Theme name must start with a letter/number and contain only letters, numbers, dots, underscores, or hyphens: ${value}`);
   }
   return theme;
 }
 
-const selectedTheme = normalizeThemeName(argValue('--theme') || process.env.PDF_THEME || 'clean');
+const selectedTheme = normalizeThemeName(argValue('--theme') || process.env.PDF_THEME || DEFAULT_THEME);
 
 function escapeHtml(str) {
   return String(str)
@@ -171,16 +224,63 @@ async function readThemeCss(theme) {
   ].join('\n\n');
 }
 
-function createMarkdownRenderer() {
+function normalizeShikiLang(lang) {
+  const raw = String(lang || '')
+    .trim()
+    .split(/\s+/)[0]
+    .replace(/^language-/, '')
+    .toLowerCase();
+
+  const mapped = SHIKI_LANG_ALIASES.get(raw) || raw || SHIKI_FALLBACK_LANG;
+  return availableShikiLanguages.has(mapped) ? mapped : SHIKI_FALLBACK_LANG;
+}
+
+function extractFenceLanguages(markdown) {
+  const languages = new Set([SHIKI_FALLBACK_LANG]);
+  const fenceRe = /^(?:```|~~~)[ \t]*([^\n\r`~]*)/gm;
+
+  for (const match of markdown.matchAll(fenceRe)) {
+    languages.add(normalizeShikiLang(match[1]));
+  }
+
+  return [...languages];
+}
+
+function decorateShikiHtml(html, language) {
+  let decorated = html.replace(/^<pre\b/, `<pre data-language="${escapeHtml(language)}"`);
+
+  if (decorated.includes(' class="')) {
+    decorated = decorated.replace(' class="', ' class="shiki-code ');
+  } else {
+    decorated = decorated.replace(/^<pre /, '<pre class="shiki-code" ');
+  }
+
+  return decorated;
+}
+
+function renderCodeBlock(highlighter, code, lang) {
+  const language = normalizeShikiLang(lang);
+
+  try {
+    const html = highlighter.codeToHtml(code, {
+      lang: language,
+      theme: SHIKI_THEME
+    });
+    return decorateShikiHtml(html, language);
+  } catch (error) {
+    console.warn(`Shiki failed for language "${language}"; falling back to escaped text: ${error?.message || error}`);
+    return `<pre class="shiki-code shiki-fallback" data-language="${escapeHtml(language)}"><code>${escapeHtml(code)}</code></pre>`;
+  }
+}
+
+function createMarkdownRenderer(highlighter) {
   return new MarkdownIt({
     html: true,
     linkify: true,
     typographer: true,
     breaks: false,
     highlight(code, lang) {
-      const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
-      const highlighted = hljs.highlight(code, { language, ignoreIllegals: true }).value;
-      return `<pre class="hljs"><code class="language-${escapeHtml(language)}">${highlighted}</code></pre>`;
+      return renderCodeBlock(highlighter, code, lang);
     }
   })
     .use(markdownItAnchor, {
@@ -206,7 +306,7 @@ async function verifyPdfOutline(pdfPath) {
   console.log(`PDF outline check: ${hasOutlines ? 'found /Outlines' : 'missing /Outlines'}; /Title entries=${titleCount}; ${pageModeUseOutlines ? 'PageMode=UseOutlines' : 'PageMode not UseOutlines'}`);
 }
 
-function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss, theme }) {
+function buildHtml({ title, renderedMarkdown, customCss, katexCss, theme }) {
   const baseHref = pathToFileURL(inputBaseDir + path.sep).href;
   const safeTheme = escapeHtml(theme);
   const queueCss = `
@@ -234,7 +334,6 @@ function buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss,
   <title>${escapeHtml(title)}</title>
   <meta name="pdf-theme" content="${safeTheme}">
   <style>${katexCss}</style>
-  <style>${highlightCss}</style>
   <style>${customCss}</style>
   <style>${queueCss}</style>
 </head>
@@ -280,18 +379,24 @@ async function main() {
   const normalizedMarkdown = renderObsidianHighlights(normalizeObsidianLinks(markdownRaw));
   const title = extractTitle(normalizedMarkdown);
   const protectedMath = protectMath(normalizedMarkdown);
+  const codeFenceLanguages = extractFenceLanguages(protectedMath.markdown);
+  const highlighter = await createHighlighter({
+    themes: [SHIKI_THEME],
+    langs: codeFenceLanguages
+  });
 
-  const md = createMarkdownRenderer();
+  const md = createMarkdownRenderer(highlighter);
   const renderedMarkdown = restoreMath(md.render(protectedMath.markdown), protectedMath.mathItems);
 
   const customCss = await readThemeCss(selectedTheme);
   const rawKatexCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/katex/dist/katex.min.css'), 'utf8');
   const katexCss = rewriteKatexCssUrls(rawKatexCss);
-  const highlightCss = await fs.readFile(path.resolve(projectRoot, 'node_modules/highlight.js/styles/github.min.css'), 'utf8');
 
-  const html = buildHtml({ title, renderedMarkdown, customCss, katexCss, highlightCss, theme: selectedTheme });
+  const html = buildHtml({ title, renderedMarkdown, customCss, katexCss, theme: selectedTheme });
   await fs.writeFile(outputHtmlPath, html, 'utf8');
   console.log(`Theme: ${selectedTheme}`);
+  console.log(`Shiki theme: ${SHIKI_THEME}`);
+  console.log(`Shiki languages: ${codeFenceLanguages.join(', ')}`);
   console.log(`HTML written to ${path.relative(projectRoot, outputHtmlPath)}`);
 
   if (htmlOnly) return;
