@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360" role="img" aria-label="PDF build flow">
+  <rect width="980" height="360" fill="#ffffff"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    .box{fill:#f8fafc;stroke:#94a3b8;stroke-width:2;rx:18;ry:18}
+    .title{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:24px;font-weight:700;fill:#0f172a}
+    .text{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:17px;fill:#334155}
+    .arrow{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <rect class="box" x="40" y="95" width="180" height="130" rx="18"/>
+  <text class="title" x="130" y="145" text-anchor="middle">Markdown</text>
+  <text class="text" x="130" y="178" text-anchor="middle">md / img</text>
+
+  <path class="arrow" d="M 235 160 H 315"/>
+
+  <rect class="box" x="330" y="95" width="180" height="130" rx="18"/>
+  <text class="title" x="420" y="145" text-anchor="middle">Manifest</text>
+  <text class="text" x="420" y="178" text-anchor="middle">默认主题</text>
+
+  <path class="arrow" d="M 525 160 H 605"/>
+
+  <rect class="box" x="620" y="95" width="180" height="130" rx="18"/>
+  <text class="title" x="710" y="145" text-anchor="middle">Actions</text>
+  <text class="text" x="710" y="178" text-anchor="middle">构建 PDF</text>
+
+  <path class="arrow" d="M 815 160 H 895"/>
+
+  <rect class="box" x="810" y="250" width="130" height="60" rx="14"/>
+  <text class="text" x="875" y="286" text-anchor="middle">output 分支</text>
+
+  <path class="arrow" d="M 710 230 C 710 280, 760 280, 800 280"/>
+
+  <text class="text" x="490" y="55" text-anchor="middle">Queue build with default theme</text>
+</svg>
