@@ -1,0 +1,19 @@
+version: 1
+title: 默认主题 Markdown 综合测试
+date: 2026-07-07
+jobs:
+  - id: default-theme-markdown-showcase
+    type: merge
+    title: 默认主题 Markdown 综合测试
+    inputs: all
+    output: default-theme-markdown-showcase.pdf
+    page_break: true
+content_checks:
+  - path: md/markdown-default-theme-showcase.md
+    min_chars: 2500
+    must_contain:
+      - Markdown 默认主题综合测试
+      - Obsidian 风格 Callout
+      - PDF 构建流程示意图
+consume:
+  delete_after_success: true
