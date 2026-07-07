@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "date": "2026-07-07",
+  "title": "LAN Notes",
+  "theme": "clean",
+  "jobs": [
+    {
+      "id": "lan",
+      "type": "merge"
+    }
+  ]
+}
