@@ -23,7 +23,8 @@ const outputDir = path.dirname(outputPdfPath);
 const outputHtmlPath = outputPdfPath.replace(/\.pdf$/i, '.html');
 const inputBaseDir = path.dirname(inputPath);
 const availableShikiLanguages = new Set(Object.keys(bundledLanguages));
-const SHIKI_FALLBACK_LANG = ['text', 'plaintext', 'txt'].find((lang) => availableShikiLanguages.has(lang)) || 'javascript';
+const SHIKI_PLAIN_TEXT_LANGS = new Set(['text', 'txt', 'plain', 'plaintext']);
+const SHIKI_FALLBACK_LANG = 'text';
 const SHIKI_LANG_ALIASES = new Map([
   ['c++', 'cpp'],
   ['cc', 'cpp'],
@@ -224,6 +225,10 @@ async function readThemeCss(theme) {
   ].join('\n\n');
 }
 
+function isSupportedShikiLang(lang) {
+  return SHIKI_PLAIN_TEXT_LANGS.has(lang) || availableShikiLanguages.has(lang);
+}
+
 function normalizeShikiLang(lang) {
   const raw = String(lang || '')
     .trim()
@@ -232,7 +237,7 @@ function normalizeShikiLang(lang) {
     .toLowerCase();
 
   const mapped = SHIKI_LANG_ALIASES.get(raw) || raw || SHIKI_FALLBACK_LANG;
-  return availableShikiLanguages.has(mapped) ? mapped : SHIKI_FALLBACK_LANG;
+  return isSupportedShikiLang(mapped) ? mapped : SHIKI_FALLBACK_LANG;
 }
 
 function extractFenceLanguages(markdown) {
