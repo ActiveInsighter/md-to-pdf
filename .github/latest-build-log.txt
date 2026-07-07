@@ -1,30 +1,30 @@
 ## apt install CJK fonts
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
-Get:6 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
-Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
 Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
 Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:6 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
+Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
 Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
-Get:9 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
-Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
-Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [172 kB]
-Get:12 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [205 kB]
-Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1079 kB]
-Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [267 kB]
-Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
-Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.7 kB]
-Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1659 kB]
-Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
-Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
-Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
-Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
-Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
-Get:23 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
-Get:24 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
-Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5744 B]
-Get:26 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1079 kB]
+Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [267 kB]
+Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.7 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1659 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
+Get:21 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5744 B]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:24 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
+Get:25 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [205 kB]
+Get:26 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [172 kB]
 Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [826 kB]
 Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [186 kB]
 Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.8 kB]
@@ -33,11 +33,11 @@ Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Pack
 Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
 Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
 Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
-Get:38 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1212 B]
 Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
 Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
 Get:37 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
-Fetched 10.2 MB in 1s (9277 kB/s)
+Get:38 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1212 B]
+Fetched 10.2 MB in 1s (8490 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -51,7 +51,7 @@ Need to get 61.2 MB of archives.
 After this operation, 93.2 MB of additional disk space will be used.
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
-Fetched 61.2 MB in 2s (37.5 MB/s)
+Fetched 61.2 MB in 0s (126 MB/s)
 Selecting previously unselected package fonts-noto-cjk.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202513 files and directories currently installed.)
 Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
@@ -71,7 +71,7 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 
 ## npm install
 
-added 157 packages, and audited 158 packages in 7s
+added 157 packages, and audited 158 packages in 8s
 
 38 packages are looking for funding
   run `npm fund` for details
@@ -86,50 +86,38 @@ npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to revi
 Using system Chrome: /usr/bin/google-chrome
 
 ## PDF build
-started_at=2026-07-07T07:46:44.083Z
+started_at=2026-07-07T08:02:07.048Z
 mode=queue
 command=node scripts/build-queue.mjs
 
 Changed files:
 - inbox/2026/07/2026-07-07/manifest.yml
+- inbox/2026/07/2026-07-07/md/001-memory-contiguous-noncontiguous-allocation.md
 Queue manifests:
 - inbox/2026/07/2026-07-07/manifest.yml
 
-Content checks: 2
-- OK inbox/2026/07/2026-07-07/md/shiki-chatgpt-light-render-test.md (2353 bytes, 1981 chars)
-- OK inbox/2026/07/2026-07-07/md/002-memory-paging-segmentation.md (25006 bytes, 12089 chars)
+Content checks: 1
+- OK inbox/2026/07/2026-07-07/md/001-memory-contiguous-noncontiguous-allocation.md (24418 bytes, 11839 chars)
 Manifest: inbox/2026/07/2026-07-07/manifest.yml
 Date: 2026-07-07
 Theme: chatgpt-light
 
-Job shiki-chatgpt-light-render-test (merge)
+Job memory-contiguous-noncontiguous-allocation (merge)
 Theme: chatgpt-light
-Inputs: inbox/2026/07/2026-07-07/md/shiki-chatgpt-light-render-test.md
-Build merged: .tmp/combined/2026/07/2026-07-07/shiki-chatgpt-light-render-test.md -> dist/queue/2026/07/2026-07-07/shiki-chatgpt-light-render-test.pdf
-Theme: chatgpt-light
-Shiki theme: github-light
-Shiki languages: text, typescript, python, shellscript, json, css
-HTML written to dist/queue/2026/07/2026-07-07/shiki-chatgpt-light-render-test.html
-Using Chrome executable: /usr/bin/google-chrome
-PDF written to dist/queue/2026/07/2026-07-07/shiki-chatgpt-light-render-test.pdf
-PDF outline check: found /Outlines; /Title entries=8; PageMode not UseOutlines
-
-Job memory-paging-segmentation-note (merge)
-Theme: chatgpt-light
-Inputs: inbox/2026/07/2026-07-07/md/002-memory-paging-segmentation.md
-Build merged: .tmp/combined/2026/07/2026-07-07/memory-paging-segmentation-note.md -> dist/queue/2026/07/2026-07-07/memory-paging-segmentation.pdf
+Inputs: inbox/2026/07/2026-07-07/md/001-memory-contiguous-noncontiguous-allocation.md
+Build merged: .tmp/combined/2026/07/2026-07-07/memory-contiguous-noncontiguous-allocation.md -> dist/queue/2026/07/2026-07-07/memory-contiguous-noncontiguous-allocation.pdf
 Theme: chatgpt-light
 Shiki theme: github-light
 Shiki languages: text
-HTML written to dist/queue/2026/07/2026-07-07/memory-paging-segmentation.html
+HTML written to dist/queue/2026/07/2026-07-07/memory-contiguous-noncontiguous-allocation.html
 Using Chrome executable: /usr/bin/google-chrome
-PDF written to dist/queue/2026/07/2026-07-07/memory-paging-segmentation.pdf
-PDF outline check: found /Outlines; /Title entries=64; PageMode not UseOutlines
+PDF written to dist/queue/2026/07/2026-07-07/memory-contiguous-noncontiguous-allocation.pdf
+PDF outline check: found /Outlines; /Title entries=83; PageMode not UseOutlines
 
-Built 2 output(s) from inbox/2026/07/2026-07-07/manifest.yml.
+Built 1 output(s) from inbox/2026/07/2026-07-07/manifest.yml.
 Built 1 manifest(s).
 Will consume after successful publish:
 - inbox/2026/07/2026-07-07
 
-finished_at=2026-07-07T07:46:53.217Z
+finished_at=2026-07-07T08:02:15.928Z
 exit_code=0
