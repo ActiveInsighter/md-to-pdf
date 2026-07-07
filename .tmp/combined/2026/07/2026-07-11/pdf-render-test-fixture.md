@@ -1,3 +1,7 @@
+# PDF Render Test Fixture
+
+<!-- source: inbox/2026/07/2026-07-11/md/pdf-render-test-fixture.md -->
+
 # PDF 渲染基准测试 Markdown
 
 > 用途：以后测试主题、公式、代码高亮、表格、打印背景、分页和常见 Markdown 语法时，统一使用这份文件。
@@ -237,3 +241,4 @@ python /home/oai/skills/pdfs/scripts/render_pdf.py dist/pdf-render-test-fixture.
 $$
 e^{i\pi}+1=0.
 $$
+
