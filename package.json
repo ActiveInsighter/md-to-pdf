@@ -14,12 +14,12 @@
     "ci:build": "node scripts/build-with-log.mjs"
   },
   "devDependencies": {
-    "highlight.js": "^11.11.1",
     "js-yaml": "^4.1.0",
     "katex": "^0.16.22",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
     "markdown-it-task-lists": "^2.1.1",
-    "puppeteer": "^24.11.2"
+    "puppeteer": "^24.11.2",
+    "shiki": "^4.3.1"
   }
 }
