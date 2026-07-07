@@ -1,3 +1,7 @@
+# Shiki ChatGPT Light 渲染测试
+
+<!-- source: inbox/2026/07/2026-07-07/md/shiki-chatgpt-light-render-test.md -->
+
 # Shiki + ChatGPT Light PDF 渲染测试
 
 这份文档用于验证当前 PDF 项目的新渲染链路：默认主题为 `chatgpt-light`，代码高亮由 Shiki 生成，页面背景和打印页边背景均为纯白。
@@ -116,3 +120,4 @@ PDF_THEME=chatgpt-light SHIKI_THEME=github-light npm run build:pdf
 - 页边背景也应为纯白。
 - 代码块应为浅灰背景，适合白底阅读。
 - 公式应保持 KaTeX 原生字体，不被主题 CSS 破坏。
+
