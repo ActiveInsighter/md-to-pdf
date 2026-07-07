@@ -1,16 +1,28 @@
 version: 1
 date: 2026-07-07
-title: Shiki ChatGPT Light 渲染测试
+title: 2026-07-07 PDF 导出任务合集
 theme: chatgpt-light
 
 content_checks:
-  - path: inbox/2026/07/2026-07-07/md/shiki-chatgpt-light-render-test.md
+  - path: md/shiki-chatgpt-light-render-test.md
     min_chars: 2000
     must_contain:
       - Shiki
       - ChatGPT Light
       - KaTeX
       - github-light
+  - path: md/002-memory-paging-segmentation.md
+    min_bytes: 25000
+    min_chars: 12000
+    sha256: 0a52759460b8095d446d7116b238a3dd6ae17e72204790a1b66d2f3c0325464d
+    must_contain:
+      - 内存管理：分页、分段、段页式管理完整笔记
+      - 页、页面、页框、页帧、块、页号、页框号、物理块号
+      - 分页地址变换过程
+      - 分段地址变换过程
+      - 段页式地址变换过程
+      - 一页速记
+    must_end_with: "<!-- END: memory-paging-segmentation-note -->"
 
 jobs:
   - id: shiki-chatgpt-light-render-test
@@ -20,3 +32,10 @@ jobs:
       - md/shiki-chatgpt-light-render-test.md
     page_break: true
     output: shiki-chatgpt-light-render-test.pdf
+  - id: memory-paging-segmentation-note
+    type: merge
+    title: 内存管理：分页、分段、段页式管理完整笔记
+    inputs:
+      - md/002-memory-paging-segmentation.md
+    page_break: true
+    output: memory-paging-segmentation.pdf
