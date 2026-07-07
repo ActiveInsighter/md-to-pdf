@@ -1,3 +1,7 @@
+# 默认主题 Markdown 综合测试
+
+<!-- source: inbox/2026/07/2026-07-07/md/markdown-default-theme-showcase.md -->
+
 # Markdown 默认主题综合测试
 
 这份文档用于测试 PDF 项目在**默认主题**下对常见 Markdown 内容的渲染效果。内容包含中文、英文、数学公式、表格、任务列表、引用、代码块、Obsidian 风格语法、Callout、图片和分页场景。
@@ -103,7 +107,7 @@ create table workflow_events (
 
 下面是一张 SVG 测试图，用于验证 Markdown 图片路径在队列合并构建中能否正确改写。
 
-![PDF 构建流程示意图](../img/pdf-build-flow.svg)
+![PDF 构建流程示意图](../../../../../inbox/2026/07/2026-07-07/img/pdf-build-flow.svg)
 
 ## 7. 长内容与换页
 
@@ -123,3 +127,4 @@ create table workflow_events (
 - 队列适合保证“任务会被投递和重试”。
 - 数据库适合保存“最终状态和幂等记录”。
 - PDF 构建适合用 manifest 明确输入、输出、主题和消费策略。
+
