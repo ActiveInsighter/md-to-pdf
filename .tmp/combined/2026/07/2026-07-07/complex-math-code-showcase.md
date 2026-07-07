@@ -1,5 +1,9 @@
 # 复杂 Markdown 数学与代码块测试页
 
+<!-- source: inbox/2026/07/2026-07-07/md/complex-math-code-showcase.md -->
+
+# 复杂 Markdown 数学与代码块测试页
+
 > [!NOTE] 测试目标
 > 本文档用于压力测试 PDF 渲染链路：标题层级、段落、行内公式、块级公式、多行公式、矩阵、表格中的公式、代码块高亮、长代码换行、Callout、分页和目录书签。每一节之间插入显式分页，目标输出约 10 页。
 
@@ -411,3 +415,4 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<ApiRespo
 - [x] 表格中的公式
 - [x] 多语言代码块高亮
 - [x] 显式分页与 PDF 书签
+
