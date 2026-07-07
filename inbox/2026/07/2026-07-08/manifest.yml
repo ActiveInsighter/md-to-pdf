@@ -1,0 +1,22 @@
+version: 1
+date: 2026-07-08
+title: Shiki ChatGPT Light 渲染测试
+theme: chatgpt-light
+
+content_checks:
+  - path: md/shiki-chatgpt-light-render-test.md
+    min_chars: 2000
+    must_contain:
+      - Shiki
+      - ChatGPT Light
+      - KaTeX
+      - github-light
+
+jobs:
+  - id: shiki-chatgpt-light-render-test
+    type: merge
+    title: Shiki ChatGPT Light 渲染测试
+    inputs:
+      - md/shiki-chatgpt-light-render-test.md
+    page_break: true
+    output: shiki-chatgpt-light-render-test.pdf
