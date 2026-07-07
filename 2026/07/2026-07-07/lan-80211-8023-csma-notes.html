@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="file:///home/runner/work/md-to-pdf/md-to-pdf/.tmp/combined/2026/07/2026-07-07/">
+  <title>LAN 802.11 802.3 CSMA Notes</title>
+  <meta name="pdf-theme" content="clean">
+  <style>@font-face{font-display:block;font-family:KaTeX_AMS;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Script;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size1;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size2;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size3;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size4;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Typewriter;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.ttf) format("truetype")}.katex{font:normal 1.21em KaTeX_Main,Times New Roman,serif;line-height:1.2;position:relative;text-indent:0;text-rendering:auto}.katex *{-ms-high-contrast-adjust:none!important;border-color:currentColor}.katex .katex-version:after{content:"0.16.47"}.katex .katex-mathml{border:0;-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;overflow:hidden;padding:0;position:absolute;width:1px}.katex .katex-html>.newline{display:block}.katex .base{position:relative;white-space:nowrap;width:-webkit-min-content;width:-moz-min-content;width:min-content}.katex .base,.katex .strut{display:inline-block}.katex .textbf{font-weight:700}.katex .textit{font-style:italic}.katex .textrm{font-family:KaTeX_Main}.katex .textsf{font-family:KaTeX_SansSerif}.katex .texttt{font-family:KaTeX_Typewriter}.katex .mathnormal{font-family:KaTeX_Math;font-style:italic}.katex .mathit{font-family:KaTeX_Main;font-style:italic}.katex .mathrm{font-style:normal}.katex .mathbf{font-family:KaTeX_Main;font-weight:700}.katex .boldsymbol{font-family:KaTeX_Math;font-style:italic;font-weight:700}.katex .amsrm,.katex .mathbb,.katex .textbb{font-family:KaTeX_AMS}.katex .mathcal{font-family:KaTeX_Caligraphic}.katex .mathfrak,.katex .textfrak{font-family:KaTeX_Fraktur}.katex .mathboldfrak,.katex .textboldfrak{font-family:KaTeX_Fraktur;font-weight:700}.katex .mathtt{font-family:KaTeX_Typewriter}.katex .mathscr,.katex .textscr{font-family:KaTeX_Script}.katex .mathsf,.katex .textsf{font-family:KaTeX_SansSerif}.katex .mathboldsf,.katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}.katex .mathitsf,.katex .mathsfit,.katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}.katex .mainrm{font-family:KaTeX_Main;font-style:normal}.katex .vlist-t{border-collapse:collapse;display:inline-table;table-layout:fixed}.katex .vlist-r{display:table-row}.katex .vlist{display:table-cell;position:relative;vertical-align:bottom}.katex .vlist>span{display:block;height:0;position:relative}.katex .vlist>span>span{display:inline-block}.katex .vlist>span>.pstrut{overflow:hidden;width:0}.katex .vlist-t2{margin-right:-2px}.katex .vlist-s{display:table-cell;font-size:1px;min-width:2px;vertical-align:bottom;width:2px}.katex .vbox{align-items:baseline;display:inline-flex;flex-direction:column}.katex .hbox{width:100%}.katex .hbox,.katex .thinbox{display:inline-flex;flex-direction:row}.katex .thinbox{max-width:0;width:0}.katex .msupsub{text-align:left}.katex .mfrac>span>span{text-align:center}.katex .mfrac .frac-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline,.katex .hline,.katex .mfrac .frac-line,.katex .overline .overline-line,.katex .rule,.katex .underline .underline-line{min-height:1px}.katex .mspace{display:inline-block}.katex .smash{display:inline;line-height:0}.katex .clap,.katex .llap,.katex .rlap{position:relative;width:0}.katex .clap>.inner,.katex .llap>.inner,.katex .rlap>.inner{position:absolute}.katex .clap>.fix,.katex .llap>.fix,.katex .rlap>.fix{display:inline-block}.katex .llap>.inner{right:0}.katex .clap>.inner,.katex .rlap>.inner{left:0}.katex .clap>.inner>span{margin-left:-50%;margin-right:50%}.katex .rule{border:0 solid;display:inline-block;position:relative}.katex .hline,.katex .overline .overline-line,.katex .underline .underline-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline{border-bottom-style:dashed;display:inline-block;width:100%}.katex .sqrt>.root{margin-left:.2777777778em;margin-right:-.5555555556em}.katex .fontsize-ensurer.reset-size1.size1,.katex .sizing.reset-size1.size1{font-size:1em}.katex .fontsize-ensurer.reset-size1.size2,.katex .sizing.reset-size1.size2{font-size:1.2em}.katex .fontsize-ensurer.reset-size1.size3,.katex .sizing.reset-size1.size3{font-size:1.4em}.katex .fontsize-ensurer.reset-size1.size4,.katex .sizing.reset-size1.size4{font-size:1.6em}.katex .fontsize-ensurer.reset-size1.size5,.katex .sizing.reset-size1.size5{font-size:1.8em}.katex .fontsize-ensurer.reset-size1.size6,.katex .sizing.reset-size1.size6{font-size:2em}.katex .fontsize-ensurer.reset-size1.size7,.katex .sizing.reset-size1.size7{font-size:2.4em}.katex .fontsize-ensurer.reset-size1.size8,.katex .sizing.reset-size1.size8{font-size:2.88em}.katex .fontsize-ensurer.reset-size1.size9,.katex .sizing.reset-size1.size9{font-size:3.456em}.katex .fontsize-ensurer.reset-size1.size10,.katex .sizing.reset-size1.size10{font-size:4.148em}.katex .fontsize-ensurer.reset-size1.size11,.katex .sizing.reset-size1.size11{font-size:4.976em}.katex .fontsize-ensurer.reset-size2.size1,.katex .sizing.reset-size2.size1{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size2.size2,.katex .sizing.reset-size2.size2{font-size:1em}.katex .fontsize-ensurer.reset-size2.size3,.katex .sizing.reset-size2.size3{font-size:1.1666666667em}.katex .fontsize-ensurer.reset-size2.size4,.katex .sizing.reset-size2.size4{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size2.size5,.katex .sizing.reset-size2.size5{font-size:1.5em}.katex .fontsize-ensurer.reset-size2.size6,.katex .sizing.reset-size2.size6{font-size:1.6666666667em}.katex .fontsize-ensurer.reset-size2.size7,.katex .sizing.reset-size2.size7{font-size:2em}.katex .fontsize-ensurer.reset-size2.size8,.katex .sizing.reset-size2.size8{font-size:2.4em}.katex .fontsize-ensurer.reset-size2.size9,.katex .sizing.reset-size2.size9{font-size:2.88em}.katex .fontsize-ensurer.reset-size2.size10,.katex .sizing.reset-size2.size10{font-size:3.4566666667em}.katex .fontsize-ensurer.reset-size2.size11,.katex .sizing.reset-size2.size11{font-size:4.1466666667em}.katex .fontsize-ensurer.reset-size3.size1,.katex .sizing.reset-size3.size1{font-size:.7142857143em}.katex .fontsize-ensurer.reset-size3.size2,.katex .sizing.reset-size3.size2{font-size:.8571428571em}.katex .fontsize-ensurer.reset-size3.size3,.katex .sizing.reset-size3.size3{font-size:1em}.katex .fontsize-ensurer.reset-size3.size4,.katex .sizing.reset-size3.size4{font-size:1.1428571429em}.katex .fontsize-ensurer.reset-size3.size5,.katex .sizing.reset-size3.size5{font-size:1.2857142857em}.katex .fontsize-ensurer.reset-size3.size6,.katex .sizing.reset-size3.size6{font-size:1.4285714286em}.katex .fontsize-ensurer.reset-size3.size7,.katex .sizing.reset-size3.size7{font-size:1.7142857143em}.katex .fontsize-ensurer.reset-size3.size8,.katex .sizing.reset-size3.size8{font-size:2.0571428571em}.katex .fontsize-ensurer.reset-size3.size9,.katex .sizing.reset-size3.size9{font-size:2.4685714286em}.katex .fontsize-ensurer.reset-size3.size10,.katex .sizing.reset-size3.size10{font-size:2.9628571429em}.katex .fontsize-ensurer.reset-size3.size11,.katex .sizing.reset-size3.size11{font-size:3.5542857143em}.katex .fontsize-ensurer.reset-size4.size1,.katex .sizing.reset-size4.size1{font-size:.625em}.katex .fontsize-ensurer.reset-size4.size2,.katex .sizing.reset-size4.size2{font-size:.75em}.katex .fontsize-ensurer.reset-size4.size3,.katex .sizing.reset-size4.size3{font-size:.875em}.katex .fontsize-ensurer.reset-size4.size4,.katex .sizing.reset-size4.size4{font-size:1em}.katex .fontsize-ensurer.reset-size4.size5,.katex .sizing.reset-size4.size5{font-size:1.125em}.katex .fontsize-ensurer.reset-size4.size6,.katex .sizing.reset-size4.size6{font-size:1.25em}.katex .fontsize-ensurer.reset-size4.size7,.katex .sizing.reset-size4.size7{font-size:1.5em}.katex .fontsize-ensurer.reset-size4.size8,.katex .sizing.reset-size4.size8{font-size:1.8em}.katex .fontsize-ensurer.reset-size4.size9,.katex .sizing.reset-size4.size9{font-size:2.16em}.katex .fontsize-ensurer.reset-size4.size10,.katex .sizing.reset-size4.size10{font-size:2.5925em}.katex .fontsize-ensurer.reset-size4.size11,.katex .sizing.reset-size4.size11{font-size:3.11em}.katex .fontsize-ensurer.reset-size5.size1,.katex .sizing.reset-size5.size1{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size5.size2,.katex .sizing.reset-size5.size2{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size5.size3,.katex .sizing.reset-size5.size3{font-size:.7777777778em}.katex .fontsize-ensurer.reset-size5.size4,.katex .sizing.reset-size5.size4{font-size:.8888888889em}.katex .fontsize-ensurer.reset-size5.size5,.katex .sizing.reset-size5.size5{font-size:1em}.katex .fontsize-ensurer.reset-size5.size6,.katex .sizing.reset-size5.size6{font-size:1.1111111111em}.katex .fontsize-ensurer.reset-size5.size7,.katex .sizing.reset-size5.size7{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size5.size8,.katex .sizing.reset-size5.size8{font-size:1.6em}.katex .fontsize-ensurer.reset-size5.size9,.katex .sizing.reset-size5.size9{font-size:1.92em}.katex .fontsize-ensurer.reset-size5.size10,.katex .sizing.reset-size5.size10{font-size:2.3044444444em}.katex .fontsize-ensurer.reset-size5.size11,.katex .sizing.reset-size5.size11{font-size:2.7644444444em}.katex .fontsize-ensurer.reset-size6.size1,.katex .sizing.reset-size6.size1{font-size:.5em}.katex .fontsize-ensurer.reset-size6.size2,.katex .sizing.reset-size6.size2{font-size:.6em}.katex .fontsize-ensurer.reset-size6.size3,.katex .sizing.reset-size6.size3{font-size:.7em}.katex .fontsize-ensurer.reset-size6.size4,.katex .sizing.reset-size6.size4{font-size:.8em}.katex .fontsize-ensurer.reset-size6.size5,.katex .sizing.reset-size6.size5{font-size:.9em}.katex .fontsize-ensurer.reset-size6.size6,.katex .sizing.reset-size6.size6{font-size:1em}.katex .fontsize-ensurer.reset-size6.size7,.katex .sizing.reset-size6.size7{font-size:1.2em}.katex .fontsize-ensurer.reset-size6.size8,.katex .sizing.reset-size6.size8{font-size:1.44em}.katex .fontsize-ensurer.reset-size6.size9,.katex .sizing.reset-size6.size9{font-size:1.728em}.katex .fontsize-ensurer.reset-size6.size10,.katex .sizing.reset-size6.size10{font-size:2.074em}.katex .fontsize-ensurer.reset-size6.size11,.katex .sizing.reset-size6.size11{font-size:2.488em}.katex .fontsize-ensurer.reset-size7.size1,.katex .sizing.reset-size7.size1{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size7.size2,.katex .sizing.reset-size7.size2{font-size:.5em}.katex .fontsize-ensurer.reset-size7.size3,.katex .sizing.reset-size7.size3{font-size:.5833333333em}.katex .fontsize-ensurer.reset-size7.size4,.katex .sizing.reset-size7.size4{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size7.size5,.katex .sizing.reset-size7.size5{font-size:.75em}.katex .fontsize-ensurer.reset-size7.size6,.katex .sizing.reset-size7.size6{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size7.size7,.katex .sizing.reset-size7.size7{font-size:1em}.katex .fontsize-ensurer.reset-size7.size8,.katex .sizing.reset-size7.size8{font-size:1.2em}.katex .fontsize-ensurer.reset-size7.size9,.katex .sizing.reset-size7.size9{font-size:1.44em}.katex .fontsize-ensurer.reset-size7.size10,.katex .sizing.reset-size7.size10{font-size:1.7283333333em}.katex .fontsize-ensurer.reset-size7.size11,.katex .sizing.reset-size7.size11{font-size:2.0733333333em}.katex .fontsize-ensurer.reset-size8.size1,.katex .sizing.reset-size8.size1{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size8.size2,.katex .sizing.reset-size8.size2{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size8.size3,.katex .sizing.reset-size8.size3{font-size:.4861111111em}.katex .fontsize-ensurer.reset-size8.size4,.katex .sizing.reset-size8.size4{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size8.size5,.katex .sizing.reset-size8.size5{font-size:.625em}.katex .fontsize-ensurer.reset-size8.size6,.katex .sizing.reset-size8.size6{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size8.size7,.katex .sizing.reset-size8.size7{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size8.size8,.katex .sizing.reset-size8.size8{font-size:1em}.katex .fontsize-ensurer.reset-size8.size9,.katex .sizing.reset-size8.size9{font-size:1.2em}.katex .fontsize-ensurer.reset-size8.size10,.katex .sizing.reset-size8.size10{font-size:1.4402777778em}.katex .fontsize-ensurer.reset-size8.size11,.katex .sizing.reset-size8.size11{font-size:1.7277777778em}.katex .fontsize-ensurer.reset-size9.size1,.katex .sizing.reset-size9.size1{font-size:.2893518519em}.katex .fontsize-ensurer.reset-size9.size2,.katex .sizing.reset-size9.size2{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size9.size3,.katex .sizing.reset-size9.size3{font-size:.4050925926em}.katex .fontsize-ensurer.reset-size9.size4,.katex .sizing.reset-size9.size4{font-size:.462962963em}.katex .fontsize-ensurer.reset-size9.size5,.katex .sizing.reset-size9.size5{font-size:.5208333333em}.katex .fontsize-ensurer.reset-size9.size6,.katex .sizing.reset-size9.size6{font-size:.5787037037em}.katex .fontsize-ensurer.reset-size9.size7,.katex .sizing.reset-size9.size7{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size9.size8,.katex .sizing.reset-size9.size8{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size9.size9,.katex .sizing.reset-size9.size9{font-size:1em}.katex .fontsize-ensurer.reset-size9.size10,.katex .sizing.reset-size9.size10{font-size:1.2002314815em}.katex .fontsize-ensurer.reset-size9.size11,.katex .sizing.reset-size9.size11{font-size:1.4398148148em}.katex .fontsize-ensurer.reset-size10.size1,.katex .sizing.reset-size10.size1{font-size:.2410800386em}.katex .fontsize-ensurer.reset-size10.size2,.katex .sizing.reset-size10.size2{font-size:.2892960463em}.katex .fontsize-ensurer.reset-size10.size3,.katex .sizing.reset-size10.size3{font-size:.337512054em}.katex .fontsize-ensurer.reset-size10.size4,.katex .sizing.reset-size10.size4{font-size:.3857280617em}.katex .fontsize-ensurer.reset-size10.size5,.katex .sizing.reset-size10.size5{font-size:.4339440694em}.katex .fontsize-ensurer.reset-size10.size6,.katex .sizing.reset-size10.size6{font-size:.4821600771em}.katex .fontsize-ensurer.reset-size10.size7,.katex .sizing.reset-size10.size7{font-size:.5785920926em}.katex .fontsize-ensurer.reset-size10.size8,.katex .sizing.reset-size10.size8{font-size:.6943105111em}.katex .fontsize-ensurer.reset-size10.size9,.katex .sizing.reset-size10.size9{font-size:.8331726133em}.katex .fontsize-ensurer.reset-size10.size10,.katex .sizing.reset-size10.size10{font-size:1em}.katex .fontsize-ensurer.reset-size10.size11,.katex .sizing.reset-size10.size11{font-size:1.1996142719em}.katex .fontsize-ensurer.reset-size11.size1,.katex .sizing.reset-size11.size1{font-size:.2009646302em}.katex .fontsize-ensurer.reset-size11.size2,.katex .sizing.reset-size11.size2{font-size:.2411575563em}.katex .fontsize-ensurer.reset-size11.size3,.katex .sizing.reset-size11.size3{font-size:.2813504823em}.katex .fontsize-ensurer.reset-size11.size4,.katex .sizing.reset-size11.size4{font-size:.3215434084em}.katex .fontsize-ensurer.reset-size11.size5,.katex .sizing.reset-size11.size5{font-size:.3617363344em}.katex .fontsize-ensurer.reset-size11.size6,.katex .sizing.reset-size11.size6{font-size:.4019292605em}.katex .fontsize-ensurer.reset-size11.size7,.katex .sizing.reset-size11.size7{font-size:.4823151125em}.katex .fontsize-ensurer.reset-size11.size8,.katex .sizing.reset-size11.size8{font-size:.578778135em}.katex .fontsize-ensurer.reset-size11.size9,.katex .sizing.reset-size11.size9{font-size:.6945337621em}.katex .fontsize-ensurer.reset-size11.size10,.katex .sizing.reset-size11.size10{font-size:.8336012862em}.katex .fontsize-ensurer.reset-size11.size11,.katex .sizing.reset-size11.size11{font-size:1em}.katex .delimsizing.size1{font-family:KaTeX_Size1}.katex .delimsizing.size2{font-family:KaTeX_Size2}.katex .delimsizing.size3{font-family:KaTeX_Size3}.katex .delimsizing.size4{font-family:KaTeX_Size4}.katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}.katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}.katex .nulldelimiter{display:inline-block;width:.12em}.katex .delimcenter,.katex .op-symbol{position:relative}.katex .op-symbol.small-op{font-family:KaTeX_Size1}.katex .op-symbol.large-op{font-family:KaTeX_Size2}.katex .accent>.vlist-t,.katex .op-limits>.vlist-t{text-align:center}.katex .accent .accent-body{position:relative}.katex .accent .accent-body:not(.accent-full){width:0}.katex .overlay{display:block}.katex .mtable .vertical-separator{display:inline-block;min-width:1px}.katex .mtable .arraycolsep{display:inline-block}.katex .mtable .col-align-c>.vlist-t{text-align:center}.katex .mtable .col-align-l>.vlist-t{text-align:left}.katex .mtable .col-align-r>.vlist-t{text-align:right}.katex .svg-align{text-align:left}.katex svg{fill:currentColor;stroke:currentColor;display:block;height:inherit;position:absolute;width:100%}.katex svg path{stroke:none}.katex svg{fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1}.katex img{border-style:none;max-height:none;max-width:none;min-height:0;min-width:0}.katex .stretchy{display:block;overflow:hidden;position:relative;width:100%}.katex .stretchy:after,.katex .stretchy:before{content:""}.katex .hide-tail{overflow:hidden;position:relative;width:100%}.katex .halfarrow-left{left:0;overflow:hidden;position:absolute;width:50.2%}.katex .halfarrow-right{overflow:hidden;position:absolute;right:0;width:50.2%}.katex .brace-left{left:0;overflow:hidden;position:absolute;width:25.1%}.katex .brace-center{left:25%;overflow:hidden;position:absolute;width:50%}.katex .brace-right{overflow:hidden;position:absolute;right:0;width:25.1%}.katex .x-arrow-pad{padding:0 .5em}.katex .cd-arrow-pad{padding:0 .55556em 0 .27778em}.katex .mover,.katex .munder,.katex .x-arrow{text-align:center}.katex .boxpad{padding:0 .3em}.katex .fbox,.katex .fcolorbox{border:.04em solid;box-sizing:border-box}.katex .cancel-pad{padding:0 .2em}.katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}.katex .sout{border-bottom-style:solid;border-bottom-width:.08em}.katex .angl{border-right:.049em solid;border-top:.049em solid;box-sizing:border-box;margin-right:.03889em}.katex .anglpad{padding:0 .03889em}.katex .eqn-num:before{content:"(" counter(katexEqnNo) ")";counter-increment:katexEqnNo}.katex .mml-eqn-num:before{content:"(" counter(mmlEqnNo) ")";counter-increment:mmlEqnNo}.katex .mtr-glue{width:50%}.katex .cd-vert-arrow{display:inline-block;position:relative}.katex .cd-label-left{display:inline-block;position:absolute;right:calc(50% + .3em);text-align:left}.katex .cd-label-right{display:inline-block;left:calc(50% + .3em);position:absolute;text-align:right}.katex-display{display:block;margin:1em 0;text-align:center}.katex-display>.katex{display:block;text-align:center;white-space:nowrap}.katex-display>.katex>.katex-html{display:block;position:relative}.katex-display>.katex>.katex-html>.tag{position:absolute;right:0}.katex-display.leqno>.katex>.katex-html>.tag{left:0;right:auto}.katex-display.fleqn>.katex{padding-left:2em;text-align:left}body{counter-reset:katexEqnNo mmlEqnNo}
+</style>
+  <style>/* themes/base.css */
+
+/*
+  Shared PDF rendering base.
+  Keep layout rules here; put visual tokens in themes/<name>.css.
+*/
+
+@page {
+  size: A4;
+  margin: var(--ky-page-margin, 14mm 15mm 17mm 15mm);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-font-body: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-heading: var(--ky-font-body);
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
+
+  --ky-text: #20252d;
+  --ky-text-soft: #303946;
+  --ky-muted: #67707d;
+  --ky-faint: #8a93a0;
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f8fa;
+  --ky-bg-mute: #f1f3f6;
+  --ky-bg-inline-code: #eef1f5;
+  --ky-bg-code: #f7f7f8;
+  --ky-border-soft: #e5e8ee;
+  --ky-border: #d4d9e2;
+  --ky-border-strong: #aeb7c4;
+  --ky-accent: #64748b;
+  --ky-radius-s: 5px;
+  --ky-radius-m: 8px;
+  --ky-radius-l: 12px;
+
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  --inline-code-color: #384152;
+  --code-normal: #2f3742;
+  --code-comment: #858b94;
+  --code-keyword: #6f5bd7;
+  --code-string: #39745c;
+  --code-function: #2f73a7;
+  --code-property: #8a6833;
+  --code-tag: #566fb0;
+  --code-operator: #6d6673;
+  --code-punctuation: #7a828d;
+  --code-important: #a15b4e;
+  --code-value: #4f6fa8;
+  --code-deletion: #b42318;
+  --code-addition: #2f7d50;
+
+  --math-color: var(--ky-text);
+  --math-display-gap: 0.68em;
+
+  color: var(--ky-text) !important;
+  background: var(--ky-bg) !important;
+  color-scheme: light !important;
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  font-weight: 400 !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0.006em !important;
+  line-break: strict !important;
+  word-break: normal !important;
+}
+
+html,
+body,
+body.theme-light,
+body.minimal-light,
+body.minimal-light-white {
+  margin: 0 !important;
+  background: var(--ky-bg) !important;
+  color: var(--ky-text) !important;
+}
+
+body {
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  line-height: var(--ky-line-height) !important;
+}
+
+.markdown-preview-view,
+.markdown-rendered {
+  font-family: var(--ky-font-body) !important;
+}
+
+.markdown-preview-view .markdown-preview-sizer {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) p {
+  margin: var(--ky-para-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--ky-link, var(--ky-text)) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.16em !important;
+  text-decoration-thickness: 0.06em !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) :is(a, .header-anchor) {
+  color: inherit !important;
+  text-decoration: none !important;
+  border: 0 !important;
+  font: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(strong, b) {
+  color: var(--ky-text) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) em {
+  color: var(--ky-muted) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) mark {
+  color: var(--ky-text) !important;
+  background: var(--ky-mark-bg, #fff3bd) !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.02em 0.2em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) hr {
+  border: 0 !important;
+  border-top: 1px solid var(--ky-border-soft) !important;
+  margin: calc(var(--ky-block-gap) * 1.4) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ky-heading, var(--ky-text)) !important;
+  font-family: var(--ky-font-heading) !important;
+  line-height: var(--ky-heading-line-height) !important;
+  letter-spacing: 0 !important;
+  margin: 0.72em 0 0.28em !important;
+  break-after: avoid !important;
+  page-break-after: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h1 {
+  font-size: 1.46em !important;
+  font-weight: 760 !important;
+  padding-bottom: 0.18em !important;
+  border-bottom: 1px solid var(--ky-border-soft) !important;
+  break-before: auto !important;
+  page-break-before: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h2 {
+  font-size: 1.28em !important;
+  font-weight: 720 !important;
+  border-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h3 {
+  font-size: 1.16em !important;
+  font-weight: 680 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h4 {
+  font-size: 1.08em !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h5 {
+  font-size: 1.03em !important;
+  font-weight: 620 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h6 {
+  color: var(--ky-muted) !important;
+  font-size: 1em !important;
+  font-weight: 600 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
+  margin: 0.24em 0 0.34em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ul {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol {
+  padding-left: 0 !important;
+  list-style-position: inside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol > li > p:first-child {
+  display: inline !important;
+  margin: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li {
+  margin: var(--ky-list-gap) 0 !important;
+  line-height: calc(var(--ky-line-height) - 0.08) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
+  color: var(--ky-marker, #5f6670) !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.42em 0.78em 0.44em 0.86em !important;
+  color: var(--ky-muted) !important;
+  background: var(--ky-bg-soft) !important;
+  border: 0 !important;
+  border-left: 3px solid var(--ky-border) !important;
+  border-radius: 0 var(--ky-radius-s) var(--ky-radius-s) 0 !important;
+  box-shadow: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) code {
+  color: var(--inline-code-color) !important;
+  background: var(--ky-bg-inline-code) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.09em 0.3em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.9em !important;
+  letter-spacing: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs {
+  color: var(--code-normal) !important;
+  background: var(--ky-bg-code) !important;
+  border: 1px solid var(--code-border, var(--ky-border-soft)) !important;
+  border-radius: var(--ky-radius-l) !important;
+  box-shadow: none !important;
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.78em 0.92em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.91em !important;
+  line-height: 1.48 !important;
+  letter-spacing: 0 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  font-variant-ligatures: none !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre code {
+  color: var(--code-normal) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-comment, .hljs-quote) {
+  color: var(--code-comment) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-doctag) {
+  color: var(--code-keyword) !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-string, .hljs-char, .hljs-regexp, .hljs-template-variable) {
+  color: var(--code-string) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-title, .hljs-title.function_, .hljs-function .hljs-title, .hljs-title.class_, .hljs-section) {
+  color: var(--code-function) !important;
+  font-weight: 580 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-attribute, .hljs-variable, .hljs-params, .hljs-property, .hljs-meta .hljs-keyword) {
+  color: var(--code-property) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-tag, .hljs-selector-id, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo) {
+  color: var(--code-tag) !important;
+  font-weight: 560 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-operator, .hljs-link, .hljs-meta) {
+  color: var(--code-operator) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-punctuation {
+  color: var(--code-punctuation) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-number, .hljs-literal, .hljs-symbol, .hljs-bullet) {
+  color: var(--code-value) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-deletion) {
+  color: var(--code-deletion) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-addition) {
+  color: var(--code-addition) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) img,
+:is(.print, .markdown-preview-view, .markdown-rendered) svg[role="img"] {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  object-fit: contain !important;
+  border-radius: var(--ky-radius-l) !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table {
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+  border: 0 !important;
+  margin: 0.62em 0 !important;
+  background: transparent !important;
+  font-size: var(--ky-table-font-size) !important;
+  line-height: var(--ky-table-line-height) !important;
+  overflow: visible !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) thead {
+  display: table-header-group !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) tfoot {
+  display: table-footer-group !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th,
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  min-width: 0 !important;
+  padding: 0.42em 0.56em !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  line-break: strict !important;
+  hyphens: auto !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--table-border-soft, var(--ky-border-soft)) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  background: var(--table-head-bg, var(--ky-bg-soft)) !important;
+  border-bottom: 1.5px solid var(--table-border-strong, var(--ky-border)) !important;
+  color: var(--table-head-text, var(--ky-text)) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+  color: var(--table-text, var(--ky-text-soft)) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(a, code) {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol):not(:last-child) {
+  margin-bottom: 0.18em !important;
+}
+
+/* Math: keep KaTeX's native font stack intact. Do not override .katex font-family. */
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  color: var(--math-color) !important;
+  text-rendering: geometricPrecision !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  max-width: 100% !important;
+  margin: var(--math-display-gap) 0 !important;
+  padding: 0.12em 0 0.18em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  color: var(--math-color) !important;
+  line-height: 1.35 !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  font-size: 1.02em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :not(pre) > code .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex {
+  font-size: 0.98em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex-display {
+  margin: 0.28em 0 !important;
+  padding: 0.08em 0 !important;
+  line-height: 1.32 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(mjx-container, .math, .math-inline, .math-block) {
+  color: var(--math-color) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: var(--ky-text) !important;
+  background: var(--callout-bg, var(--ky-bg-soft)) !important;
+  border: 0 !important;
+  border-left: 3px solid var(--callout-border, var(--ky-border)) !important;
+  border-radius: var(--ky-radius-m) !important;
+  box-shadow: none !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45em !important;
+  color: var(--ky-text-soft) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0.4em 0.68em 0.14em !important;
+  font-size: 0.98em !important;
+  font-weight: 700 !important;
+  line-height: 1.28 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
+  color: var(--ky-text) !important;
+  padding: 0.12em 0.68em 0.46em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content p,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
+  accent-color: var(--ky-text) !important;
+}
+
+@media screen {
+  .markdown-preview-view {
+    max-width: var(--ky-screen-width, 900px) !important;
+    margin: 30px auto !important;
+    padding: 38px 46px !important;
+    background: var(--ky-bg) !important;
+    border: 1px solid var(--ky-border-soft) !important;
+    border-radius: var(--ky-radius-l) !important;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06) !important;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .markdown-preview-view {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  pre,
+  blockquote,
+  table,
+  img,
+  .callout {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+
+/* themes/clean.css */
+
+/*
+  Default clean PDF theme.
+  Goal: slightly more breathing room, stable Chinese typography, soft code colors, and native KaTeX math typography.
+*/
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-page-margin: 14mm 15mm 17mm 15mm;
+
+  --ky-font-body: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-heading: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
+
+  --ky-text: #20252d;
+  --ky-text-soft: #303946;
+  --ky-muted: #67707d;
+  --ky-faint: #8a93a0;
+  --ky-heading: #1f2937;
+  --ky-link: #334155;
+  --ky-marker: #667085;
+
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f8fa;
+  --ky-bg-mute: #f1f3f6;
+  --ky-bg-inline-code: #eef1f5;
+  --ky-bg-code: #f7f7f8;
+  --ky-mark-bg: #fff2b8;
+
+  --ky-border-soft: #e5e8ee;
+  --ky-border: #d4d9e2;
+  --ky-border-strong: #aeb7c4;
+  --ky-accent: #667085;
+
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  /* Light, coordinated code palette on the unchanged #f7f7f8 background. */
+  --inline-code-color: #3b4656;
+  --code-normal: #2e3642;
+  --code-comment: #8c94a1;
+  --code-keyword: #6f4fc9;
+  --code-string: #2f7d5c;
+  --code-function: #256fa8;
+  --code-property: #8b6b2f;
+  --code-tag: #5c6fae;
+  --code-operator: #756978;
+  --code-punctuation: #7a838f;
+  --code-important: #a85b4a;
+  --code-value: #4f67a5;
+  --code-deletion: #b42318;
+  --code-addition: #2f7d50;
+  --code-border: #e7e9ee;
+
+  --math-color: #1f2937;
+  --math-display-gap: 0.72em;
+
+  --table-text: var(--ky-text-soft);
+  --table-head-text: var(--ky-text);
+  --table-head-bg: #f4f6f9;
+  --table-border-strong: #d1d7e0;
+  --table-border-soft: #e6e9ef;
+
+  --callout-bg: #f7f8fa;
+  --callout-border: #d1d7e0;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h2 {
+  color: #263241 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h3 {
+  color: #2b3645 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  background: #f8fafc !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-note,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-info {
+  --callout-bg: #f4f7fb;
+  --callout-border: #b8c7dd;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-tip,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-success {
+  --callout-bg: #f3faf6;
+  --callout-border: #b8d8c4;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-important,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-warning,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-caution,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-danger {
+  --callout-bg: #fff7f0;
+  --callout-border: #dfc0a8;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-question,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-example {
+  --callout-bg: #f7f5fb;
+  --callout-border: #c8bfdc;
+}
+
+
+/* style.css optional project overrides */
+
+/*
+  Optional project-level overrides.
+
+  The PDF renderer now loads CSS in this order:
+
+  1. themes/base.css       - shared structure and common Markdown rules
+  2. themes/<theme>.css    - selected visual theme, default: clean
+  3. style.css             - optional last-mile overrides
+
+  Keep this file small. Put reusable styles in themes/<name>.css instead.
+*/
+
+/*
+  KaTeX math protection layer.
+
+  Theme CSS should not change KaTeX's internal line breaking, wrapping, spacing,
+  or font metrics. KaTeX formulas are built from many positioned spans; global
+  Markdown rules such as overflow-wrap, word-break, line-break, letter-spacing,
+  or inherited text formatting can make fractions, sums, limits, and accents look
+  vertically misaligned in exported PDFs and mobile PDF viewers.
+*/
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  line-break: auto !important;
+  hyphens: none !important;
+  letter-spacing: normal !important;
+  text-indent: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  font-size: 1em !important;
+  max-width: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex .katex-html {
+  white-space: nowrap !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  display: block !important;
+  max-width: 100% !important;
+  margin: var(--math-display-gap, 0.68em) 0 !important;
+  padding: 0.08em 0 0.12em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  text-align: center !important;
+  line-height: 1.28 !important;
+  white-space: normal !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+</style>
+  <style>
+.page-break {
+  break-after: page;
+  page-break-after: always;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+@media print {
+  .page-break {
+    break-after: page;
+    page-break-after: always;
+  }
+}
+</style>
+</head>
+<body class="theme-light minimal-light minimal-light-white pdf-theme pdf-theme-clean">
+  <main class="markdown-preview-view markdown-rendered">
+<h1 id="lan-80211-8023-csma-notes" tabindex="-1"><a class="header-anchor" href="#lan-80211-8023-csma-notes">LAN 802.11 802.3 CSMA Notes</a></h1>
+<!-- source: inbox/2026/07/2026-07-07/md/001-lan-80211-8023-csma.md -->
+<h1 id="局域网ieee-8023ieee-80211csmacd-与-csmaca-系统讲义" tabindex="-1"><a class="header-anchor" href="#局域网ieee-8023ieee-80211csmacd-与-csmaca-系统讲义">局域网、IEEE 802.3、IEEE 802.11、CSMA/CD 与 CSMA/CA 系统讲义</a></h1>
+<blockquote>
+<p>适合计算机网络课程复习。阅读主线：先理解“局域网解决什么问题”，再看以太网 802.3 和无线局域网 802.11 如何分别解决“共享介质访问、成帧、寻址、可靠传输、冲突处理”等问题。</p>
+</blockquote>
+<h2 id="目录" tabindex="-1"><a class="header-anchor" href="#目录">目录</a></h2>
+<ol>
+<li>局域网的基本概念</li>
+<li>IEEE 802 体系与数据链路层拆分</li>
+<li>以太网与 IEEE 802.3</li>
+<li>CSMA/CD：有线共享介质中的冲突检测</li>
+<li>无线局域网与 IEEE 802.11</li>
+<li>CSMA/CA：无线介质中的冲突避免</li>
+<li>802.3 与 802.11 的对比</li>
+<li>交换机、VLAN、广播域与冲突域</li>
+<li>常见协议配合：ARP、DHCP、IP 与 MAC</li>
+<li>典型考点与易错点</li>
+<li>速记表</li>
+</ol>
+<hr>
+<h2 id="1-局域网的基本概念" tabindex="-1"><a class="header-anchor" href="#1-局域网的基本概念">1. 局域网的基本概念</a></h2>
+<h3 id="11-什么是局域网" tabindex="-1"><a class="header-anchor" href="#11-什么是局域网">1.1 什么是局域网</a></h3>
+<p>局域网，即 LAN，通常指覆盖范围较小、归属同一组织或个人管理的计算机网络，例如宿舍、实验室、办公室、教学楼、家庭网络。它的核心目标是让一组设备在较小范围内高效共享资源，包括文件、打印机、服务器、互联网出口等。</p>
+<p>从网络分层看，局域网最常讨论的是物理层和数据链路层。物理层关心比特如何在介质上传输；数据链路层关心如何把比特组织成帧、如何用 MAC 地址标识设备、如何协调多个设备对同一传输介质的访问。</p>
+<h3 id="12-局域网关心的核心问题" tabindex="-1"><a class="header-anchor" href="#12-局域网关心的核心问题">1.2 局域网关心的核心问题</a></h3>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>含义</th>
+<th>典型解决机制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>成帧</td>
+<td>把比特流划分为一个个数据单元</td>
+<td>Ethernet 帧、802.11 帧</td>
+</tr>
+<tr>
+<td>寻址</td>
+<td>在同一链路中找到目标设备</td>
+<td>MAC 地址</td>
+</tr>
+<tr>
+<td>介质访问控制</td>
+<td>多个节点争用同一介质时谁先发</td>
+<td>CSMA/CD、CSMA/CA、交换机调度</td>
+</tr>
+<tr>
+<td>差错检测</td>
+<td>判断帧是否在传输中出错</td>
+<td>FCS、CRC</td>
+</tr>
+<tr>
+<td>广播与发现</td>
+<td>在局域网中寻找未知节点</td>
+<td>广播、ARP、DHCP</td>
+</tr>
+<tr>
+<td>隔离与管理</td>
+<td>限制广播范围或划分逻辑网络</td>
+<td>VLAN、子网、路由器</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-mac-地址" tabindex="-1"><a class="header-anchor" href="#13-mac-地址">1.3 MAC 地址</a></h3>
+<p>MAC 地址一般是 48 位，常写成 6 组十六进制数，例如：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A4:5E:60:12:34:56</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>MAC 地址用于同一链路或同一二层广播域内的帧转发。注意：MAC 地址解决的是“下一跳是谁”，IP 地址解决的是“最终目的主机在哪里”。跨网段通信时，数据帧的目的 MAC 通常是默认网关的 MAC，而不是远端主机的 MAC。</p>
+<hr>
+<h2 id="2-ieee-802-体系与数据链路层拆分" tabindex="-1"><a class="header-anchor" href="#2-ieee-802-体系与数据链路层拆分">2. IEEE 802 体系与数据链路层拆分</a></h2>
+<p>IEEE 802 是局域网和城域网相关标准族。常见标准如下：</p>
+<table>
+<thead>
+<tr>
+<th>标准</th>
+<th>主题</th>
+<th>常见理解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IEEE 802.1</td>
+<td>桥接、VLAN、STP 等</td>
+<td>交换网络管理与二层控制</td>
+</tr>
+<tr>
+<td>IEEE 802.2</td>
+<td>LLC，逻辑链路控制</td>
+<td>数据链路层上半部分，现代以太网中存在感较弱</td>
+</tr>
+<tr>
+<td>IEEE 802.3</td>
+<td>Ethernet，以太网</td>
+<td>有线局域网主流技术</td>
+</tr>
+<tr>
+<td>IEEE 802.11</td>
+<td>WLAN，无线局域网</td>
+<td>Wi-Fi 的技术基础</td>
+</tr>
+<tr>
+<td>IEEE 802.15</td>
+<td>WPAN</td>
+<td>蓝牙等个人区域网络相关</td>
+</tr>
+</tbody>
+</table>
+<p>IEEE 802 常把数据链路层拆成两个子层：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>上层：LLC，Logical Link Control，逻辑链路控制</span></span>
+<span class="line"><span>下层：MAC，Media Access Control，介质访问控制</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>LLC 子层向网络层提供较统一的接口；MAC 子层负责具体局域网技术中的成帧、MAC 地址、介质访问控制和差错检测。</p>
+<hr>
+<h2 id="3-以太网与-ieee-8023" tabindex="-1"><a class="header-anchor" href="#3-以太网与-ieee-8023">3. 以太网与 IEEE 802.3</a></h2>
+<h3 id="31-以太网的基本思想" tabindex="-1"><a class="header-anchor" href="#31-以太网的基本思想">3.1 以太网的基本思想</a></h3>
+<p>以太网是最常见的有线局域网技术。早期以太网常使用共享总线或集线器，多个节点共享同一传输介质，因此需要解决冲突问题。现代以太网几乎都使用交换机，并采用全双工链路，冲突基本不再出现，CSMA/CD 也基本只作为历史和考试知识存在。</p>
+<h3 id="32-ethernet-帧格式" tabindex="-1"><a class="header-anchor" href="#32-ethernet-帧格式">3.2 Ethernet 帧格式</a></h3>
+<p>常见 Ethernet II 帧结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th style="text-align:right">长度</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前导码 Preamble</td>
+<td style="text-align:right">7 字节</td>
+<td>位同步</td>
+</tr>
+<tr>
+<td>帧开始定界符 SFD</td>
+<td style="text-align:right">1 字节</td>
+<td>标记帧正式开始</td>
+</tr>
+<tr>
+<td>目的 MAC</td>
+<td style="text-align:right">6 字节</td>
+<td>接收方 MAC 地址</td>
+</tr>
+<tr>
+<td>源 MAC</td>
+<td style="text-align:right">6 字节</td>
+<td>发送方 MAC 地址</td>
+</tr>
+<tr>
+<td>类型 EtherType</td>
+<td style="text-align:right">2 字节</td>
+<td>指明上层协议，如 IPv4、ARP、IPv6</td>
+</tr>
+<tr>
+<td>数据 Payload</td>
+<td style="text-align:right">46 到 1500 字节</td>
+<td>上层数据，不足最小长度要填充</td>
+</tr>
+<tr>
+<td>FCS</td>
+<td style="text-align:right">4 字节</td>
+<td>CRC 差错检测</td>
+</tr>
+</tbody>
+</table>
+<p>常见最大传输单元 MTU 为 1500 字节，指的是 Ethernet Payload 中能承载的最大上层数据长度。普通 Ethernet 帧不含前导码和 SFD 时最大长度通常是 1518 字节；带 802.1Q VLAN 标签时常见为 1522 字节。</p>
+<h3 id="33-最小帧长为什么是-64-字节" tabindex="-1"><a class="header-anchor" href="#33-最小帧长为什么是-64-字节">3.3 最小帧长为什么是 64 字节</a></h3>
+<p>早期半双工以太网需要在发送过程中检测冲突。若帧太短，发送方可能已经发完了帧，冲突信号才传回来，发送方就无法知道发生过冲突。因此以太网规定最小帧长，以保证发送方在最坏传播时延下仍能检测到冲突。</p>
+<p>核心思想可用下面的关系理解：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>T</mi><mrow><mi>s</mi><mi>e</mi><mi>n</mi><mi>d</mi></mrow></msub><mo>≥</mo><mn>2</mn><msub><mi>T</mi><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>p</mi></mrow></msub></mrow><annotation encoding="application/x-tex">T_{send} \ge 2T_{prop}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">se</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">d</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord">2</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span></span>
+<p>其中，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mrow><mi>s</mi><mi>e</mi><mi>n</mi><mi>d</mi></mrow></msub></mrow><annotation encoding="application/x-tex">T_{send}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">se</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">d</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是发送一帧所需时间，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>p</mi></mrow></msub></mrow><annotation encoding="application/x-tex">T_{prop}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight" style="margin-right:0.0278em;">r</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span> 是信号在网络最远两端之间的单程传播时延。以太网中的争用期也常称为 slot time，经典值为 512 bit times，对应最小帧 64 字节。</p>
+<h3 id="34-交换式以太网" tabindex="-1"><a class="header-anchor" href="#34-交换式以太网">3.4 交换式以太网</a></h3>
+<p>现代以太网通常是“主机 - 交换机 - 主机”的结构。每条链路只有两个端点，且通常全双工：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>主机 A  &#x3C;----全双工链路---->  交换机  &#x3C;----全双工链路---->  主机 B</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>交换机根据源 MAC 学习端口映射，根据目的 MAC 转发帧。基本规则如下：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>交换机动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>收到帧后看到源 MAC</td>
+<td>学习：记录源 MAC 位于哪个端口</td>
+</tr>
+<tr>
+<td>目的 MAC 已知</td>
+<td>只从对应端口转发</td>
+</tr>
+<tr>
+<td>目的 MAC 未知</td>
+<td>泛洪到除入端口外的其他端口</td>
+</tr>
+<tr>
+<td>目的 MAC 是广播地址</td>
+<td>泛洪到同一 VLAN 内所有其他端口</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-csmacd有线共享介质中的冲突检测" tabindex="-1"><a class="header-anchor" href="#4-csmacd有线共享介质中的冲突检测">4. CSMA/CD：有线共享介质中的冲突检测</a></h2>
+<h3 id="41-名称拆解" tabindex="-1"><a class="header-anchor" href="#41-名称拆解">4.1 名称拆解</a></h3>
+<p>CSMA/CD 是 Carrier Sense Multiple Access with Collision Detection，中文常译为“载波监听多路访问/冲突检测”。</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Carrier Sense</td>
+<td>发送前先监听信道是否空闲</td>
+</tr>
+<tr>
+<td>Multiple Access</td>
+<td>多个节点共享同一传输介质</td>
+</tr>
+<tr>
+<td>Collision Detection</td>
+<td>发送时继续监听，发现冲突就停止</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-工作流程" tabindex="-1"><a class="header-anchor" href="#42-工作流程">4.2 工作流程</a></h3>
+<p>半双工共享以太网中的 CSMA/CD 大致过程如下：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. 站点想发送帧。</span></span>
+<span class="line"><span>2. 监听信道。</span></span>
+<span class="line"><span>3. 如果信道忙，就等待；如果空闲，就开始发送。</span></span>
+<span class="line"><span>4. 发送过程中继续检测是否发生冲突。</span></span>
+<span class="line"><span>5. 如果没有冲突，发送成功。</span></span>
+<span class="line"><span>6. 如果检测到冲突，立即停止发送，并发送 jam 信号。</span></span>
+<span class="line"><span>7. 执行二进制指数退避，等待随机时间后重试。</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="43-二进制指数退避" tabindex="-1"><a class="header-anchor" href="#43-二进制指数退避">4.3 二进制指数退避</a></h3>
+<p>发生第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span></span></span></span> 次冲突后，节点从一个范围中随机选择退避时隙数。可直观理解为：冲突越多，等待范围越大，从而降低再次同时发送的概率。</p>
+<p>常见描述为：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>r</mi><mo>∈</mo><mo stretchy="false">{</mo><mn>0</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>2</mn><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msup><mn>2</mn><mi>m</mi></msup><mo>−</mo><mn>1</mn><mo stretchy="false">}</mo><mo separator="true">,</mo><mspace width="1em"/><mi>m</mi><mo>=</mo><mi>min</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>k</mi><mo separator="true">,</mo><mn>10</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">r \in \{0, 1, 2, \ldots, 2^m - 1\}, \quad m = \min(k, 10)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">r</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7144em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">}</span><span class="mpunct">,</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">min</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">10</span><span class="mclose">)</span></span></span></span></span>
+<p>退避时间可表示为：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>T</mi><mrow><mi>b</mi><mi>a</mi><mi>c</mi><mi>k</mi><mi>o</mi><mi>f</mi><mi>f</mi></mrow></msub><mo>=</mo><mi>r</mi><mo>×</mo><msub><mi>T</mi><mrow><mi>s</mi><mi>l</mi><mi>o</mi><mi>t</mi></mrow></msub></mrow><annotation encoding="application/x-tex">T_{backoff} = r \times T_{slot}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">ba</span><span class="mord mathnormal mtight">c</span><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.1076em;">f</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">r</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mrow><mi>s</mi><mi>l</mi><mi>o</mi><mi>t</mi></mrow></msub></mrow><annotation encoding="application/x-tex">T_{slot}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是一个时隙时间。经典以太网中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mrow><mi>s</mi><mi>l</mi><mi>o</mi><mi>t</mi></mrow></msub></mrow><annotation encoding="application/x-tex">T_{slot}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight" style="margin-right:0.0197em;">l</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 对应 512 bit times。</p>
+<h3 id="44-csmacd-适用场景" tabindex="-1"><a class="header-anchor" href="#44-csmacd-适用场景">4.4 CSMA/CD 适用场景</a></h3>
+<p>CSMA/CD 主要适用于早期半双工、共享介质的以太网，例如总线型以太网或使用集线器的网络。现代交换式全双工以太网中，每条链路只有两个端点，双方可以同时收发，不再需要通过 CSMA/CD 解决冲突。</p>
+<h3 id="45-为什么全双工以太网不需要-csmacd" tabindex="-1"><a class="header-anchor" href="#45-为什么全双工以太网不需要-csmacd">4.5 为什么全双工以太网不需要 CSMA/CD</a></h3>
+<p>全双工链路中，发送方向和接收方向逻辑上分离，双方可以同时发送。交换机端口不会像集线器那样把所有电信号简单复制到所有端口，因此不存在传统共享介质上的碰撞域。于是 CSMA/CD 被关闭，链路靠交换机缓冲和调度来处理并发流量。</p>
+<hr>
+<h2 id="5-无线局域网与-ieee-80211" tabindex="-1"><a class="header-anchor" href="#5-无线局域网与-ieee-80211">5. 无线局域网与 IEEE 802.11</a></h2>
+<h3 id="51-80211-与-wi-fi-的关系" tabindex="-1"><a class="header-anchor" href="#51-80211-与-wi-fi-的关系">5.1 802.11 与 Wi-Fi 的关系</a></h3>
+<p>IEEE 802.11 是无线局域网标准族，Wi-Fi 是产业联盟认证和商业名称。日常说的 Wi-Fi 通常基于 802.11 系列标准。</p>
+<p>常见演进可以这样记：</p>
+<table>
+<thead>
+<tr>
+<th>俗称</th>
+<th>主要 IEEE 标准</th>
+<th>常见频段</th>
+<th>简要特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wi-Fi 4</td>
+<td>802.11n</td>
+<td>2.4 GHz / 5 GHz</td>
+<td>MIMO，吞吐明显提升</td>
+</tr>
+<tr>
+<td>Wi-Fi 5</td>
+<td>802.11ac</td>
+<td>5 GHz</td>
+<td>更宽信道、更高阶调制、MU-MIMO</td>
+</tr>
+<tr>
+<td>Wi-Fi 6</td>
+<td>802.11ax</td>
+<td>2.4 GHz / 5 GHz</td>
+<td>OFDMA、BSS Coloring、效率提升</td>
+</tr>
+<tr>
+<td>Wi-Fi 6E</td>
+<td>802.11ax 扩展到 6 GHz</td>
+<td>6 GHz</td>
+<td>频谱更多、干扰更少</td>
+</tr>
+<tr>
+<td>Wi-Fi 7</td>
+<td>802.11be</td>
+<td>2.4 GHz / 5 GHz / 6 GHz</td>
+<td>更宽信道、MLO 等能力</td>
+</tr>
+</tbody>
+</table>
+<p>这里重点不是背速率，而是理解：无线介质开放、半双工、干扰多、节点未必能互相听见，因此 802.11 的 MAC 设计与 802.3 有很大不同。</p>
+<h3 id="52-基础设施模式与自组织模式" tabindex="-1"><a class="header-anchor" href="#52-基础设施模式与自组织模式">5.2 基础设施模式与自组织模式</a></h3>
+<p>常见 Wi-Fi 网络使用基础设施模式：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>手机 / 笔记本  &#x3C;----无线---->  AP  &#x3C;----有线---->  交换机 / 路由器 / Internet</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>AP，即 Access Point，接入点。一个 AP 及其关联站点构成一个 BSS，Basic Service Set。多个 AP 通过同一个分布式系统连接，可以构成 ESS，Extended Service Set，对用户表现为同一个网络名称，即 SSID。</p>
+<p>自组织模式也叫 ad hoc 模式，设备之间不依赖 AP 直接通信，但日常网络中远不如基础设施模式常见。</p>
+<h3 id="53-80211-的帧类型" tabindex="-1"><a class="header-anchor" href="#53-80211-的帧类型">5.3 802.11 的帧类型</a></h3>
+<p>802.11 帧比以太网帧复杂，因为无线网络需要接入、漫游、省电、确认、介质预留等功能。帧大类包括：</p>
+<table>
+<thead>
+<tr>
+<th>帧类型</th>
+<th>作用</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>管理帧 Management</td>
+<td>建立和维护无线连接</td>
+<td>Beacon、Probe、Authentication、Association</td>
+</tr>
+<tr>
+<td>控制帧 Control</td>
+<td>协调介质访问和确认</td>
+<td>ACK、RTS、CTS</td>
+</tr>
+<tr>
+<td>数据帧 Data</td>
+<td>承载上层数据</td>
+<td>普通数据帧、QoS 数据帧</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-连接-ap-的基本过程" tabindex="-1"><a class="header-anchor" href="#54-连接-ap-的基本过程">5.4 连接 AP 的基本过程</a></h3>
+<p>一个终端连接 Wi-Fi 通常经历：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>扫描 -> 认证 -> 关联 -> 安全密钥协商 -> 获取 IP 地址</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>更具体地说：</p>
+<ol>
+<li>扫描：终端被动接收 Beacon，或主动发送 Probe Request。</li>
+<li>认证：802.11 层面的认证，不等同于输入 Wi-Fi 密码后的完整安全过程。</li>
+<li>关联：终端与某个 AP 建立关联关系。</li>
+<li>安全：例如 WPA2/WPA3 中的密钥协商。</li>
+<li>三层配置：通常通过 DHCP 获取 IP、网关、DNS。</li>
+</ol>
+<h3 id="55-80211-为什么需要确认-ack" tabindex="-1"><a class="header-anchor" href="#55-80211-为什么需要确认-ack">5.5 802.11 为什么需要确认 ACK</a></h3>
+<p>无线链路误码率更高，而且发送方无法像有线 CSMA/CD 那样可靠检测冲突。因此 802.11 对单播帧通常使用链路层 ACK：发送方发出数据帧后，接收方若成功收到，会在很短间隔后返回 ACK。发送方没有收到 ACK，就认为可能丢失，需要重传。</p>
+<hr>
+<h2 id="6-csmaca无线介质中的冲突避免" tabindex="-1"><a class="header-anchor" href="#6-csmaca无线介质中的冲突避免">6. CSMA/CA：无线介质中的冲突避免</a></h2>
+<h3 id="61-名称拆解" tabindex="-1"><a class="header-anchor" href="#61-名称拆解">6.1 名称拆解</a></h3>
+<p>CSMA/CA 是 Carrier Sense Multiple Access with Collision Avoidance，中文常译为“载波监听多路访问/冲突避免”。</p>
+<p>它的关键词是“避免”，而不是“检测”。无线网络中，发送方通常难以边发送边准确监听信道中的其他信号，因此不能像 CSMA/CD 那样可靠检测冲突，只能尽量减少冲突发生的概率。</p>
+<h3 id="62-为什么无线不能直接用-csmacd" tabindex="-1"><a class="header-anchor" href="#62-为什么无线不能直接用-csmacd">6.2 为什么无线不能直接用 CSMA/CD</a></h3>
+<p>无线局域网不适合 CSMA/CD，主要原因包括：</p>
+<ol>
+<li>无线设备发送时自身信号很强，接收其他弱信号很困难，很难边发边听。</li>
+<li>隐藏节点问题：两个站点可能都能听到 AP，却互相听不到。</li>
+<li>无线环境干扰多、衰落强，冲突和噪声导致的错误不容易区分。</li>
+<li>无线介质天然广播，范围边界不清晰，不像双绞线链路那样确定。</li>
+</ol>
+<h3 id="63-csmaca-的基本流程" tabindex="-1"><a class="header-anchor" href="#63-csmaca-的基本流程">6.3 CSMA/CA 的基本流程</a></h3>
+<p>802.11 中的基本竞争访问机制常称为 DCF，Distributed Coordination Function。简化流程如下：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. 站点有数据要发。</span></span>
+<span class="line"><span>2. 先监听信道。</span></span>
+<span class="line"><span>3. 如果信道空闲持续 DIFS 时间，进入随机退避。</span></span>
+<span class="line"><span>4. 从竞争窗口中随机选择一个退避计数。</span></span>
+<span class="line"><span>5. 信道空闲时倒计时；信道忙时冻结计数。</span></span>
+<span class="line"><span>6. 计数到 0 后发送数据帧。</span></span>
+<span class="line"><span>7. 接收方成功收到后，等待 SIFS 时间并返回 ACK。</span></span>
+<span class="line"><span>8. 发送方收到 ACK，认为发送成功；否则扩大竞争窗口并重传。</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="64-ifs不同等待间隔的优先级" tabindex="-1"><a class="header-anchor" href="#64-ifs不同等待间隔的优先级">6.4 IFS：不同等待间隔的优先级</a></h3>
+<p>802.11 使用不同的帧间间隔来表达优先级。常见关系是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>SIFS &#x3C; DIFS</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>SIFS 更短，通常用于 ACK、CTS 等需要立即响应的控制帧；DIFS 更长，普通数据竞争发送前需要等待 DIFS。因此 ACK 能优先于新的竞争发送，减少确认帧被打断的概率。</p>
+<h3 id="65-rtscts-与隐藏节点" tabindex="-1"><a class="header-anchor" href="#65-rtscts-与隐藏节点">6.5 RTS/CTS 与隐藏节点</a></h3>
+<p>隐藏节点问题示意：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A  ----能到达---->  AP  &#x3C;----能到达----  C</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>A 与 C 距离较远，可能互相听不到。</span></span>
+<span class="line"><span>A 觉得信道空闲，C 也觉得信道空闲，二者同时发给 AP，AP 处发生冲突。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>RTS/CTS 机制用于缓解隐藏节点：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. A 先向 AP 发送 RTS，请求发送。</span></span>
+<span class="line"><span>2. AP 返回 CTS，允许 A 发送。</span></span>
+<span class="line"><span>3. 听到 CTS 的其他站点设置 NAV，在一段时间内保持静默。</span></span>
+<span class="line"><span>4. A 发送数据，AP 返回 ACK。</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>RTS/CTS 会增加额外开销，因此通常只在帧较大或隐藏节点明显时更有价值。</p>
+<h3 id="66-虚拟载波监听nav" tabindex="-1"><a class="header-anchor" href="#66-虚拟载波监听nav">6.6 虚拟载波监听：NAV</a></h3>
+<p>除了物理载波监听，802.11 还有虚拟载波监听。帧中可携带 Duration 字段，其他站点据此设置 NAV，Network Allocation Vector，表示“这段时间信道已经被预约”。只要 NAV 未到期，即使物理上听到信道似乎空闲，站点也会避免发送。</p>
+<hr>
+<h2 id="7-8023-与-80211-的对比" tabindex="-1"><a class="header-anchor" href="#7-8023-与-80211-的对比">7. 802.3 与 802.11 的对比</a></h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>IEEE 802.3 以太网</th>
+<th>IEEE 802.11 无线局域网</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>介质</td>
+<td>双绞线、光纤等有线介质</td>
+<td>无线电波</td>
+</tr>
+<tr>
+<td>常见拓扑</td>
+<td>交换机星型结构</td>
+<td>AP + 多个无线终端</td>
+</tr>
+<tr>
+<td>双工</td>
+<td>现代网络多为全双工</td>
+<td>常见为半双工共享无线信道</td>
+</tr>
+<tr>
+<td>介质访问</td>
+<td>早期半双工用 CSMA/CD；现代交换式基本不用</td>
+<td>主要使用 CSMA/CA 与 ACK</td>
+</tr>
+<tr>
+<td>冲突处理</td>
+<td>检测冲突后停止、jam、退避</td>
+<td>发送前退避，发送后靠 ACK 判断成功</td>
+</tr>
+<tr>
+<td>帧复杂度</td>
+<td>相对简单</td>
+<td>管理、控制、数据帧更复杂</td>
+</tr>
+<tr>
+<td>误码和干扰</td>
+<td>通常较低</td>
+<td>通常较高，受距离、遮挡、干扰影响</td>
+</tr>
+<tr>
+<td>移动性</td>
+<td>基本不考虑移动</td>
+<td>支持扫描、关联、漫游、省电</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>物理接入相对可控</td>
+<td>需要 WPA2/WPA3 等加密认证机制</td>
+</tr>
+</tbody>
+</table>
+<p>一句话总结：802.3 的典型问题是“有线共享介质如何检测冲突”，802.11 的典型问题是“无线共享介质如何尽量避免冲突并确认成功”。</p>
+<hr>
+<h2 id="8-交换机vlan广播域与冲突域" tabindex="-1"><a class="header-anchor" href="#8-交换机vlan广播域与冲突域">8. 交换机、VLAN、广播域与冲突域</a></h2>
+<h3 id="81-集线器与交换机" tabindex="-1"><a class="header-anchor" href="#81-集线器与交换机">8.1 集线器与交换机</a></h3>
+<p>集线器工作在物理层，本质上把一个端口收到的信号复制到其他端口。所有端口共享同一个冲突域，半双工场景下需要 CSMA/CD。</p>
+<p>交换机工作在数据链路层，根据 MAC 地址表转发帧。每个交换机端口通常是独立冲突域，现代全双工下冲突域问题基本消失。</p>
+<table>
+<thead>
+<tr>
+<th>设备</th>
+<th>层次</th>
+<th>转发依据</th>
+<th>冲突域</th>
+<th>广播域</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>集线器 Hub</td>
+<td>物理层</td>
+<td>不看地址，复制信号</td>
+<td>所有端口一个冲突域</td>
+<td>通常一个广播域</td>
+</tr>
+<tr>
+<td>交换机 Switch</td>
+<td>数据链路层</td>
+<td>MAC 地址表</td>
+<td>每端口一个冲突域</td>
+<td>默认一个 VLAN 一个广播域</td>
+</tr>
+<tr>
+<td>路由器 Router</td>
+<td>网络层</td>
+<td>IP 路由表</td>
+<td>分隔冲突域</td>
+<td>分隔广播域</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-广播域" tabindex="-1"><a class="header-anchor" href="#82-广播域">8.2 广播域</a></h3>
+<p>广播域是二层广播帧能到达的范围。例如 ARP 请求通常是广播帧，在同一 VLAN 中传播，但不会被路由器默认转发到其他网段。广播域过大，会带来广播流量增多、故障影响范围扩大等问题。</p>
+<h3 id="83-vlan" tabindex="-1"><a class="header-anchor" href="#83-vlan">8.3 VLAN</a></h3>
+<p>VLAN，即 Virtual LAN，用于在同一物理交换网络上划分多个逻辑二层网络。不同 VLAN 默认互相隔离，需要通过三层设备或三层交换机进行 VLAN 间路由。</p>
+<p>802.1Q VLAN 标签会插入 Ethernet 帧头中，携带 VLAN ID。一个 VLAN ID 通常为 12 位，因此理论上可表示 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>12</mn></msup><mo>=</mo><mn>4096</mn></mrow><annotation encoding="application/x-tex">2^{12}=4096</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">12</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4096</span></span></span></span> 个值，其中部分值保留，实际可用数量略少。</p>
+<h3 id="84-access-端口与-trunk-端口" tabindex="-1"><a class="header-anchor" href="#84-access-端口与-trunk-端口">8.4 Access 端口与 Trunk 端口</a></h3>
+<table>
+<thead>
+<tr>
+<th>端口类型</th>
+<th>常见连接对象</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Access</td>
+<td>终端设备，如 PC、打印机</td>
+<td>通常属于一个 VLAN，进出终端的帧不带 VLAN 标签</td>
+</tr>
+<tr>
+<td>Trunk</td>
+<td>交换机之间、交换机到路由器</td>
+<td>可承载多个 VLAN，帧通常带 802.1Q 标签</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-常见协议配合arpdhcpip-与-mac" tabindex="-1"><a class="header-anchor" href="#9-常见协议配合arpdhcpip-与-mac">9. 常见协议配合：ARP、DHCP、IP 与 MAC</a></h2>
+<h3 id="91-同网段通信" tabindex="-1"><a class="header-anchor" href="#91-同网段通信">9.1 同网段通信</a></h3>
+<p>主机 A 要给同一网段的主机 B 发 IP 包，但只知道 B 的 IP 地址，不知道 B 的 MAC 地址。过程通常是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>1. A 查 ARP 缓存。</span></span>
+<span class="line"><span>2. 如果没有 B 的 MAC，A 广播 ARP Request：谁是这个 IP？</span></span>
+<span class="line"><span>3. B 单播 ARP Reply：这个 IP 对应我的 MAC。</span></span>
+<span class="line"><span>4. A 封装 Ethernet 帧：目的 MAC = B 的 MAC。</span></span>
+<span class="line"><span>5. 交换机根据 MAC 地址表转发。</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="92-跨网段通信" tabindex="-1"><a class="header-anchor" href="#92-跨网段通信">9.2 跨网段通信</a></h3>
+<p>如果 B 不在同一网段，A 不会 ARP 查询 B 的 MAC，而是查询默认网关的 MAC：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>A 的 IP 包目的 IP = 远端主机 B</span></span>
+<span class="line"><span>A 的二层帧目的 MAC = 默认网关的 MAC</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>路由器收到后，剥掉二层帧，查看 IP 目的地址，再决定下一跳，并重新封装新的二层帧。</p>
+<h3 id="93-dhcp-获取地址" tabindex="-1"><a class="header-anchor" href="#93-dhcp-获取地址">9.3 DHCP 获取地址</a></h3>
+<p>DHCP 用于自动配置 IP 地址、子网掩码、默认网关、DNS 等。经典过程可简记为 DORA：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Discover -> Offer -> Request -> Acknowledge</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>刚接入局域网的主机还没有可用 IP，因此 DHCP 初始阶段会使用广播通信。</p>
+<hr>
+<h2 id="10-典型考点与易错点" tabindex="-1"><a class="header-anchor" href="#10-典型考点与易错点">10. 典型考点与易错点</a></h2>
+<h3 id="101-csmacd-与-csmaca-的区别" tabindex="-1"><a class="header-anchor" href="#101-csmacd-与-csmaca-的区别">10.1 CSMA/CD 与 CSMA/CA 的区别</a></h3>
+<table>
+<thead>
+<tr>
+<th>对比点</th>
+<th>CSMA/CD</th>
+<th>CSMA/CA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>关键词</td>
+<td>检测冲突</td>
+<td>避免冲突</td>
+</tr>
+<tr>
+<td>典型标准</td>
+<td>早期半双工 802.3</td>
+<td>802.11</td>
+</tr>
+<tr>
+<td>发送时是否检测冲突</td>
+<td>是</td>
+<td>通常不能可靠检测</td>
+</tr>
+<tr>
+<td>失败判断</td>
+<td>检测到冲突</td>
+<td>未收到 ACK 或重传超时</td>
+</tr>
+<tr>
+<td>典型后续动作</td>
+<td>jam 信号 + 指数退避</td>
+<td>扩大竞争窗口 + 重传</td>
+</tr>
+</tbody>
+</table>
+<p>口诀：有线早期可“边发边听”，无线通常做不到，所以有线用 CD，无线用 CA。</p>
+<h3 id="102-交换机隔离广播域是错的" tabindex="-1"><a class="header-anchor" href="#102-交换机隔离广播域是错的">10.2 “交换机隔离广播域”是错的</a></h3>
+<p>普通二层交换机默认不会隔离广播域，同一 VLAN 内的广播仍会被泛洪。交换机隔离的是冲突域；VLAN 或路由器才会隔离广播域。</p>
+<p>更准确地说：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>交换机每个端口通常是一个冲突域。</span></span>
+<span class="line"><span>交换机每个 VLAN 通常是一个广播域。</span></span>
+<span class="line"><span>路由器天然隔离广播域。</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="103-目的-mac-总是最终主机-mac是错的" tabindex="-1"><a class="header-anchor" href="#103-目的-mac-总是最终主机-mac是错的">10.3 “目的 MAC 总是最终主机 MAC”是错的</a></h3>
+<p>跨网段通信时，二层帧只负责到达下一跳，目的 MAC 是下一跳设备的 MAC，通常是默认网关 MAC；IP 包的目的 IP 才是最终目标主机。</p>
+<h3 id="104-wi-fi-有冲突检测是错的" tabindex="-1"><a class="header-anchor" href="#104-wi-fi-有冲突检测是错的">10.4 “Wi-Fi 有冲突检测”是错的</a></h3>
+<p>Wi-Fi 主要通过 CSMA/CA、随机退避、RTS/CTS、NAV、ACK 和重传机制来减少并处理冲突，而不是像早期以太网那样在发送过程中可靠检测冲突。</p>
+<h3 id="105-无线速率等于实际吞吐是错的" tabindex="-1"><a class="header-anchor" href="#105-无线速率等于实际吞吐是错的">10.5 “无线速率等于实际吞吐”是错的</a></h3>
+<p>无线标称速率是物理层或链路层能力的理想表示，实际吞吐会受到信号强度、干扰、终端数量、协议开销、重传、信道宽度、空间流数量等影响。</p>
+<hr>
+<h2 id="11-速记表" tabindex="-1"><a class="header-anchor" href="#11-速记表">11. 速记表</a></h2>
+<h3 id="111-标准速记" tabindex="-1"><a class="header-anchor" href="#111-标准速记">11.1 标准速记</a></h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>记忆点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>802.3</td>
+<td>有线以太网</td>
+</tr>
+<tr>
+<td>802.11</td>
+<td>无线局域网，Wi-Fi 基础</td>
+</tr>
+<tr>
+<td>802.1Q</td>
+<td>VLAN 标签</td>
+</tr>
+<tr>
+<td>MAC</td>
+<td>数据链路层地址，常见 48 位</td>
+</tr>
+<tr>
+<td>FCS</td>
+<td>帧校验序列，用于差错检测</td>
+</tr>
+<tr>
+<td>ARP</td>
+<td>IP 地址到 MAC 地址的解析</td>
+</tr>
+<tr>
+<td>DHCP</td>
+<td>自动分配 IP 配置</td>
+</tr>
+</tbody>
+</table>
+<h3 id="112-介质访问控制速记" tabindex="-1"><a class="header-anchor" href="#112-介质访问控制速记">11.2 介质访问控制速记</a></h3>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>场景</th>
+<th>核心动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CSMA/CD</td>
+<td>早期半双工共享以太网</td>
+<td>先听再发，边发边检测，冲突后退避</td>
+</tr>
+<tr>
+<td>CSMA/CA</td>
+<td>无线局域网</td>
+<td>先听再等随机退避，靠 ACK 判断成功</td>
+</tr>
+<tr>
+<td>交换式全双工</td>
+<td>现代有线以太网</td>
+<td>交换机按端口转发，基本无传统冲突</td>
+</tr>
+</tbody>
+</table>
+<h3 id="113-一句话总复习" tabindex="-1"><a class="header-anchor" href="#113-一句话总复习">11.3 一句话总复习</a></h3>
+<p>局域网的核心是二层通信。以太网 802.3 用 MAC 帧在有线链路上传输数据，早期共享介质依赖 CSMA/CD，现代交换式全双工基本不再使用冲突检测；无线局域网 802.11 由于无法可靠边发边听、存在隐藏节点和干扰，采用 CSMA/CA、随机退避、ACK、RTS/CTS、NAV 等机制来降低冲突并提高可靠性。交换机根据 MAC 地址转发帧，VLAN 划分广播域，路由器负责跨网段转发。</p>
+<hr>
+<h2 id="12-复习时可以这样串起来" tabindex="-1"><a class="header-anchor" href="#12-复习时可以这样串起来">12. 复习时可以这样串起来</a></h2>
+<ol>
+<li>先画出局域网拓扑：主机、交换机、AP、路由器。</li>
+<li>再判断每段链路是有线 802.3 还是无线 802.11。</li>
+<li>判断是否存在共享介质竞争：早期有线共享介质看 CSMA/CD，Wi-Fi 看 CSMA/CA。</li>
+<li>判断二层范围：同一 VLAN 内 MAC 转发，跨 VLAN 需要三层转发。</li>
+<li>最后把 ARP、DHCP、默认网关放进通信流程中。</li>
+</ol>
+
+  </main>
+  <script>
+    function enhanceCallouts() {
+      document.querySelectorAll('blockquote').forEach((blockquote) => {
+        const first = blockquote.querySelector('p, li, div');
+        if (!first) return;
+
+        const rawText = first.textContent.trim();
+        const firstLine = rawText.split(/\n/)[0].trim();
+        const match = firstLine.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO|QUESTION|EXAMPLE|QUOTE|BUG|SUCCESS|FAILURE|DANGER)\]\s*(.*)$/i);
+        if (!match) return;
+
+        const type = match[1].toLowerCase();
+        const title = match[2] || match[1].toUpperCase();
+        blockquote.classList.add('callout', 'callout-' + type);
+
+        const htmlLines = first.innerHTML.split(/(?:\r?\n|<br\s*\/?>)/i);
+        first.innerHTML = htmlLines.slice(1).join('<br>').trim();
+
+        const titleNode = document.createElement('div');
+        titleNode.className = 'callout-title';
+        titleNode.textContent = title;
+        blockquote.prepend(titleNode);
+      });
+    }
+
+    enhanceCallouts();
+  </script>
+</body>
+</html>
