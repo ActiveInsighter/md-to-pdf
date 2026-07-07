@@ -9,3 +9,57 @@
 
   Keep this file small. Put reusable styles in themes/<name>.css instead.
 */
+
+/*
+  KaTeX math protection layer.
+
+  Theme CSS should not change KaTeX's internal line breaking, wrapping, spacing,
+  or font metrics. KaTeX formulas are built from many positioned spans; global
+  Markdown rules such as overflow-wrap, word-break, line-break, letter-spacing,
+  or inherited text formatting can make fractions, sums, limits, and accents look
+  vertically misaligned in exported PDFs and mobile PDF viewers.
+*/
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  line-break: auto !important;
+  hyphens: none !important;
+  letter-spacing: normal !important;
+  text-indent: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  font-size: 1em !important;
+  max-width: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex .katex-html {
+  white-space: nowrap !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  display: block !important;
+  max-width: 100% !important;
+  margin: var(--math-display-gap, 0.68em) 0 !important;
+  padding: 0.08em 0 0.12em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  text-align: center !important;
+  line-height: 1.28 !important;
+  white-space: normal !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
