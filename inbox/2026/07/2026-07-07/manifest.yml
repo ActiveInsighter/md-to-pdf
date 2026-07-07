@@ -1,0 +1,19 @@
+version: 1
+title: 复杂 Markdown 数学与代码块测试页
+date: 2026-07-07
+jobs:
+  - id: complex-math-code-showcase
+    type: merge
+    title: 复杂 Markdown 数学与代码块测试页
+    inputs: all
+    output: complex-math-code-showcase.pdf
+    page_break: true
+content_checks:
+  - path: md/complex-math-code-showcase.md
+    min_chars: 9000
+    must_contain:
+      - 复杂 Markdown 数学与代码块测试页
+      - 第 10 页：综合长公式、接口代码与结论
+      - KaTeX
+consume:
+  delete_after_success: true
