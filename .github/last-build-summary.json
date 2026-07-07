@@ -2,12 +2,12 @@
   "status": "success",
   "manifests": [
     {
-      "manifest": "inbox/2026/07/2026-07-09/manifest.yml",
-      "root": "inbox/2026/07/2026-07-09",
-      "date": "2026-07-09"
+      "manifest": "inbox/2026/07/2026-07-10/manifest.yml",
+      "root": "inbox/2026/07/2026-07-10",
+      "date": "2026-07-10"
     }
   ],
   "consumed": [
-    "inbox/2026/07/2026-07-09"
+    "inbox/2026/07/2026-07-10"
   ]
 }
