@@ -1,0 +1,13 @@
+version: 1
+date: 2026-07-11
+title: PDF Render Test Fixture
+theme: chatgpt-light
+
+jobs:
+  - id: pdf-render-test-fixture
+    type: merge
+    title: PDF Render Test Fixture
+    inputs:
+      - md/pdf-render-test-fixture.md
+    page_break: true
+    output: pdf-render-test-fixture.pdf
