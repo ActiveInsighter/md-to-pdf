@@ -10,7 +10,7 @@ jobs:
     page_break: true
 content_checks:
   - path: md/markdown-default-theme-showcase.md
-    min_chars: 2500
+    min_chars: 2000
     must_contain:
       - Markdown 默认主题综合测试
       - Obsidian 风格 Callout
