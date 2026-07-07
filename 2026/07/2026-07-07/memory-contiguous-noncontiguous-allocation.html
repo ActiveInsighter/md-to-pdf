@@ -1,0 +1,1857 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="file:///home/runner/work/md-to-pdf/md-to-pdf/.tmp/combined/2026/07/2026-07-07/">
+  <title>内存管理：连续分配、非连续分配与动态分区分配算法</title>
+  <meta name="pdf-theme" content="chatgpt-light">
+  <style>@font-face{font-display:block;font-family:KaTeX_AMS;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Script;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size1;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size2;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size3;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size4;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Typewriter;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.ttf) format("truetype")}.katex{font:normal 1.21em KaTeX_Main,Times New Roman,serif;line-height:1.2;position:relative;text-indent:0;text-rendering:auto}.katex *{-ms-high-contrast-adjust:none!important;border-color:currentColor}.katex .katex-version:after{content:"0.16.47"}.katex .katex-mathml{border:0;-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;overflow:hidden;padding:0;position:absolute;width:1px}.katex .katex-html>.newline{display:block}.katex .base{position:relative;white-space:nowrap;width:-webkit-min-content;width:-moz-min-content;width:min-content}.katex .base,.katex .strut{display:inline-block}.katex .textbf{font-weight:700}.katex .textit{font-style:italic}.katex .textrm{font-family:KaTeX_Main}.katex .textsf{font-family:KaTeX_SansSerif}.katex .texttt{font-family:KaTeX_Typewriter}.katex .mathnormal{font-family:KaTeX_Math;font-style:italic}.katex .mathit{font-family:KaTeX_Main;font-style:italic}.katex .mathrm{font-style:normal}.katex .mathbf{font-family:KaTeX_Main;font-weight:700}.katex .boldsymbol{font-family:KaTeX_Math;font-style:italic;font-weight:700}.katex .amsrm,.katex .mathbb,.katex .textbb{font-family:KaTeX_AMS}.katex .mathcal{font-family:KaTeX_Caligraphic}.katex .mathfrak,.katex .textfrak{font-family:KaTeX_Fraktur}.katex .mathboldfrak,.katex .textboldfrak{font-family:KaTeX_Fraktur;font-weight:700}.katex .mathtt{font-family:KaTeX_Typewriter}.katex .mathscr,.katex .textscr{font-family:KaTeX_Script}.katex .mathsf,.katex .textsf{font-family:KaTeX_SansSerif}.katex .mathboldsf,.katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}.katex .mathitsf,.katex .mathsfit,.katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}.katex .mainrm{font-family:KaTeX_Main;font-style:normal}.katex .vlist-t{border-collapse:collapse;display:inline-table;table-layout:fixed}.katex .vlist-r{display:table-row}.katex .vlist{display:table-cell;position:relative;vertical-align:bottom}.katex .vlist>span{display:block;height:0;position:relative}.katex .vlist>span>span{display:inline-block}.katex .vlist>span>.pstrut{overflow:hidden;width:0}.katex .vlist-t2{margin-right:-2px}.katex .vlist-s{display:table-cell;font-size:1px;min-width:2px;vertical-align:bottom;width:2px}.katex .vbox{align-items:baseline;display:inline-flex;flex-direction:column}.katex .hbox{width:100%}.katex .hbox,.katex .thinbox{display:inline-flex;flex-direction:row}.katex .thinbox{max-width:0;width:0}.katex .msupsub{text-align:left}.katex .mfrac>span>span{text-align:center}.katex .mfrac .frac-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline,.katex .hline,.katex .mfrac .frac-line,.katex .overline .overline-line,.katex .rule,.katex .underline .underline-line{min-height:1px}.katex .mspace{display:inline-block}.katex .smash{display:inline;line-height:0}.katex .clap,.katex .llap,.katex .rlap{position:relative;width:0}.katex .clap>.inner,.katex .llap>.inner,.katex .rlap>.inner{position:absolute}.katex .clap>.fix,.katex .llap>.fix,.katex .rlap>.fix{display:inline-block}.katex .llap>.inner{right:0}.katex .clap>.inner,.katex .rlap>.inner{left:0}.katex .clap>.inner>span{margin-left:-50%;margin-right:50%}.katex .rule{border:0 solid;display:inline-block;position:relative}.katex .hline,.katex .overline .overline-line,.katex .underline .underline-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline{border-bottom-style:dashed;display:inline-block;width:100%}.katex .sqrt>.root{margin-left:.2777777778em;margin-right:-.5555555556em}.katex .fontsize-ensurer.reset-size1.size1,.katex .sizing.reset-size1.size1{font-size:1em}.katex .fontsize-ensurer.reset-size1.size2,.katex .sizing.reset-size1.size2{font-size:1.2em}.katex .fontsize-ensurer.reset-size1.size3,.katex .sizing.reset-size1.size3{font-size:1.4em}.katex .fontsize-ensurer.reset-size1.size4,.katex .sizing.reset-size1.size4{font-size:1.6em}.katex .fontsize-ensurer.reset-size1.size5,.katex .sizing.reset-size1.size5{font-size:1.8em}.katex .fontsize-ensurer.reset-size1.size6,.katex .sizing.reset-size1.size6{font-size:2em}.katex .fontsize-ensurer.reset-size1.size7,.katex .sizing.reset-size1.size7{font-size:2.4em}.katex .fontsize-ensurer.reset-size1.size8,.katex .sizing.reset-size1.size8{font-size:2.88em}.katex .fontsize-ensurer.reset-size1.size9,.katex .sizing.reset-size1.size9{font-size:3.456em}.katex .fontsize-ensurer.reset-size1.size10,.katex .sizing.reset-size1.size10{font-size:4.148em}.katex .fontsize-ensurer.reset-size1.size11,.katex .sizing.reset-size1.size11{font-size:4.976em}.katex .fontsize-ensurer.reset-size2.size1,.katex .sizing.reset-size2.size1{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size2.size2,.katex .sizing.reset-size2.size2{font-size:1em}.katex .fontsize-ensurer.reset-size2.size3,.katex .sizing.reset-size2.size3{font-size:1.1666666667em}.katex .fontsize-ensurer.reset-size2.size4,.katex .sizing.reset-size2.size4{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size2.size5,.katex .sizing.reset-size2.size5{font-size:1.5em}.katex .fontsize-ensurer.reset-size2.size6,.katex .sizing.reset-size2.size6{font-size:1.6666666667em}.katex .fontsize-ensurer.reset-size2.size7,.katex .sizing.reset-size2.size7{font-size:2em}.katex .fontsize-ensurer.reset-size2.size8,.katex .sizing.reset-size2.size8{font-size:2.4em}.katex .fontsize-ensurer.reset-size2.size9,.katex .sizing.reset-size2.size9{font-size:2.88em}.katex .fontsize-ensurer.reset-size2.size10,.katex .sizing.reset-size2.size10{font-size:3.4566666667em}.katex .fontsize-ensurer.reset-size2.size11,.katex .sizing.reset-size2.size11{font-size:4.1466666667em}.katex .fontsize-ensurer.reset-size3.size1,.katex .sizing.reset-size3.size1{font-size:.7142857143em}.katex .fontsize-ensurer.reset-size3.size2,.katex .sizing.reset-size3.size2{font-size:.8571428571em}.katex .fontsize-ensurer.reset-size3.size3,.katex .sizing.reset-size3.size3{font-size:1em}.katex .fontsize-ensurer.reset-size3.size4,.katex .sizing.reset-size3.size4{font-size:1.1428571429em}.katex .fontsize-ensurer.reset-size3.size5,.katex .sizing.reset-size3.size5{font-size:1.2857142857em}.katex .fontsize-ensurer.reset-size3.size6,.katex .sizing.reset-size3.size6{font-size:1.4285714286em}.katex .fontsize-ensurer.reset-size3.size7,.katex .sizing.reset-size3.size7{font-size:1.7142857143em}.katex .fontsize-ensurer.reset-size3.size8,.katex .sizing.reset-size3.size8{font-size:2.0571428571em}.katex .fontsize-ensurer.reset-size3.size9,.katex .sizing.reset-size3.size9{font-size:2.4685714286em}.katex .fontsize-ensurer.reset-size3.size10,.katex .sizing.reset-size3.size10{font-size:2.9628571429em}.katex .fontsize-ensurer.reset-size3.size11,.katex .sizing.reset-size3.size11{font-size:3.5542857143em}.katex .fontsize-ensurer.reset-size4.size1,.katex .sizing.reset-size4.size1{font-size:.625em}.katex .fontsize-ensurer.reset-size4.size2,.katex .sizing.reset-size4.size2{font-size:.75em}.katex .fontsize-ensurer.reset-size4.size3,.katex .sizing.reset-size4.size3{font-size:.875em}.katex .fontsize-ensurer.reset-size4.size4,.katex .sizing.reset-size4.size4{font-size:1em}.katex .fontsize-ensurer.reset-size4.size5,.katex .sizing.reset-size4.size5{font-size:1.125em}.katex .fontsize-ensurer.reset-size4.size6,.katex .sizing.reset-size4.size6{font-size:1.25em}.katex .fontsize-ensurer.reset-size4.size7,.katex .sizing.reset-size4.size7{font-size:1.5em}.katex .fontsize-ensurer.reset-size4.size8,.katex .sizing.reset-size4.size8{font-size:1.8em}.katex .fontsize-ensurer.reset-size4.size9,.katex .sizing.reset-size4.size9{font-size:2.16em}.katex .fontsize-ensurer.reset-size4.size10,.katex .sizing.reset-size4.size10{font-size:2.5925em}.katex .fontsize-ensurer.reset-size4.size11,.katex .sizing.reset-size4.size11{font-size:3.11em}.katex .fontsize-ensurer.reset-size5.size1,.katex .sizing.reset-size5.size1{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size5.size2,.katex .sizing.reset-size5.size2{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size5.size3,.katex .sizing.reset-size5.size3{font-size:.7777777778em}.katex .fontsize-ensurer.reset-size5.size4,.katex .sizing.reset-size5.size4{font-size:.8888888889em}.katex .fontsize-ensurer.reset-size5.size5,.katex .sizing.reset-size5.size5{font-size:1em}.katex .fontsize-ensurer.reset-size5.size6,.katex .sizing.reset-size5.size6{font-size:1.1111111111em}.katex .fontsize-ensurer.reset-size5.size7,.katex .sizing.reset-size5.size7{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size5.size8,.katex .sizing.reset-size5.size8{font-size:1.6em}.katex .fontsize-ensurer.reset-size5.size9,.katex .sizing.reset-size5.size9{font-size:1.92em}.katex .fontsize-ensurer.reset-size5.size10,.katex .sizing.reset-size5.size10{font-size:2.3044444444em}.katex .fontsize-ensurer.reset-size5.size11,.katex .sizing.reset-size5.size11{font-size:2.7644444444em}.katex .fontsize-ensurer.reset-size6.size1,.katex .sizing.reset-size6.size1{font-size:.5em}.katex .fontsize-ensurer.reset-size6.size2,.katex .sizing.reset-size6.size2{font-size:.6em}.katex .fontsize-ensurer.reset-size6.size3,.katex .sizing.reset-size6.size3{font-size:.7em}.katex .fontsize-ensurer.reset-size6.size4,.katex .sizing.reset-size6.size4{font-size:.8em}.katex .fontsize-ensurer.reset-size6.size5,.katex .sizing.reset-size6.size5{font-size:.9em}.katex .fontsize-ensurer.reset-size6.size6,.katex .sizing.reset-size6.size6{font-size:1em}.katex .fontsize-ensurer.reset-size6.size7,.katex .sizing.reset-size6.size7{font-size:1.2em}.katex .fontsize-ensurer.reset-size6.size8,.katex .sizing.reset-size6.size8{font-size:1.44em}.katex .fontsize-ensurer.reset-size6.size9,.katex .sizing.reset-size6.size9{font-size:1.728em}.katex .fontsize-ensurer.reset-size6.size10,.katex .sizing.reset-size6.size10{font-size:2.074em}.katex .fontsize-ensurer.reset-size6.size11,.katex .sizing.reset-size6.size11{font-size:2.488em}.katex .fontsize-ensurer.reset-size7.size1,.katex .sizing.reset-size7.size1{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size7.size2,.katex .sizing.reset-size7.size2{font-size:.5em}.katex .fontsize-ensurer.reset-size7.size3,.katex .sizing.reset-size7.size3{font-size:.5833333333em}.katex .fontsize-ensurer.reset-size7.size4,.katex .sizing.reset-size7.size4{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size7.size5,.katex .sizing.reset-size7.size5{font-size:.75em}.katex .fontsize-ensurer.reset-size7.size6,.katex .sizing.reset-size7.size6{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size7.size7,.katex .sizing.reset-size7.size7{font-size:1em}.katex .fontsize-ensurer.reset-size7.size8,.katex .sizing.reset-size7.size8{font-size:1.2em}.katex .fontsize-ensurer.reset-size7.size9,.katex .sizing.reset-size7.size9{font-size:1.44em}.katex .fontsize-ensurer.reset-size7.size10,.katex .sizing.reset-size7.size10{font-size:1.7283333333em}.katex .fontsize-ensurer.reset-size7.size11,.katex .sizing.reset-size7.size11{font-size:2.0733333333em}.katex .fontsize-ensurer.reset-size8.size1,.katex .sizing.reset-size8.size1{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size8.size2,.katex .sizing.reset-size8.size2{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size8.size3,.katex .sizing.reset-size8.size3{font-size:.4861111111em}.katex .fontsize-ensurer.reset-size8.size4,.katex .sizing.reset-size8.size4{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size8.size5,.katex .sizing.reset-size8.size5{font-size:.625em}.katex .fontsize-ensurer.reset-size8.size6,.katex .sizing.reset-size8.size6{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size8.size7,.katex .sizing.reset-size8.size7{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size8.size8,.katex .sizing.reset-size8.size8{font-size:1em}.katex .fontsize-ensurer.reset-size8.size9,.katex .sizing.reset-size8.size9{font-size:1.2em}.katex .fontsize-ensurer.reset-size8.size10,.katex .sizing.reset-size8.size10{font-size:1.4402777778em}.katex .fontsize-ensurer.reset-size8.size11,.katex .sizing.reset-size8.size11{font-size:1.7277777778em}.katex .fontsize-ensurer.reset-size9.size1,.katex .sizing.reset-size9.size1{font-size:.2893518519em}.katex .fontsize-ensurer.reset-size9.size2,.katex .sizing.reset-size9.size2{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size9.size3,.katex .sizing.reset-size9.size3{font-size:.4050925926em}.katex .fontsize-ensurer.reset-size9.size4,.katex .sizing.reset-size9.size4{font-size:.462962963em}.katex .fontsize-ensurer.reset-size9.size5,.katex .sizing.reset-size9.size5{font-size:.5208333333em}.katex .fontsize-ensurer.reset-size9.size6,.katex .sizing.reset-size9.size6{font-size:.5787037037em}.katex .fontsize-ensurer.reset-size9.size7,.katex .sizing.reset-size9.size7{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size9.size8,.katex .sizing.reset-size9.size8{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size9.size9,.katex .sizing.reset-size9.size9{font-size:1em}.katex .fontsize-ensurer.reset-size9.size10,.katex .sizing.reset-size9.size10{font-size:1.2002314815em}.katex .fontsize-ensurer.reset-size9.size11,.katex .sizing.reset-size9.size11{font-size:1.4398148148em}.katex .fontsize-ensurer.reset-size10.size1,.katex .sizing.reset-size10.size1{font-size:.2410800386em}.katex .fontsize-ensurer.reset-size10.size2,.katex .sizing.reset-size10.size2{font-size:.2892960463em}.katex .fontsize-ensurer.reset-size10.size3,.katex .sizing.reset-size10.size3{font-size:.337512054em}.katex .fontsize-ensurer.reset-size10.size4,.katex .sizing.reset-size10.size4{font-size:.3857280617em}.katex .fontsize-ensurer.reset-size10.size5,.katex .sizing.reset-size10.size5{font-size:.4339440694em}.katex .fontsize-ensurer.reset-size10.size6,.katex .sizing.reset-size10.size6{font-size:.4821600771em}.katex .fontsize-ensurer.reset-size10.size7,.katex .sizing.reset-size10.size7{font-size:.5785920926em}.katex .fontsize-ensurer.reset-size10.size8,.katex .sizing.reset-size10.size8{font-size:.6943105111em}.katex .fontsize-ensurer.reset-size10.size9,.katex .sizing.reset-size10.size9{font-size:.8331726133em}.katex .fontsize-ensurer.reset-size10.size10,.katex .sizing.reset-size10.size10{font-size:1em}.katex .fontsize-ensurer.reset-size10.size11,.katex .sizing.reset-size10.size11{font-size:1.1996142719em}.katex .fontsize-ensurer.reset-size11.size1,.katex .sizing.reset-size11.size1{font-size:.2009646302em}.katex .fontsize-ensurer.reset-size11.size2,.katex .sizing.reset-size11.size2{font-size:.2411575563em}.katex .fontsize-ensurer.reset-size11.size3,.katex .sizing.reset-size11.size3{font-size:.2813504823em}.katex .fontsize-ensurer.reset-size11.size4,.katex .sizing.reset-size11.size4{font-size:.3215434084em}.katex .fontsize-ensurer.reset-size11.size5,.katex .sizing.reset-size11.size5{font-size:.3617363344em}.katex .fontsize-ensurer.reset-size11.size6,.katex .sizing.reset-size11.size6{font-size:.4019292605em}.katex .fontsize-ensurer.reset-size11.size7,.katex .sizing.reset-size11.size7{font-size:.4823151125em}.katex .fontsize-ensurer.reset-size11.size8,.katex .sizing.reset-size11.size8{font-size:.578778135em}.katex .fontsize-ensurer.reset-size11.size9,.katex .sizing.reset-size11.size9{font-size:.6945337621em}.katex .fontsize-ensurer.reset-size11.size10,.katex .sizing.reset-size11.size10{font-size:.8336012862em}.katex .fontsize-ensurer.reset-size11.size11,.katex .sizing.reset-size11.size11{font-size:1em}.katex .delimsizing.size1{font-family:KaTeX_Size1}.katex .delimsizing.size2{font-family:KaTeX_Size2}.katex .delimsizing.size3{font-family:KaTeX_Size3}.katex .delimsizing.size4{font-family:KaTeX_Size4}.katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}.katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}.katex .nulldelimiter{display:inline-block;width:.12em}.katex .delimcenter,.katex .op-symbol{position:relative}.katex .op-symbol.small-op{font-family:KaTeX_Size1}.katex .op-symbol.large-op{font-family:KaTeX_Size2}.katex .accent>.vlist-t,.katex .op-limits>.vlist-t{text-align:center}.katex .accent .accent-body{position:relative}.katex .accent .accent-body:not(.accent-full){width:0}.katex .overlay{display:block}.katex .mtable .vertical-separator{display:inline-block;min-width:1px}.katex .mtable .arraycolsep{display:inline-block}.katex .mtable .col-align-c>.vlist-t{text-align:center}.katex .mtable .col-align-l>.vlist-t{text-align:left}.katex .mtable .col-align-r>.vlist-t{text-align:right}.katex .svg-align{text-align:left}.katex svg{fill:currentColor;stroke:currentColor;display:block;height:inherit;position:absolute;width:100%}.katex svg path{stroke:none}.katex svg{fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1}.katex img{border-style:none;max-height:none;max-width:none;min-height:0;min-width:0}.katex .stretchy{display:block;overflow:hidden;position:relative;width:100%}.katex .stretchy:after,.katex .stretchy:before{content:""}.katex .hide-tail{overflow:hidden;position:relative;width:100%}.katex .halfarrow-left{left:0;overflow:hidden;position:absolute;width:50.2%}.katex .halfarrow-right{overflow:hidden;position:absolute;right:0;width:50.2%}.katex .brace-left{left:0;overflow:hidden;position:absolute;width:25.1%}.katex .brace-center{left:25%;overflow:hidden;position:absolute;width:50%}.katex .brace-right{overflow:hidden;position:absolute;right:0;width:25.1%}.katex .x-arrow-pad{padding:0 .5em}.katex .cd-arrow-pad{padding:0 .55556em 0 .27778em}.katex .mover,.katex .munder,.katex .x-arrow{text-align:center}.katex .boxpad{padding:0 .3em}.katex .fbox,.katex .fcolorbox{border:.04em solid;box-sizing:border-box}.katex .cancel-pad{padding:0 .2em}.katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}.katex .sout{border-bottom-style:solid;border-bottom-width:.08em}.katex .angl{border-right:.049em solid;border-top:.049em solid;box-sizing:border-box;margin-right:.03889em}.katex .anglpad{padding:0 .03889em}.katex .eqn-num:before{content:"(" counter(katexEqnNo) ")";counter-increment:katexEqnNo}.katex .mml-eqn-num:before{content:"(" counter(mmlEqnNo) ")";counter-increment:mmlEqnNo}.katex .mtr-glue{width:50%}.katex .cd-vert-arrow{display:inline-block;position:relative}.katex .cd-label-left{display:inline-block;position:absolute;right:calc(50% + .3em);text-align:left}.katex .cd-label-right{display:inline-block;left:calc(50% + .3em);position:absolute;text-align:right}.katex-display{display:block;margin:1em 0;text-align:center}.katex-display>.katex{display:block;text-align:center;white-space:nowrap}.katex-display>.katex>.katex-html{display:block;position:relative}.katex-display>.katex>.katex-html>.tag{position:absolute;right:0}.katex-display.leqno>.katex>.katex-html>.tag{left:0;right:auto}.katex-display.fleqn>.katex{padding-left:2em;text-align:left}body{counter-reset:katexEqnNo mmlEqnNo}
+</style>
+  <style>/* themes/base.css */
+
+/*
+  Shared PDF rendering base.
+  Keep layout rules here; put visual tokens in themes/<name>.css.
+*/
+
+@page {
+  size: A4;
+  margin: var(--ky-page-margin, 14mm 15mm 17mm 15mm);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-font-body: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-heading: var(--ky-font-body);
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
+
+  --ky-text: #20252d;
+  --ky-text-soft: #303946;
+  --ky-muted: #67707d;
+  --ky-faint: #8a93a0;
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f8fa;
+  --ky-bg-mute: #f1f3f6;
+  --ky-bg-inline-code: #eef1f5;
+  --ky-bg-code: #f7f7f8;
+  --ky-border-soft: #e5e8ee;
+  --ky-border: #d4d9e2;
+  --ky-border-strong: #aeb7c4;
+  --ky-accent: #64748b;
+  --ky-radius-s: 5px;
+  --ky-radius-m: 8px;
+  --ky-radius-l: 12px;
+
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  --inline-code-color: #384152;
+  --code-normal: #2f3742;
+  --code-comment: #858b94;
+  --code-keyword: #6f5bd7;
+  --code-string: #39745c;
+  --code-function: #2f73a7;
+  --code-property: #8a6833;
+  --code-tag: #566fb0;
+  --code-operator: #6d6673;
+  --code-punctuation: #7a828d;
+  --code-important: #a15b4e;
+  --code-value: #4f6fa8;
+  --code-deletion: #b42318;
+  --code-addition: #2f7d50;
+
+  --math-color: var(--ky-text);
+  --math-display-gap: 0.68em;
+
+  color: var(--ky-text) !important;
+  background: var(--ky-bg) !important;
+  color-scheme: light !important;
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  font-weight: 400 !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0.006em !important;
+  line-break: strict !important;
+  word-break: normal !important;
+}
+
+html,
+body,
+body.theme-light,
+body.minimal-light,
+body.minimal-light-white {
+  margin: 0 !important;
+  background: var(--ky-bg) !important;
+  color: var(--ky-text) !important;
+}
+
+body {
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  line-height: var(--ky-line-height) !important;
+}
+
+.markdown-preview-view,
+.markdown-rendered {
+  font-family: var(--ky-font-body) !important;
+}
+
+.markdown-preview-view .markdown-preview-sizer {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) p {
+  margin: var(--ky-para-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--ky-link, var(--ky-text)) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.16em !important;
+  text-decoration-thickness: 0.06em !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) :is(a, .header-anchor) {
+  color: inherit !important;
+  text-decoration: none !important;
+  border: 0 !important;
+  font: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(strong, b) {
+  color: var(--ky-text) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) em {
+  color: var(--ky-muted) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) mark {
+  color: var(--ky-text) !important;
+  background: var(--ky-mark-bg, #fff3bd) !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.02em 0.2em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) hr {
+  border: 0 !important;
+  border-top: 1px solid var(--ky-border-soft) !important;
+  margin: calc(var(--ky-block-gap) * 1.4) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ky-heading, var(--ky-text)) !important;
+  font-family: var(--ky-font-heading) !important;
+  line-height: var(--ky-heading-line-height) !important;
+  letter-spacing: 0 !important;
+  margin: 0.72em 0 0.28em !important;
+  break-after: avoid !important;
+  page-break-after: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h1 {
+  font-size: 1.46em !important;
+  font-weight: 760 !important;
+  padding-bottom: 0.18em !important;
+  border-bottom: 1px solid var(--ky-border-soft) !important;
+  break-before: auto !important;
+  page-break-before: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h2 {
+  font-size: 1.28em !important;
+  font-weight: 720 !important;
+  border-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h3 {
+  font-size: 1.16em !important;
+  font-weight: 680 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h4 {
+  font-size: 1.08em !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h5 {
+  font-size: 1.03em !important;
+  font-weight: 620 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h6 {
+  color: var(--ky-muted) !important;
+  font-size: 1em !important;
+  font-weight: 600 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
+  margin: 0.24em 0 0.34em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ul {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol {
+  padding-left: 0 !important;
+  list-style-position: inside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol > li > p:first-child {
+  display: inline !important;
+  margin: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li {
+  margin: var(--ky-list-gap) 0 !important;
+  line-height: calc(var(--ky-line-height) - 0.08) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
+  color: var(--ky-marker, #5f6670) !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.42em 0.78em 0.44em 0.86em !important;
+  color: var(--ky-muted) !important;
+  background: var(--ky-bg-soft) !important;
+  border: 0 !important;
+  border-left: 3px solid var(--ky-border) !important;
+  border-radius: 0 var(--ky-radius-s) var(--ky-radius-s) 0 !important;
+  box-shadow: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) code {
+  color: var(--inline-code-color) !important;
+  background: var(--ky-bg-inline-code) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.09em 0.3em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.9em !important;
+  letter-spacing: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs {
+  color: var(--code-normal) !important;
+  background: var(--ky-bg-code) !important;
+  border: 1px solid var(--code-border, var(--ky-border-soft)) !important;
+  border-radius: var(--ky-radius-l) !important;
+  box-shadow: none !important;
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.78em 0.92em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.91em !important;
+  line-height: 1.48 !important;
+  letter-spacing: 0 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  font-variant-ligatures: none !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre code {
+  color: var(--code-normal) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-comment, .hljs-quote) {
+  color: var(--code-comment) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-doctag) {
+  color: var(--code-keyword) !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-string, .hljs-char, .hljs-regexp, .hljs-template-variable) {
+  color: var(--code-string) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-title, .hljs-title.function_, .hljs-function .hljs-title, .hljs-title.class_, .hljs-section) {
+  color: var(--code-function) !important;
+  font-weight: 580 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-attribute, .hljs-variable, .hljs-params, .hljs-property, .hljs-meta .hljs-keyword) {
+  color: var(--code-property) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-tag, .hljs-selector-id, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo) {
+  color: var(--code-tag) !important;
+  font-weight: 560 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-operator, .hljs-link, .hljs-meta) {
+  color: var(--code-operator) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-punctuation {
+  color: var(--code-punctuation) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-number, .hljs-literal, .hljs-symbol, .hljs-bullet) {
+  color: var(--code-value) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-deletion) {
+  color: var(--code-deletion) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-addition) {
+  color: var(--code-addition) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) img,
+:is(.print, .markdown-preview-view, .markdown-rendered) svg[role="img"] {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  object-fit: contain !important;
+  border-radius: var(--ky-radius-l) !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table {
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+  border: 0 !important;
+  margin: 0.62em 0 !important;
+  background: transparent !important;
+  font-size: var(--ky-table-font-size) !important;
+  line-height: var(--ky-table-line-height) !important;
+  overflow: visible !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) thead {
+  display: table-header-group !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) tfoot {
+  display: table-footer-group !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th,
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  min-width: 0 !important;
+  padding: 0.42em 0.56em !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  line-break: strict !important;
+  hyphens: auto !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--table-border-soft, var(--ky-border-soft)) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  background: var(--table-head-bg, var(--ky-bg-soft)) !important;
+  border-bottom: 1.5px solid var(--table-border-strong, var(--ky-border)) !important;
+  color: var(--table-head-text, var(--ky-text)) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+  color: var(--table-text, var(--ky-text-soft)) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(a, code) {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol):not(:last-child) {
+  margin-bottom: 0.18em !important;
+}
+
+/* Math: keep KaTeX's native font stack intact. Do not override .katex font-family. */
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  color: var(--math-color) !important;
+  text-rendering: geometricPrecision !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  max-width: 100% !important;
+  margin: var(--math-display-gap) 0 !important;
+  padding: 0.12em 0 0.18em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  color: var(--math-color) !important;
+  line-height: 1.35 !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  font-size: 1.02em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :not(pre) > code .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex {
+  font-size: 0.98em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex-display {
+  margin: 0.28em 0 !important;
+  padding: 0.08em 0 !important;
+  line-height: 1.32 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(mjx-container, .math, .math-inline, .math-block) {
+  color: var(--math-color) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: var(--ky-text) !important;
+  background: var(--callout-bg, var(--ky-bg-soft)) !important;
+  border: 0 !important;
+  border-left: 3px solid var(--callout-border, var(--ky-border)) !important;
+  border-radius: var(--ky-radius-m) !important;
+  box-shadow: none !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45em !important;
+  color: var(--ky-text-soft) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0.4em 0.68em 0.14em !important;
+  font-size: 0.98em !important;
+  font-weight: 700 !important;
+  line-height: 1.28 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
+  color: var(--ky-text) !important;
+  padding: 0.12em 0.68em 0.46em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content p,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
+  accent-color: var(--ky-text) !important;
+}
+
+@media screen {
+  .markdown-preview-view {
+    max-width: var(--ky-screen-width, 900px) !important;
+    margin: 30px auto !important;
+    padding: 38px 46px !important;
+    background: var(--ky-bg) !important;
+    border: 1px solid var(--ky-border-soft) !important;
+    border-radius: var(--ky-radius-l) !important;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06) !important;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .markdown-preview-view {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  pre,
+  blockquote,
+  table,
+  img,
+  .callout {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+
+/* themes/chatgpt-light.css */
+
+/*
+  ChatGPT-style light PDF theme.
+  Visual tokens sampled from the open ChatGPT Markdown rendering page on 2026-07-02.
+
+  This file is loaded after themes/base.css and before style.css.
+  It maps ChatGPT-like design tokens onto the project-wide --ky-* PDF tokens.
+*/
+
+@page {
+  background: #ffffff;
+}
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered),
+.pdf-theme-chatgpt-light {
+  --chatgpt-bg: #ffffff;
+  --chatgpt-bg-soft: #fafafa;
+  --chatgpt-message: #f7f7f8;
+  --chatgpt-text: #0d0d0d;
+  --chatgpt-muted: #5d5d5d;
+  --chatgpt-faint: #8f8f8f;
+  --chatgpt-border: rgba(0, 0, 0, 0.08);
+  --chatgpt-border-strong: rgba(0, 0, 0, 0.15);
+  --chatgpt-link: #2964aa;
+  --chatgpt-inline-code-bg: #ececec;
+  --chatgpt-code-bg: #f7f7f8;
+  --chatgpt-code-header: #ededed;
+  --chatgpt-code-text: #24292f;
+  --chatgpt-code-keyword: #cf222e;
+  --chatgpt-code-symbol: #0550ae;
+  --chatgpt-code-name: #8250df;
+  --chatgpt-code-title: #953800;
+  --chatgpt-code-comment: #6e7781;
+  --chatgpt-code-string: #0a3069;
+  --chatgpt-code-number: #0550ae;
+  --chatgpt-radius: 7px;
+  --chatgpt-font-sans: -apple-system-body, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --chatgpt-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "JetBrains Mono", "Cascadia Code", monospace;
+
+  --ky-page-margin: 14mm 15mm 17mm 15mm;
+  --ky-font-body: var(--chatgpt-font-sans);
+  --ky-font-heading: var(--chatgpt-font-sans);
+  --ky-font-mono: var(--chatgpt-font-mono);
+
+  --ky-text: var(--chatgpt-text);
+  --ky-text-soft: #262626;
+  --ky-muted: var(--chatgpt-muted);
+  --ky-faint: var(--chatgpt-faint);
+  --ky-heading: var(--chatgpt-text);
+  --ky-link: var(--chatgpt-link);
+  --ky-marker: #5d5d5d;
+
+  --ky-bg: var(--chatgpt-bg);
+  --ky-bg-soft: var(--chatgpt-bg-soft);
+  --ky-bg-mute: var(--chatgpt-message);
+  --ky-bg-inline-code: var(--chatgpt-inline-code-bg);
+  --ky-bg-code: var(--chatgpt-code-bg);
+  --ky-mark-bg: #fff3bd;
+
+  --ky-border-soft: var(--chatgpt-border);
+  --ky-border: var(--chatgpt-border-strong);
+  --ky-border-strong: rgba(0, 0, 0, 0.24);
+  --ky-accent: #5d5d5d;
+  --ky-radius-s: 5px;
+  --ky-radius-m: var(--chatgpt-radius);
+  --ky-radius-l: var(--chatgpt-radius);
+
+  /* Keep the original project PDF font size. */
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  --inline-code-color: var(--chatgpt-code-text);
+  --code-normal: var(--chatgpt-code-text);
+  --code-comment: var(--chatgpt-code-comment);
+  --code-keyword: var(--chatgpt-code-keyword);
+  --code-string: var(--chatgpt-code-string);
+  --code-function: var(--chatgpt-code-title);
+  --code-property: var(--chatgpt-code-name);
+  --code-tag: var(--chatgpt-code-symbol);
+  --code-operator: var(--chatgpt-code-symbol);
+  --code-punctuation: #4b5563;
+  --code-important: var(--chatgpt-code-keyword);
+  --code-value: var(--chatgpt-code-number);
+  --code-deletion: #b42318;
+  --code-addition: #0f7b6c;
+  --code-border: transparent;
+
+  --math-color: var(--chatgpt-text);
+  --math-display-gap: 0.72em;
+
+  --table-text: #222222;
+  --table-head-text: var(--chatgpt-text);
+  --table-head-bg: transparent;
+  --table-border-strong: var(--chatgpt-border-strong);
+  --table-border-soft: var(--chatgpt-border);
+
+  --callout-bg: var(--chatgpt-bg-soft);
+  --callout-border: var(--chatgpt-border-strong);
+
+  color-scheme: light !important;
+}
+
+html,
+body,
+body.theme-light,
+body.minimal-light,
+body.minimal-light-white,
+body.pdf-theme-chatgpt-light {
+  background: #ffffff !important;
+  color: var(--chatgpt-text) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  color: var(--chatgpt-text) !important;
+  background: #ffffff !important;
+  font-family: var(--chatgpt-font-sans) !important;
+  font-size: var(--ky-font-size) !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0 !important;
+  overflow-wrap: anywhere !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) > :first-child {
+  margin-top: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--chatgpt-text) !important;
+  letter-spacing: -0.01em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h1 {
+  border-bottom-color: var(--chatgpt-border) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--chatgpt-link) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  color: var(--chatgpt-muted) !important;
+  background: var(--chatgpt-bg-soft) !important;
+  border-left-color: var(--chatgpt-border-strong) !important;
+  border-radius: 0 var(--chatgpt-radius) var(--chatgpt-radius) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) code {
+  color: var(--chatgpt-code-text) !important;
+  background: var(--chatgpt-inline-code-bg) !important;
+  border-radius: 0.28em !important;
+  padding: 0.08em 0.28em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code {
+  color: var(--chatgpt-code-text) !important;
+  background: var(--chatgpt-code-bg) !important;
+  border: 0 !important;
+  border-radius: var(--chatgpt-radius) !important;
+  padding: 0.78em 0.92em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki code,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code code {
+  display: block !important;
+  min-width: 0 !important;
+  color: inherit !important;
+  background: transparent !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki span,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code span {
+  background: transparent !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki .line,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code .line {
+  min-height: 1em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th,
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  color: var(--chatgpt-text) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  background: var(--chatgpt-bg-soft) !important;
+  border-left-color: var(--chatgpt-border-strong) !important;
+  border-radius: var(--chatgpt-radius) !important;
+}
+
+@media screen {
+  html,
+  body,
+  .markdown-preview-view,
+  .markdown-rendered {
+    background: #ffffff !important;
+  }
+}
+
+@media print {
+  html,
+  body,
+  body.theme-light,
+  body.minimal-light,
+  body.minimal-light-white,
+  .markdown-preview-view,
+  .markdown-rendered {
+    background: #ffffff !important;
+  }
+}
+
+
+/* style.css optional project overrides */
+
+/*
+  Optional project-level overrides.
+
+  The PDF renderer now loads CSS in this order:
+
+  1. themes/base.css       - shared structure and common Markdown rules
+  2. themes/<theme>.css    - selected visual theme, default: clean
+  3. style.css             - optional last-mile overrides
+
+  Keep this file small. Put reusable styles in themes/<name>.css instead.
+*/
+
+/*
+  KaTeX math protection layer.
+
+  Theme CSS should not change KaTeX's internal line breaking, wrapping, spacing,
+  or font metrics. KaTeX formulas are built from many positioned spans; global
+  Markdown rules such as overflow-wrap, word-break, line-break, letter-spacing,
+  or inherited text formatting can make fractions, sums, limits, and accents look
+  vertically misaligned in exported PDFs and mobile PDF viewers.
+*/
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  line-break: auto !important;
+  hyphens: none !important;
+  letter-spacing: normal !important;
+  text-indent: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  font-size: 1em !important;
+  max-width: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex .katex-html {
+  white-space: nowrap !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  display: block !important;
+  max-width: 100% !important;
+  margin: var(--math-display-gap, 0.68em) 0 !important;
+  padding: 0.08em 0 0.12em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  text-align: center !important;
+  line-height: 1.28 !important;
+  white-space: normal !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+</style>
+  <style>
+.page-break {
+  break-after: page;
+  page-break-after: always;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+@media print {
+  .page-break {
+    break-after: page;
+    page-break-after: always;
+  }
+}
+</style>
+</head>
+<body class="theme-light minimal-light minimal-light-white pdf-theme pdf-theme-chatgpt-light">
+  <main class="markdown-preview-view markdown-rendered">
+<h1 id="内存管理连续分配非连续分配与动态分区分配算法" tabindex="-1"><a class="header-anchor" href="#内存管理连续分配非连续分配与动态分区分配算法">内存管理：连续分配、非连续分配与动态分区分配算法</a></h1>
+<!-- source: inbox/2026/07/2026-07-07/md/001-memory-contiguous-noncontiguous-allocation.md -->
+<h1 id="内存管理连续分配非连续分配与动态分区分配算法-1" tabindex="-1"><a class="header-anchor" href="#内存管理连续分配非连续分配与动态分区分配算法-1">内存管理：连续分配、非连续分配与动态分区分配算法</a></h1>
+<blockquote>
+<p>目标：讲清楚内存的连续分配和非连续分配，重点掌握固定分区、动态分区、分页、分段、段页式之间的关系，并系统总结首次适应、循环首次适应、最佳适应、最坏适应、邻近适应、快速适应、伙伴系统等动态分区分配算法。</p>
+</blockquote>
+<h2 id="0-先把问题放到全局来看" tabindex="-1"><a class="header-anchor" href="#0-先把问题放到全局来看">0. 先把问题放到全局来看</a></h2>
+<p>内存分配要解决的问题是：当一个进程要运行时，操作系统应该把它放到主存的哪里？</p>
+<p>如果从“进程是否必须占用一整块连续物理内存”来看，内存分配方式可以分成两大类：</p>
+<table>
+<thead>
+<tr>
+<th>大类</th>
+<th>基本思想</th>
+<th>代表方式</th>
+<th>是否要求物理连续</th>
+<th>主要碎片</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连续分配</td>
+<td>一个进程或一个分区占用一段连续物理内存</td>
+<td>单一连续分配、固定分区、动态分区</td>
+<td>要求连续</td>
+<td>固定分区有内部碎片，动态分区有外部碎片</td>
+</tr>
+<tr>
+<td>非连续分配</td>
+<td>一个进程可以被拆开放到多个不连续物理位置</td>
+<td>分页、分段、段页式</td>
+<td>不要求整个进程连续</td>
+<td>分页有内部碎片，分段可能有外部碎片，段页式主要有内部碎片</td>
+</tr>
+</tbody>
+</table>
+<p>一句话：<strong>连续分配简单，但怕找不到足够大的连续空闲区；非连续分配复杂，但能更充分利用零散内存。</strong></p>
+<hr>
+<h2 id="1-什么是连续分配" tabindex="-1"><a class="header-anchor" href="#1-什么是连续分配">1. 什么是连续分配</a></h2>
+<h3 id="11-连续分配的定义" tabindex="-1"><a class="header-anchor" href="#11-连续分配的定义">1.1 连续分配的定义</a></h3>
+<p>连续分配是指：一个进程装入内存时，必须占用一段连续的物理地址空间。</p>
+<p>例如某进程需要 100 KB，如果它被装入物理地址 400 KB 开始的位置，那么它占用的内存范围是：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mo stretchy="false">[</mo><mn>400</mn><mtext>KB</mtext><mo separator="true">,</mo><mn>500</mn><mtext>KB</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">[400\text{KB}, 500\text{KB})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">400</span><span class="mord text"><span class="mord">KB</span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">500</span><span class="mord text"><span class="mord">KB</span></span><span class="mclose">)</span></span></span></span></span>
+<p>中间不能断开，不能一半在 400 KB，一半在 900 KB。</p>
+<p>连续分配的典型地址变换很简单。若进程逻辑地址为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span></span></span></span>，重定位寄存器保存起始物理地址 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span></span></span></span>，则物理地址为：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>E</mi><mo>=</mo><mi>B</mi><mo>+</mo><mi>A</mi></mrow><annotation encoding="application/x-tex">E = B + A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span></span></span></span></span>
+<p>同时还要用界限寄存器检查是否越界。若进程长度为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span>，则必须满足：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>0</mn><mo>≤</mo><mi>A</mi><mo>&lt;</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">0 \le A &lt; L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7804em;vertical-align:-0.136em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span></span>
+<h3 id="12-连续分配的共同特点" tabindex="-1"><a class="header-anchor" href="#12-连续分配的共同特点">1.2 连续分配的共同特点</a></h3>
+<p>连续分配的优点：</p>
+<ol>
+<li>地址变换简单，只需要基址加偏移。</li>
+<li>管理结构简单，适合早期操作系统。</li>
+<li>对硬件要求低。</li>
+</ol>
+<p>连续分配的缺点：</p>
+<ol>
+<li>一个进程必须找到足够大的连续空闲区。</li>
+<li>容易产生碎片。</li>
+<li>内存利用率不高。</li>
+<li>进程扩展困难，例如堆或栈增长时可能没有相邻空间。</li>
+</ol>
+<hr>
+<h2 id="2-单一连续分配" tabindex="-1"><a class="header-anchor" href="#2-单一连续分配">2. 单一连续分配</a></h2>
+<h3 id="21-基本思想" tabindex="-1"><a class="header-anchor" href="#21-基本思想">2.1 基本思想</a></h3>
+<p>单一连续分配是最简单的方式：内存中通常只运行一个用户进程，操作系统占用一部分内存，剩余部分全部给用户程序。</p>
+<p>示意：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>低地址</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>| 操作系统          |</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>| 用户程序          |</span></span>
+<span class="line"><span>|                  |</span></span>
+<span class="line"><span>|                  |</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>高地址</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="22-特点" tabindex="-1"><a class="header-anchor" href="#22-特点">2.2 特点</a></h3>
+<p>优点是简单，几乎不需要复杂的内存管理。</p>
+<p>缺点也很明显：</p>
+<ol>
+<li>同一时刻只能运行一个用户程序。</li>
+<li>内存利用率低。</li>
+<li>不支持现代意义上的多道程序设计。</li>
+</ol>
+<p>它适合早期单道批处理系统，不适合现代操作系统。</p>
+<hr>
+<h2 id="3-固定分区分配" tabindex="-1"><a class="header-anchor" href="#3-固定分区分配">3. 固定分区分配</a></h2>
+<h3 id="31-基本思想" tabindex="-1"><a class="header-anchor" href="#31-基本思想">3.1 基本思想</a></h3>
+<p>固定分区分配是把内存预先划分成若干个固定大小的分区。每个分区一次只能装入一个进程。</p>
+<p>示意：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>低地址</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>| 操作系统          |</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>| 分区 1：100 KB    |</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>| 分区 2：200 KB    |</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>| 分区 3：300 KB    |</span></span>
+<span class="line"><span>+------------------+</span></span>
+<span class="line"><span>高地址</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>进程来了以后，操作系统选择一个能够容纳它的空闲分区。</p>
+<h3 id="32-分区大小可以相等也可以不等" tabindex="-1"><a class="header-anchor" href="#32-分区大小可以相等也可以不等">3.2 分区大小可以相等，也可以不等</a></h3>
+<p>固定分区有两种做法：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+<th>问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分区大小相等</td>
+<td>管理简单</td>
+<td>大程序放不下，小程序浪费多</td>
+</tr>
+<tr>
+<td>分区大小不等</td>
+<td>能适应不同大小进程</td>
+<td>管理稍复杂，仍有浪费</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-固定分区的碎片" tabindex="-1"><a class="header-anchor" href="#33-固定分区的碎片">3.3 固定分区的碎片</a></h3>
+<p>固定分区的主要问题是内部碎片。</p>
+<p>例如某分区大小为 100 KB，进程只需要 70 KB，那么剩下 30 KB 不能再分给其他进程，只能浪费在该分区内部。</p>
+<p>这部分浪费就是内部碎片：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>内部碎片</mtext><mo>=</mo><mtext>分区大小</mtext><mo>−</mo><mtext>进程大小</mtext></mrow><annotation encoding="application/x-tex">\text{内部碎片} = \text{分区大小} - \text{进程大小}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord cjk_fallback">内部碎片</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord text"><span class="mord cjk_fallback">分区大小</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord cjk_fallback">进程大小</span></span></span></span></span></span>
+<h3 id="34-固定分区的优缺点" tabindex="-1"><a class="header-anchor" href="#34-固定分区的优缺点">3.4 固定分区的优缺点</a></h3>
+<p>优点：</p>
+<ol>
+<li>比单一连续分配支持更多并发进程。</li>
+<li>管理简单。</li>
+<li>地址变换仍然比较简单。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>分区数固定，限制并发进程数。</li>
+<li>分区大小固定，容易产生内部碎片。</li>
+<li>大进程可能因为没有足够大的固定分区而无法装入。</li>
+</ol>
+<hr>
+<h2 id="4-动态分区分配" tabindex="-1"><a class="header-anchor" href="#4-动态分区分配">4. 动态分区分配</a></h2>
+<h3 id="41-基本思想" tabindex="-1"><a class="header-anchor" href="#41-基本思想">4.1 基本思想</a></h3>
+<p>动态分区分配不预先划分固定分区，而是在进程装入时，根据进程大小动态划出一块连续内存。</p>
+<p>例如初始内存有一个大空闲区：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+----------------------------------+</span></span>
+<span class="line"><span>|           空闲 1000 KB            |</span></span>
+<span class="line"><span>+----------------------------------+</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>来了一个 200 KB 的进程，就切出 200 KB：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+----------+-----------------------+</span></span>
+<span class="line"><span>| P1 200KB |       空闲 800KB       |</span></span>
+<span class="line"><span>+----------+-----------------------+</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>再来一个 300 KB 的进程：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+----------+----------+------------+</span></span>
+<span class="line"><span>| P1 200KB | P2 300KB | 空闲 500KB  |</span></span>
+<span class="line"><span>+----------+----------+------------+</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>当进程退出时，它占用的空间重新变为空闲区。</p>
+<h3 id="42-动态分区需要维护什么信息" tabindex="-1"><a class="header-anchor" href="#42-动态分区需要维护什么信息">4.2 动态分区需要维护什么信息</a></h3>
+<p>操作系统通常需要维护空闲分区表或空闲分区链。</p>
+<p>空闲分区表可以写成：</p>
+<table>
+<thead>
+<tr>
+<th>空闲区编号</th>
+<th style="text-align:right">起始地址</th>
+<th style="text-align:right">大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">100 KB</td>
+<td style="text-align:right">60 KB</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:right">300 KB</td>
+<td style="text-align:right">180 KB</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:right">700 KB</td>
+<td style="text-align:right">400 KB</td>
+</tr>
+</tbody>
+</table>
+<p>每次分配内存时，就在这些空闲区里找一个合适的。</p>
+<h3 id="43-动态分区的地址变换" tabindex="-1"><a class="header-anchor" href="#43-动态分区的地址变换">4.3 动态分区的地址变换</a></h3>
+<p>动态分区仍然属于连续分配，所以地址变换仍然是基址加偏移。</p>
+<p>若进程被装入物理起始地址 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span></span></span></span>，逻辑地址为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span></span></span></span>，则：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>E</mi><mo>=</mo><mi>B</mi><mo>+</mo><mi>A</mi></mrow><annotation encoding="application/x-tex">E = B + A</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span></span></span></span></span>
+<p>还要检查：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>A</mi><mo>&lt;</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">A &lt; L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span></span>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 是进程占用分区的长度。</p>
+<h3 id="44-动态分区的碎片" tabindex="-1"><a class="header-anchor" href="#44-动态分区的碎片">4.4 动态分区的碎片</a></h3>
+<p>动态分区主要产生外部碎片。</p>
+<p>例如内存中有三个空闲区：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>空闲 10 KB、空闲 20 KB、空闲 30 KB</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>总空闲空间为：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>10</mn><mo>+</mo><mn>20</mn><mo>+</mo><mn>30</mn><mo>=</mo><mn>60</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">10 + 20 + 30 = 60\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">10</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">20</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">30</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">60</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<p>但如果某进程需要 40 KB 连续空间，就无法装入。因为没有任何一个单独空闲区达到 40 KB。</p>
+<p>这就是外部碎片：<strong>空闲空间总量足够，但不连续，导致无法使用。</strong></p>
+<h3 id="45-紧凑技术" tabindex="-1"><a class="header-anchor" href="#45-紧凑技术">4.5 紧凑技术</a></h3>
+<p>为了解决外部碎片，可以进行紧凑，也叫拼接或内存压缩。</p>
+<p>它把已分配的进程移动到一端，把零散空闲区合并成一个大空闲区。</p>
+<p>紧凑前：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+----+------+----+------+----+</span></span>
+<span class="line"><span>| P1 | 空闲 | P2 | 空闲 | P3 |</span></span>
+<span class="line"><span>+----+------+----+------+----+</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>紧凑后：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>+----+----+----+------------+</span></span>
+<span class="line"><span>| P1 | P2 | P3 |    空闲     |</span></span>
+<span class="line"><span>+----+----+----+------------+</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>缺点是代价大，因为要移动进程，还要修改相关地址映射信息。</p>
+<hr>
+<h2 id="5-动态分区分配算法总览" tabindex="-1"><a class="header-anchor" href="#5-动态分区分配算法总览">5. 动态分区分配算法总览</a></h2>
+<p>动态分区分配算法要解决的问题是：面对多个空闲分区，应选择哪一个分给新进程？</p>
+<p>常见算法如下：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>英文</th>
+<th>基本思想</th>
+<th>空闲区通常如何组织</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>首次适应</td>
+<td>First Fit</td>
+<td>从头找第一个足够大的空闲区</td>
+<td>按地址递增排序</td>
+</tr>
+<tr>
+<td>循环首次适应/邻近适应</td>
+<td>Next Fit</td>
+<td>从上次查找结束位置继续找</td>
+<td>按地址递增的循环链</td>
+</tr>
+<tr>
+<td>最佳适应</td>
+<td>Best Fit</td>
+<td>找能容纳进程的最小空闲区</td>
+<td>按容量递增排序或全表扫描</td>
+</tr>
+<tr>
+<td>最坏适应</td>
+<td>Worst Fit</td>
+<td>找最大的空闲区</td>
+<td>按容量递减排序或全表扫描</td>
+</tr>
+<tr>
+<td>快速适应</td>
+<td>Quick Fit</td>
+<td>为常见大小维护多个空闲链表</td>
+<td>按规格分类链表</td>
+</tr>
+<tr>
+<td>伙伴系统</td>
+<td>Buddy System</td>
+<td>按 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 大小分裂和合并</td>
+<td>多个 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 空闲链表</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-首次适应算法" tabindex="-1"><a class="header-anchor" href="#6-首次适应算法">6. 首次适应算法</a></h2>
+<h3 id="61-基本思想" tabindex="-1"><a class="header-anchor" href="#61-基本思想">6.1 基本思想</a></h3>
+<p>首次适应算法从空闲分区表或空闲链表的表头开始查找，找到第一个大小不小于请求大小的空闲区，就把它分配出去。</p>
+<p>若进程请求大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>，某空闲区大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span></span></span></span>，只要满足：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>H</mi><mo>≥</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H \ge S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span></span>
+<p>就可以分配。</p>
+<p>如果 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>&gt;</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H&gt;S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>，剩余部分继续作为空闲区。</p>
+<h3 id="62-示例" tabindex="-1"><a class="header-anchor" href="#62-示例">6.2 示例</a></h3>
+<p>空闲区按地址从低到高排列：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th style="text-align:right">起始地址</th>
+<th style="text-align:right">大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">100</td>
+<td style="text-align:right">20 KB</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:right">200</td>
+<td style="text-align:right">50 KB</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:right">400</td>
+<td style="text-align:right">100 KB</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:right">700</td>
+<td style="text-align:right">30 KB</td>
+</tr>
+</tbody>
+</table>
+<p>现在进程请求 45 KB。</p>
+<p>首次适应算法从表头开始找：</p>
+<ol>
+<li>20 KB 不够。</li>
+<li>50 KB 够。</li>
+<li>选择 50 KB 这个空闲区。</li>
+</ol>
+<p>分配后剩余：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>50</mn><mtext>KB</mtext><mo>−</mo><mn>45</mn><mtext>KB</mtext><mo>=</mo><mn>5</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">50\text{KB} - 45\text{KB} = 5\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">50</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">45</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">5</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<p>这个 5 KB 继续留作空闲区。</p>
+<h3 id="63-优缺点" tabindex="-1"><a class="header-anchor" href="#63-优缺点">6.3 优缺点</a></h3>
+<p>优点：</p>
+<ol>
+<li>查找速度通常较快。</li>
+<li>实现简单。</li>
+<li>大空闲区倾向于保留在高地址部分。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>低地址部分会逐渐产生很多小碎片。</li>
+<li>每次都从头查找，表头附近可能越来越拥挤。</li>
+</ol>
+<h3 id="64-适合记忆" tabindex="-1"><a class="header-anchor" href="#64-适合记忆">6.4 适合记忆</a></h3>
+<p>首次适应的关键词是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>从头找，第一个够用就分配。</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="7-循环首次适应算法--邻近适应算法" tabindex="-1"><a class="header-anchor" href="#7-循环首次适应算法--邻近适应算法">7. 循环首次适应算法 / 邻近适应算法</a></h2>
+<h3 id="71-基本思想" tabindex="-1"><a class="header-anchor" href="#71-基本思想">7.1 基本思想</a></h3>
+<p>循环首次适应也叫邻近适应。它不是每次都从表头开始，而是从上一次找到空闲区的位置之后继续查找。</p>
+<p>如果查到表尾还没有找到，就绕回表头继续查找。</p>
+<p>它的核心是维护一个查找指针。</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>上次分配位置 → 从这里继续往后找 → 到表尾后回到表头</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="72-示例" tabindex="-1"><a class="header-anchor" href="#72-示例">7.2 示例</a></h3>
+<p>空闲区按地址排列：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th style="text-align:right">起始地址</th>
+<th style="text-align:right">大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">100</td>
+<td style="text-align:right">20 KB</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:right">200</td>
+<td style="text-align:right">50 KB</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:right">400</td>
+<td style="text-align:right">100 KB</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:right">700</td>
+<td style="text-align:right">30 KB</td>
+</tr>
+</tbody>
+</table>
+<p>假设上次查找停在编号 2 后面，现在请求 25 KB，则从编号 3 开始找：</p>
+<ol>
+<li>编号 3：100 KB，够用。</li>
+<li>直接选择编号 3。</li>
+</ol>
+<p>它不会从编号 1 重新开始。</p>
+<h3 id="73-优缺点" tabindex="-1"><a class="header-anchor" href="#73-优缺点">7.3 优缺点</a></h3>
+<p>优点：</p>
+<ol>
+<li>避免每次都从低地址开始查找。</li>
+<li>空闲区使用更均匀。</li>
+<li>查找开销可能小于首次适应。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>可能破坏高地址的大空闲区。</li>
+<li>大空闲区不容易长期保留。</li>
+<li>整体效果不一定优于首次适应。</li>
+</ol>
+<h3 id="74-适合记忆" tabindex="-1"><a class="header-anchor" href="#74-适合记忆">7.4 适合记忆</a></h3>
+<p>循环首次适应的关键词是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>从上次位置继续找，找到第一个够用的。</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="8-最佳适应算法" tabindex="-1"><a class="header-anchor" href="#8-最佳适应算法">8. 最佳适应算法</a></h2>
+<h3 id="81-基本思想" tabindex="-1"><a class="header-anchor" href="#81-基本思想">8.1 基本思想</a></h3>
+<p>最佳适应算法选择所有能满足请求的空闲区中最小的那个。</p>
+<p>也就是找满足 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>≥</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H \ge S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span> 的空闲区中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span></span></span></span> 最小者。</p>
+<p>公式化表示：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>H</mi><mo>∗</mo></msup><mo>=</mo><mi>min</mi><mo>⁡</mo><mo stretchy="false">{</mo><mi>H</mi><mo>∣</mo><mi>H</mi><mo>≥</mo><mi>S</mi><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">H^* = \min\{H \mid H \ge S\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7387em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7387em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">∗</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">min</span><span class="mopen">{</span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span><span class="mclose">}</span></span></span></span></span>
+<p>它的想法是：尽量别浪费大空闲区。</p>
+<h3 id="82-示例" tabindex="-1"><a class="header-anchor" href="#82-示例">8.2 示例</a></h3>
+<p>空闲区如下：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th style="text-align:right">大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">20 KB</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:right">50 KB</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:right">100 KB</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:right">30 KB</td>
+</tr>
+</tbody>
+</table>
+<p>请求 25 KB。</p>
+<p>能满足的有 50 KB、100 KB、30 KB，其中最小的是 30 KB，所以选择 30 KB。</p>
+<p>分配后剩余：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>30</mn><mtext>KB</mtext><mo>−</mo><mn>25</mn><mtext>KB</mtext><mo>=</mo><mn>5</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">30\text{KB} - 25\text{KB} = 5\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">30</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">25</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">5</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<h3 id="83-优缺点" tabindex="-1"><a class="header-anchor" href="#83-优缺点">8.3 优缺点</a></h3>
+<p>优点：</p>
+<ol>
+<li>每次局部浪费看起来最少。</li>
+<li>能尽量保留大的空闲区。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>容易产生大量很小、难以再利用的碎片。</li>
+<li>如果空闲区不按大小排序，查找需要扫描整个表。</li>
+<li>即使按大小排序，分配和回收后也要维护顺序。</li>
+</ol>
+<h3 id="84-为什么最佳适应不一定最佳" tabindex="-1"><a class="header-anchor" href="#84-为什么最佳适应不一定最佳">8.4 为什么最佳适应不一定最佳</a></h3>
+<p>“最佳适应”只是对当前这一次分配最省空间，不代表全局最优。</p>
+<p>例如经常把 30 KB 分区分给 25 KB 进程，就会留下很多 5 KB 小碎片。这些碎片可能长期无法利用。</p>
+<p>所以最佳适应的典型问题是：<strong>小碎片太多。</strong></p>
+<h3 id="85-适合记忆" tabindex="-1"><a class="header-anchor" href="#85-适合记忆">8.5 适合记忆</a></h3>
+<p>最佳适应的关键词是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>找最小的够用空闲区。</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="9-最坏适应算法" tabindex="-1"><a class="header-anchor" href="#9-最坏适应算法">9. 最坏适应算法</a></h2>
+<h3 id="91-基本思想" tabindex="-1"><a class="header-anchor" href="#91-基本思想">9.1 基本思想</a></h3>
+<p>最坏适应算法和最佳适应相反。它总是选择当前最大的空闲区。</p>
+<p>如果请求大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>，它选择最大的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span></span></span></span>，且满足：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>H</mi><mo>≥</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H \ge S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span></span>
+<p>它的想法是：从最大空闲区里切一块出去后，剩下的部分仍然可能比较大，还能继续使用。</p>
+<h3 id="92-示例" tabindex="-1"><a class="header-anchor" href="#92-示例">9.2 示例</a></h3>
+<p>空闲区如下：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th style="text-align:right">大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">20 KB</td>
+</tr>
+<tr>
+<td>2</td>
+<td style="text-align:right">50 KB</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align:right">100 KB</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:right">30 KB</td>
+</tr>
+</tbody>
+</table>
+<p>请求 25 KB。</p>
+<p>最坏适应选择最大的 100 KB 空闲区。分配后剩余：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>100</mn><mtext>KB</mtext><mo>−</mo><mn>25</mn><mtext>KB</mtext><mo>=</mo><mn>75</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">100\text{KB} - 25\text{KB} = 75\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">100</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">25</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">75</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<h3 id="93-优缺点" tabindex="-1"><a class="header-anchor" href="#93-优缺点">9.3 优缺点</a></h3>
+<p>优点：</p>
+<ol>
+<li>不容易留下特别小的碎片。</li>
+<li>剩余空闲区通常还比较大。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>会很快消耗大空闲区。</li>
+<li>当大进程到来时，可能没有足够大的空闲区。</li>
+<li>整体内存利用效果通常不理想。</li>
+</ol>
+<h3 id="94-适合记忆" tabindex="-1"><a class="header-anchor" href="#94-适合记忆">9.4 适合记忆</a></h3>
+<p>最坏适应的关键词是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>找最大的空闲区来切。</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="10-快速适应算法" tabindex="-1"><a class="header-anchor" href="#10-快速适应算法">10. 快速适应算法</a></h2>
+<h3 id="101-基本思想" tabindex="-1"><a class="header-anchor" href="#101-基本思想">10.1 基本思想</a></h3>
+<p>快速适应算法把常见大小的空闲分区单独组织成多个链表。例如：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>8 KB 空闲链表</span></span>
+<span class="line"><span>16 KB 空闲链表</span></span>
+<span class="line"><span>32 KB 空闲链表</span></span>
+<span class="line"><span>64 KB 空闲链表</span></span>
+<span class="line"><span>128 KB 空闲链表</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>请求某种常见大小时，直接到对应链表取一个分区，不需要反复扫描整个空闲表。</p>
+<h3 id="102-优点" tabindex="-1"><a class="header-anchor" href="#102-优点">10.2 优点</a></h3>
+<ol>
+<li>分配速度很快。</li>
+<li>适合请求大小集中在若干规格的场景。</li>
+<li>减少查找时间。</li>
+</ol>
+<h3 id="103-缺点" tabindex="-1"><a class="header-anchor" href="#103-缺点">10.3 缺点</a></h3>
+<ol>
+<li>回收时合并相邻空闲区比较复杂。</li>
+<li>如果规格设计不好，会浪费空间。</li>
+<li>对不常见大小的请求不一定友好。</li>
+</ol>
+<h3 id="104-适合记忆" tabindex="-1"><a class="header-anchor" href="#104-适合记忆">10.4 适合记忆</a></h3>
+<p>快速适应的关键词是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>按大小分类，直接从对应链表取。</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="11-伙伴系统" tabindex="-1"><a class="header-anchor" href="#11-伙伴系统">11. 伙伴系统</a></h2>
+<h3 id="111-基本思想" tabindex="-1"><a class="header-anchor" href="#111-基本思想">11.1 基本思想</a></h3>
+<p>伙伴系统把内存按 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 大小进行管理。请求内存时，系统分配不小于请求大小的最小 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 块。</p>
+<p>例如请求 70 KB，如果块大小只能是 64 KB、128 KB、256 KB，那么会分配 128 KB。</p>
+<h3 id="112-分裂过程" tabindex="-1"><a class="header-anchor" href="#112-分裂过程">11.2 分裂过程</a></h3>
+<p>如果没有刚好大小的空闲块，就把更大的块不断对半分裂。</p>
+<p>例如有一个 512 KB 空闲块，请求 100 KB：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>512 KB</span></span>
+<span class="line"><span>  ↓ 分裂</span></span>
+<span class="line"><span>256 KB + 256 KB</span></span>
+<span class="line"><span>  ↓ 继续分裂其中一个 256 KB</span></span>
+<span class="line"><span>128 KB + 128 KB + 256 KB</span></span>
+<span class="line"><span>  ↓</span></span>
+<span class="line"><span>分配一个 128 KB 给进程</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="113-合并过程" tabindex="-1"><a class="header-anchor" href="#113-合并过程">11.3 合并过程</a></h3>
+<p>当一个块释放时，如果它的伙伴块也空闲，就可以合并成更大的块。</p>
+<p>例如两个相邻的 128 KB 伙伴块都空闲，就可以合并为 256 KB。</p>
+<p>再看它的 256 KB 伙伴是否空闲，若空闲还能继续合并。</p>
+<h3 id="114-伙伴的含义" tabindex="-1"><a class="header-anchor" href="#114-伙伴的含义">11.4 伙伴的含义</a></h3>
+<p>伙伴不是任意相邻块，而是由同一个大块分裂出来的两个大小相同的块。</p>
+<p>例如一个 256 KB 块分裂成两个 128 KB 块，这两个 128 KB 块互为伙伴。</p>
+<h3 id="115-优缺点" tabindex="-1"><a class="header-anchor" href="#115-优缺点">11.5 优缺点</a></h3>
+<p>优点：</p>
+<ol>
+<li>分配和回收较快。</li>
+<li>合并规则清晰。</li>
+<li>比普通动态分区更容易管理。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>由于按 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 分配，可能产生内部碎片。</li>
+<li>请求大小稍大于 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">2^{k-1}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span> 时，会分配 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span>，浪费较明显。</li>
+</ol>
+<p>例如请求 129 KB，只能分配 256 KB，内部浪费为：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>256</mn><mtext>KB</mtext><mo>−</mo><mn>129</mn><mtext>KB</mtext><mo>=</mo><mn>127</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">256\text{KB} - 129\text{KB} = 127\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">256</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">129</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">127</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<h3 id="116-适合记忆" tabindex="-1"><a class="header-anchor" href="#116-适合记忆">11.6 适合记忆</a></h3>
+<p>伙伴系统的关键词是：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>不够就对半分裂，释放后找伙伴合并。</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="12-非连续分配" tabindex="-1"><a class="header-anchor" href="#12-非连续分配">12. 非连续分配</a></h2>
+<h3 id="121-非连续分配的定义" tabindex="-1"><a class="header-anchor" href="#121-非连续分配的定义">12.1 非连续分配的定义</a></h3>
+<p>非连续分配是指：一个进程不必占用一整段连续物理内存，而是可以拆成多个部分，分别放到不同的物理位置。</p>
+<p>最典型的是分页：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>进程逻辑页：页0 页1 页2 页3</span></span>
+<span class="line"><span>物理页框：  框8 框2 框15 框4</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>进程逻辑上连续，物理上不连续。</p>
+<h3 id="122-非连续分配为什么重要" tabindex="-1"><a class="header-anchor" href="#122-非连续分配为什么重要">12.2 非连续分配为什么重要</a></h3>
+<p>连续分配的问题是必须找大连续空闲区。如果内存碎成很多小块，大进程可能无法装入。</p>
+<p>非连续分配则可以把进程拆开，塞进多个小空闲区，从而提高内存利用率。</p>
+<h3 id="123-非连续分配的代价" tabindex="-1"><a class="header-anchor" href="#123-非连续分配的代价">12.3 非连续分配的代价</a></h3>
+<p>非连续分配需要额外的数据结构来记录映射关系。</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>需要的数据结构</th>
+<th>地址变换</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分页</td>
+<td>页表</td>
+<td>页号查页框号</td>
+</tr>
+<tr>
+<td>分段</td>
+<td>段表</td>
+<td>段号查基址和段长</td>
+</tr>
+<tr>
+<td>段页式</td>
+<td>段表 + 页表</td>
+<td>先查段表，再查页表</td>
+</tr>
+</tbody>
+</table>
+<p>非连续分配的地址变换更复杂，因此通常需要硬件支持，例如 MMU 和 TLB。</p>
+<hr>
+<h2 id="13-分页分段段页式与连续非连续的关系" tabindex="-1"><a class="header-anchor" href="#13-分页分段段页式与连续非连续的关系">13. 分页、分段、段页式与连续/非连续的关系</a></h2>
+<h3 id="131-分页" tabindex="-1"><a class="header-anchor" href="#131-分页">13.1 分页</a></h3>
+<p>分页把逻辑地址空间分成固定大小的页，把物理内存分成同样大小的页框。</p>
+<p>进程的不同页可以放入不同页框，所以分页属于非连续分配。</p>
+<p>分页地址结构：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>| 页号 p | 页内偏移 d |</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>地址变换：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>E</mi><mo>=</mo><mi>f</mi><mi>L</mi><mo>+</mo><mi>d</mi></mrow><annotation encoding="application/x-tex">E = fL + d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mord mathnormal">L</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span></span>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span></span></span></span> 是页框号，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 是页大小。</p>
+<p>分页特点：</p>
+<ol>
+<li>无外部碎片。</li>
+<li>有内部碎片。</li>
+<li>对用户透明。</li>
+<li>需要页表。</li>
+</ol>
+<h3 id="132-分段" tabindex="-1"><a class="header-anchor" href="#132-分段">13.2 分段</a></h3>
+<p>分段按程序逻辑模块划分，例如代码段、数据段、栈段。</p>
+<p>每个段内部通常连续存放，但不同段之间可以不连续。因此从整个进程角度看，分段是一种非连续分配；但从单个段角度看，每个段仍要求连续空间。</p>
+<p>分段地址结构：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>| 段号 s | 段内偏移 d |</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>地址变换：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>E</mi><mo>=</mo><msub><mi>b</mi><mi>s</mi></msub><mo>+</mo><mi>d</mi></mrow><annotation encoding="application/x-tex">E = b_s + d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span></span>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>b</mi><mi>s</mi></msub></mrow><annotation encoding="application/x-tex">b_s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">s</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是段基址。</p>
+<p>分段特点：</p>
+<ol>
+<li>符合程序逻辑。</li>
+<li>方便共享和保护。</li>
+<li>段长可变。</li>
+<li>会产生外部碎片。</li>
+</ol>
+<h3 id="133-段页式" tabindex="-1"><a class="header-anchor" href="#133-段页式">13.3 段页式</a></h3>
+<p>段页式先分段，再把每个段分页。它既保留了分段的逻辑结构，又通过分页实现离散装入。</p>
+<p>段页式地址结构：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>| 段号 s | 段内页号 p | 页内偏移 d |</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>地址变换：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>段号 s → 查段表 → 找到该段页表</span></span>
+<span class="line"><span>段内页号 p → 查页表 → 得到页框号 f</span></span>
+<span class="line"><span>物理地址 = f × 页大小 + d</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>段页式特点：</p>
+<ol>
+<li>以段为逻辑保护单位。</li>
+<li>以页为物理分配单位。</li>
+<li>无外部碎片。</li>
+<li>有内部碎片。</li>
+<li>表结构和地址变换更复杂。</li>
+</ol>
+<hr>
+<h2 id="14-连续分配与非连续分配的系统对比" tabindex="-1"><a class="header-anchor" href="#14-连续分配与非连续分配的系统对比">14. 连续分配与非连续分配的系统对比</a></h2>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>连续分配</th>
+<th>非连续分配</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>物理存放</td>
+<td>一个进程或分区占连续空间</td>
+<td>可分散到多个位置</td>
+</tr>
+<tr>
+<td>地址变换</td>
+<td>基址 + 偏移</td>
+<td>查表映射</td>
+</tr>
+<tr>
+<td>硬件支持</td>
+<td>较少</td>
+<td>通常需要 MMU/TLB</td>
+</tr>
+<tr>
+<td>内存利用率</td>
+<td>较低</td>
+<td>较高</td>
+</tr>
+<tr>
+<td>碎片</td>
+<td>固定分区有内部碎片，动态分区有外部碎片</td>
+<td>分页有内部碎片，分段有外部碎片，段页式主要有内部碎片</td>
+</tr>
+<tr>
+<td>共享保护</td>
+<td>较弱</td>
+<td>更灵活</td>
+</tr>
+<tr>
+<td>实现复杂度</td>
+<td>简单</td>
+<td>复杂</td>
+</tr>
+<tr>
+<td>代表方式</td>
+<td>单一连续、固定分区、动态分区</td>
+<td>分页、分段、段页式</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="15-动态分区算法对比表" tabindex="-1"><a class="header-anchor" href="#15-动态分区算法对比表">15. 动态分区算法对比表</a></h2>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>选择策略</th>
+<th>优点</th>
+<th>缺点</th>
+<th>典型碎片趋势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>首次适应</td>
+<td>第一个够用的</td>
+<td>简单、速度较快</td>
+<td>低地址小碎片多</td>
+<td>表头附近碎片多</td>
+</tr>
+<tr>
+<td>循环首次适应</td>
+<td>从上次位置继续找第一个够用的</td>
+<td>分配更均匀</td>
+<td>可能破坏大空闲区</td>
+<td>分布较均匀</td>
+</tr>
+<tr>
+<td>最佳适应</td>
+<td>最小的够用空闲区</td>
+<td>单次浪费小</td>
+<td>容易留下很多极小碎片</td>
+<td>小碎片多</td>
+</tr>
+<tr>
+<td>最坏适应</td>
+<td>最大空闲区</td>
+<td>剩余块仍较大</td>
+<td>大空闲区消耗快</td>
+<td>大块减少快</td>
+</tr>
+<tr>
+<td>快速适应</td>
+<td>按规格链表快速取</td>
+<td>分配快</td>
+<td>合并复杂，规格依赖强</td>
+<td>取决于规格设计</td>
+</tr>
+<tr>
+<td>伙伴系统</td>
+<td>按 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 分裂合并</td>
+<td>分裂合并规则清晰</td>
+<td>可能有内部碎片</td>
+<td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 对齐浪费</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="16-做题常见套路" tabindex="-1"><a class="header-anchor" href="#16-做题常见套路">16. 做题常见套路</a></h2>
+<h3 id="161-判断属于哪类分配" tabindex="-1"><a class="header-anchor" href="#161-判断属于哪类分配">16.1 判断属于哪类分配</a></h3>
+<p>看到“一个进程必须装入连续内存区域”，通常是连续分配。</p>
+<p>看到“页、页框、页表”，通常是分页，属于非连续分配。</p>
+<p>看到“段号、段长、段基址”，通常是分段。</p>
+<p>看到“段表指出页表始址”，通常是段页式。</p>
+<h3 id="162-判断碎片类型" tabindex="-1"><a class="header-anchor" href="#162-判断碎片类型">16.2 判断碎片类型</a></h3>
+<p>记忆规则：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>固定大小 → 容易内部碎片</span></span>
+<span class="line"><span>可变大小且要求连续 → 容易外部碎片</span></span>
+<span class="line"><span>分页 → 内部碎片</span></span>
+<span class="line"><span>动态分区/分段 → 外部碎片</span></span>
+<span class="line"><span>段页式 → 内部碎片</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="163-动态分区算法选择题" tabindex="-1"><a class="header-anchor" href="#163-动态分区算法选择题">16.3 动态分区算法选择题</a></h3>
+<p>遇到空闲分区表和请求大小，按算法逐个判断：</p>
+<ol>
+<li>首次适应：按表中顺序找第一个够用的。</li>
+<li>循环首次适应：从上次位置后面开始找第一个够用的。</li>
+<li>最佳适应：在所有够用的里面找最小的。</li>
+<li>最坏适应：在所有够用的里面找最大的。</li>
+</ol>
+<h3 id="164-动态分区分配后如何更新空闲表" tabindex="-1"><a class="header-anchor" href="#164-动态分区分配后如何更新空闲表">16.4 动态分区分配后如何更新空闲表</a></h3>
+<p>若空闲区大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi></mrow><annotation encoding="application/x-tex">H</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span></span></span></span>，请求大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>：</p>
+<ul>
+<li>若 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>=</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H=S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>，该空闲区从表中删除。</li>
+<li>若 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>&gt;</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H&gt;S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>，切出 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span>，剩余 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>−</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">H-S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span> 继续留在空闲表。</li>
+</ul>
+<p>公式：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>剩余空闲区大小</mtext><mo>=</mo><mi>H</mi><mo>−</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">\text{剩余空闲区大小} = H - S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord cjk_fallback">剩余空闲区大小</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span></span>
+<p>若按地址递增排序，还要更新剩余空闲区的起始地址。</p>
+<h3 id="165-回收时如何合并" tabindex="-1"><a class="header-anchor" href="#165-回收时如何合并">16.5 回收时如何合并</a></h3>
+<p>回收一个分区时，要看它前后是否有相邻空闲区。</p>
+<p>情况有四种：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前后都不是空闲区</td>
+<td>新增一个空闲区</td>
+</tr>
+<tr>
+<td>前面是空闲区，后面不是</td>
+<td>与前面的空闲区合并</td>
+</tr>
+<tr>
+<td>前面不是，后面是空闲区</td>
+<td>与后面的空闲区合并</td>
+</tr>
+<tr>
+<td>前后都是空闲区</td>
+<td>三者合并成一个大空闲区</td>
+</tr>
+</tbody>
+</table>
+<p>合并依据是物理地址连续，而不是表中相邻。</p>
+<hr>
+<h2 id="17-综合例题动态分区算法" tabindex="-1"><a class="header-anchor" href="#17-综合例题动态分区算法">17. 综合例题：动态分区算法</a></h2>
+<p>空闲区表如下，按地址递增排列：</p>
+<table>
+<thead>
+<tr>
+<th>空闲区</th>
+<th style="text-align:right">起始地址</th>
+<th style="text-align:right">大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align:right">100</td>
+<td style="text-align:right">20 KB</td>
+</tr>
+<tr>
+<td>B</td>
+<td style="text-align:right">200</td>
+<td style="text-align:right">80 KB</td>
+</tr>
+<tr>
+<td>C</td>
+<td style="text-align:right">400</td>
+<td style="text-align:right">50 KB</td>
+</tr>
+<tr>
+<td>D</td>
+<td style="text-align:right">600</td>
+<td style="text-align:right">120 KB</td>
+</tr>
+</tbody>
+</table>
+<p>现在请求 45 KB。</p>
+<h3 id="171-首次适应" tabindex="-1"><a class="header-anchor" href="#171-首次适应">17.1 首次适应</a></h3>
+<p>从头找：</p>
+<ul>
+<li>A：20 KB，不够。</li>
+<li>B：80 KB，够。</li>
+</ul>
+<p>所以选择 B，剩余：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>80</mn><mo>−</mo><mn>45</mn><mo>=</mo><mn>35</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">80 - 45 = 35\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">80</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">45</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">35</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<h3 id="172-最佳适应" tabindex="-1"><a class="header-anchor" href="#172-最佳适应">17.2 最佳适应</a></h3>
+<p>能满足 45 KB 的空闲区有：</p>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>B：80 KB</span></span>
+<span class="line"><span>C：50 KB</span></span>
+<span class="line"><span>D：120 KB</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>最小的是 C：50 KB，所以选择 C，剩余：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>50</mn><mo>−</mo><mn>45</mn><mo>=</mo><mn>5</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">50 - 45 = 5\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">50</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">45</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">5</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<h3 id="173-最坏适应" tabindex="-1"><a class="header-anchor" href="#173-最坏适应">17.3 最坏适应</a></h3>
+<p>最大的空闲区是 D：120 KB，所以选择 D，剩余：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>120</mn><mo>−</mo><mn>45</mn><mo>=</mo><mn>75</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">120 - 45 = 75\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">120</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">45</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">75</span><span class="mord text"><span class="mord">KB</span></span></span></span></span></span>
+<h3 id="174-循环首次适应" tabindex="-1"><a class="header-anchor" href="#174-循环首次适应">17.4 循环首次适应</a></h3>
+<p>如果上次查找停在 B 后面，则从 C 开始：</p>
+<ul>
+<li>C：50 KB，够。</li>
+</ul>
+<p>所以选择 C。</p>
+<p>如果上次查找停在 C 后面，则从 D 开始，选择 D。</p>
+<p>循环首次适应的结果依赖“上次查找指针”的位置。</p>
+<hr>
+<h2 id="18-最容易混的点" tabindex="-1"><a class="header-anchor" href="#18-最容易混的点">18. 最容易混的点</a></h2>
+<h3 id="181-动态分区和分段有什么区别" tabindex="-1"><a class="header-anchor" href="#181-动态分区和分段有什么区别">18.1 动态分区和分段有什么区别？</a></h3>
+<p>动态分区是一种物理内存分配策略：进程来了，就按进程大小切一块连续内存。</p>
+<p>分段是一种按程序逻辑划分地址空间的管理方式：程序被分为代码段、数据段、栈段等。</p>
+<p>它们都可能使用可变长度连续区域，所以都可能产生外部碎片，但关注点不同。</p>
+<h3 id="182-分段是不是非连续分配" tabindex="-1"><a class="header-anchor" href="#182-分段是不是非连续分配">18.2 分段是不是非连续分配？</a></h3>
+<p>从整个进程看，分段可以是非连续的，因为不同段可以放在不同位置。</p>
+<p>但从单个段看，每个段内部通常连续存放，所以分段仍然会产生外部碎片。</p>
+<h3 id="183-动态分区有没有内部碎片" tabindex="-1"><a class="header-anchor" href="#183-动态分区有没有内部碎片">18.3 动态分区有没有内部碎片？</a></h3>
+<p>严格按需分配时，动态分区主要没有内部碎片，主要问题是外部碎片。</p>
+<p>但实际系统可能因为对齐、最小分配单位等产生少量内部浪费。408 语境下通常记：动态分区产生外部碎片。</p>
+<h3 id="184-最佳适应为什么会产生很多小碎片" tabindex="-1"><a class="header-anchor" href="#184-最佳适应为什么会产生很多小碎片">18.4 最佳适应为什么会产生很多小碎片？</a></h3>
+<p>因为它总是找最接近请求大小的空闲区，切完后剩余部分往往很小。这些小碎片可能不能满足后续请求。</p>
+<h3 id="185-最坏适应为什么不一定好" tabindex="-1"><a class="header-anchor" href="#185-最坏适应为什么不一定好">18.5 最坏适应为什么不一定好？</a></h3>
+<p>它总是切最大的空闲区，会快速破坏大块连续空间。后面如果来大进程，反而可能没有足够大的空闲区。</p>
+<hr>
+<h2 id="19-一页速记" tabindex="-1"><a class="header-anchor" href="#19-一页速记">19. 一页速记</a></h2>
+<ol>
+<li>连续分配：进程占一段连续物理内存，地址变换是基址加偏移。</li>
+<li>非连续分配：进程可分散存放，需要页表、段表等映射结构。</li>
+<li>单一连续分配：一次通常只运行一个用户进程，简单但利用率低。</li>
+<li>固定分区：预先切分区，一个分区一个进程，主要有内部碎片。</li>
+<li>动态分区：按进程大小动态切分，主要有外部碎片。</li>
+<li>外部碎片：总空闲够，但没有足够大的连续空闲区。</li>
+<li>内部碎片：分配给进程的空间内部有没用完的部分。</li>
+<li>首次适应：从头找第一个够用的。</li>
+<li>循环首次适应：从上次位置继续找第一个够用的。</li>
+<li>最佳适应：找最小的够用空闲区，容易留下小碎片。</li>
+<li>最坏适应：找最大的空闲区，容易消耗大空闲区。</li>
+<li>快速适应：按常见大小分类链表，分配快但合并复杂。</li>
+<li>伙伴系统：按 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span> 分裂和合并，规则清晰但可能有内部碎片。</li>
+<li>分页：非连续分配，无外部碎片，有内部碎片。</li>
+<li>分段：逻辑友好，段间可不连续，但段内连续，可能有外部碎片。</li>
+<li>段页式：先分段再分页，保留逻辑结构，同时用页框离散分配。</li>
+</ol>
+<!-- END: memory-contiguous-noncontiguous-allocation-note -->
+
+  </main>
+  <script>
+    function enhanceCallouts() {
+      document.querySelectorAll('blockquote').forEach((blockquote) => {
+        const first = blockquote.querySelector('p, li, div');
+        if (!first) return;
+
+        const rawText = first.textContent.trim();
+        const firstLine = rawText.split(/\n/)[0].trim();
+        const match = firstLine.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO|QUESTION|EXAMPLE|QUOTE|BUG|SUCCESS|FAILURE|DANGER)\]\s*(.*)$/i);
+        if (!match) return;
+
+        const type = match[1].toLowerCase();
+        const title = match[2] || match[1].toUpperCase();
+        blockquote.classList.add('callout', 'callout-' + type);
+
+        const htmlLines = first.innerHTML.split(/(?:\r?\n|<br\s*\/?>)/i);
+        first.innerHTML = htmlLines.slice(1).join('<br>').trim();
+
+        const titleNode = document.createElement('div');
+        titleNode.className = 'callout-title';
+        titleNode.textContent = title;
+        blockquote.prepend(titleNode);
+      });
+    }
+
+    enhanceCallouts();
+  </script>
+</body>
+</html>
