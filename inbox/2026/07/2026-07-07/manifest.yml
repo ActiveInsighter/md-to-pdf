@@ -14,6 +14,6 @@ content_checks:
     must_contain:
       - 复杂 Markdown 数学与代码块测试页
       - 第 10 页：综合长公式、接口代码与结论
-      - KaTeX
+      - 行内公式与中文混排
 consume:
   delete_after_success: true
