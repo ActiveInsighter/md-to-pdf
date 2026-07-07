@@ -2,7 +2,7 @@
   "status": "success",
   "manifests": [
     {
-      "manifest": "inbox/2026/07/2026-07-07/manifest.yml",
+      "manifest": "inbox/2026/07/2026-07-07/manifest.json",
       "root": "inbox/2026/07/2026-07-07",
       "date": "2026-07-07"
     }
