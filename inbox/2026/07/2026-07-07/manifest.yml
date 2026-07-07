@@ -1,0 +1,30 @@
+version: 1
+date: 2026-07-07
+title: 内存管理：连续分配、非连续分配与动态分区分配算法
+theme: chatgpt-light
+
+content_checks:
+  - path: md/001-memory-contiguous-noncontiguous-allocation.md
+    min_bytes: 23000
+    min_chars: 10000
+    must_contain:
+      - 内存管理：连续分配、非连续分配与动态分区分配算法
+      - 单一连续分配
+      - 固定分区分配
+      - 动态分区分配
+      - 首次适应算法
+      - 循环首次适应算法
+      - 最佳适应算法
+      - 最坏适应算法
+      - 伙伴系统
+      - 一页速记
+    must_end_with: "<!-- END: memory-contiguous-noncontiguous-allocation-note -->"
+
+jobs:
+  - id: memory-contiguous-noncontiguous-allocation
+    type: merge
+    title: 内存管理：连续分配、非连续分配与动态分区分配算法
+    inputs:
+      - md/001-memory-contiguous-noncontiguous-allocation.md
+    page_break: true
+    output: memory-contiguous-noncontiguous-allocation.pdf
