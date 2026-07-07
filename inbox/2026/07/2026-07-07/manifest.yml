@@ -14,7 +14,7 @@ content_checks:
   - path: md/002-memory-paging-segmentation.md
     min_bytes: 25000
     min_chars: 12000
-    sha256: 0a52759460b8095d446d7116b238a3dd6ae17e72204790a1b66d2f3c0325464d
+    sha256: be34a1de7fd3e8148d395ab950a7968a0cce15356c533c376ac1bba6b11cb6e5
     must_contain:
       - 内存管理：分页、分段、段页式管理完整笔记
       - 页、页面、页框、页帧、块、页号、页框号、物理块号
