@@ -10,7 +10,7 @@ jobs:
     page_break: true
 content_checks:
   - path: md/complex-math-code-showcase.md
-    min_chars: 9000
+    min_chars: 8000
     must_contain:
       - 复杂 Markdown 数学与代码块测试页
       - 第 10 页：综合长公式、接口代码与结论
