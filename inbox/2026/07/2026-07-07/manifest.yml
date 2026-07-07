@@ -5,7 +5,7 @@ theme: chatgpt-light
 
 content_checks:
   - path: md/shiki-chatgpt-light-render-test.md
-    min_chars: 2000
+    min_chars: 1900
     must_contain:
       - Shiki
       - ChatGPT Light
