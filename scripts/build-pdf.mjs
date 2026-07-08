@@ -15,6 +15,7 @@ const htmlOnly = args.includes('--html-only');
 const DEFAULT_THEME = 'chatgpt-light';
 const SHIKI_THEME = process.env.SHIKI_THEME || 'github-light';
 const THEME_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const PUPPETEER_TIMEOUT_MS = Number(process.env.PUPPETEER_TIMEOUT_MS || 180000);
 
 const projectRoot = process.cwd();
 const inputPath = path.resolve(projectRoot, inputFile);
@@ -421,7 +422,9 @@ async function main() {
 
   try {
     const page = await browser.newPage();
-    await page.goto(pathToFileURL(outputHtmlPath).href, { waitUntil: 'networkidle0' });
+    page.setDefaultTimeout(PUPPETEER_TIMEOUT_MS);
+    page.setDefaultNavigationTimeout(PUPPETEER_TIMEOUT_MS);
+    await page.goto(pathToFileURL(outputHtmlPath).href, { waitUntil: 'networkidle0', timeout: PUPPETEER_TIMEOUT_MS });
     await page.emulateMediaType('print');
     await page.pdf({
       path: outputPdfPath,

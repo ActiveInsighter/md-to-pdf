@@ -1,6 +1,6 @@
 version: 1
 date: 2026-07-08
-title: Shiki ChatGPT Light 渲染测试
+title: 2026-07-08 PDF 构建任务
 theme: chatgpt-light
 
 content_checks:
@@ -11,6 +11,12 @@ content_checks:
       - ChatGPT Light
       - KaTeX
       - github-light
+  - path: md/001-计算机组成原理_合并.md
+    min_chars: 160000
+    must_contain:
+      - 第一章 计算机系统概述
+      - 第七章 输入/输出系统
+      - DMA 方式
 
 jobs:
   - id: shiki-chatgpt-light-render-test
@@ -20,3 +26,11 @@ jobs:
       - md/shiki-chatgpt-light-render-test.md
     page_break: true
     output: shiki-chatgpt-light-render-test.pdf
+
+  - id: computer-organization-merged-full
+    type: merge
+    title: 408 计算机组成原理学习笔记
+    inputs:
+      - md/001-计算机组成原理_合并.md
+    page_break: true
+    output: 2026-07-08-计算机组成原理.pdf
