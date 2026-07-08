@@ -8,12 +8,12 @@
   "actor": "ActiveInsighter",
   "branch": "rebuild-20260708-computer-org-katex",
   "head_sha": "756de8d18a6dfebf630efd75848734ae472b5311",
-  "status": "running",
+  "status": "failure",
   "started_at": "2026-07-08T07:16:15.666Z",
-  "finished_at": null,
-  "duration_seconds": null,
-  "build_outcome": null,
-  "artifact_outcome": null,
+  "finished_at": "2026-07-08T07:16:50.094Z",
+  "duration_seconds": 34,
+  "build_outcome": "failure",
+  "artifact_outcome": "skipped",
   "artifact_name": "obsidian-style-pdf",
   "log_file": ".github/latest-build-log.txt"
 }
