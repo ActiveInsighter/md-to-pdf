@@ -11,6 +11,8 @@ on:
       - 'inbox/**/md/**'
       - 'inbox/**/img/**'
       - 'inbox/**/attachments/**'
+      - 'themes/**'
+      - 'style.css'
       - 'scripts/**'
       - 'package.json'
       - '.github/workflows/build-pdf.yml'
