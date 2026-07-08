@@ -13,11 +13,11 @@
 /*
   KaTeX math protection layer.
 
-  Theme CSS should not change KaTeX's internal line breaking, wrapping, spacing,
-  or font metrics. KaTeX formulas are built from many positioned spans; global
-  Markdown rules such as overflow-wrap, word-break, line-break, letter-spacing,
-  or inherited text formatting can make fractions, sums, limits, and accents look
-  vertically misaligned in exported PDFs and mobile PDF viewers.
+  Keep KaTeX's own font metrics and span positioning intact. The renderer should
+  protect formulas from global Markdown wrapping rules, but it should not compress
+  their line boxes or turn display math into a clipped scrolling box. Fractions,
+  radicals, limits, accents, and CJK text inside \text{...} need extra vertical
+  room when Chrome prints HTML to PDF.
 */
 :is(.print, .markdown-preview-view, .markdown-rendered) .katex,
 :is(.print, .markdown-preview-view, .markdown-rendered) .katex * {
@@ -31,35 +31,46 @@
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .katex {
   white-space: nowrap !important;
-  line-height: 1.2 !important;
+  line-height: normal !important;
   font-size: 1em !important;
   max-width: none !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .katex .katex-html {
   white-space: nowrap !important;
+  overflow: visible !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
   display: block !important;
   max-width: 100% !important;
   margin: var(--math-display-gap, 0.68em) 0 !important;
-  padding: 0.08em 0 0.12em !important;
-  overflow-x: auto !important;
-  overflow-y: visible !important;
+  padding: 0.32em 0 0.42em !important;
+  overflow: visible !important;
   text-align: center !important;
-  line-height: 1.28 !important;
+  line-height: normal !important;
   white-space: normal !important;
+  min-height: max-content !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
   display: inline-block !important;
   max-width: 100% !important;
   white-space: nowrap !important;
+  overflow: visible !important;
+  vertical-align: middle !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered) table .katex,
 :is(.print, .markdown-preview-view, .markdown-rendered) table .katex * {
   overflow-wrap: normal !important;
   word-break: normal !important;
+}
+
+@media print {
+  :is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+    overflow: visible !important;
+  }
 }
