@@ -1,43 +1,43 @@
 ## apt install CJK fonts
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
-Get:3 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
 Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:6 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
+Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
 Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
-Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
-Get:5 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
-Get:6 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
-Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
-Get:9 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
-Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [205 kB]
-Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
-Get:12 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [173 kB]
-Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1078 kB]
-Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [267 kB]
-Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [181 kB]
-Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.7 kB]
-Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1659 kB]
-Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
-Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
-Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
-Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
-Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
-Get:23 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
-Get:24 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
-Get:25 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
-Get:26 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
-Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [826 kB]
-Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [186 kB]
-Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
-Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
-Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
-Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
-Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
-Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
-Get:35 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
-Get:36 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
+Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:8 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
+Get:9 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1078 kB]
+Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [267 kB]
+Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [181 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 c-n-f Metadata [17.7 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1659 kB]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [34.9 kB]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1196 kB]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [271 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [11.8 kB]
+Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [826 kB]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [186 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
+Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1173 kB]
+Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [230 kB]
+Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:35 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [205 kB]
+Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1133 kB]
+Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [259 kB]
+Get:36 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [173 kB]
+Get:37 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
+Get:34 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
 Get:38 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1218 B]
-Get:37 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [10.1 kB]
-Fetched 10.2 MB in 1s (7714 kB/s)
+Fetched 10.2 MB in 1s (8746 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -51,7 +51,7 @@ Need to get 61.2 MB of archives.
 After this operation, 93.2 MB of additional disk space will be used.
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
-Fetched 61.2 MB in 1s (42.0 MB/s)
+Fetched 61.2 MB in 1s (84.9 MB/s)
 Selecting previously unselected package fonts-noto-cjk.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202513 files and directories currently installed.)
 Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
@@ -71,7 +71,7 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 
 ## npm install
 
-added 157 packages, and audited 158 packages in 9s
+added 157 packages, and audited 158 packages in 8s
 
 38 packages are looking for funding
   run `npm fund` for details
@@ -86,117 +86,50 @@ npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to revi
 Using system Chrome: /usr/bin/google-chrome
 
 ## PDF build
-started_at=2026-07-08T06:33:19.709Z
+started_at=2026-07-08T06:47:36.918Z
 mode=queue
 command=node scripts/build-queue.mjs
 
 Changed files:
-- inbox/2026/07/2026-07-08/img/001-ch1-sec1-2-2-computer-hardware.png
-- inbox/2026/07/2026-07-08/img/002-ch1-sec1-2-4-computer-system-hierarchy.png
-- inbox/2026/07/2026-07-08/img/003-ch1-sec1-2-5-computer-system-users.png
-- inbox/2026/07/2026-07-08/img/004-ch1-sec1-2-6-von-neumann-structure.png
-- inbox/2026/07/2026-07-08/img/005-ch1-sec1-2-6-program-execution-flow.png
-- inbox/2026/07/2026-07-08/img/006-ch2-sec2-1-2-fixed-point-number-coding.png
-- inbox/2026/07/2026-07-08/img/007-ch2-sec2-2-1-one-bit-full-adder.png
-- inbox/2026/07/2026-07-08/img/008-ch2-sec2-2-1-ripple-carry-adder.png
-- inbox/2026/07/2026-07-08/img/009-ch2-sec2-2-1-carry-lookahead-adder.png
-- inbox/2026/07/2026-07-08/img/010-ch2-sec2-2-1-alu-structure.png
-- inbox/2026/07/2026-07-08/img/011-ch2-sec2-2-1-arithmetic-logic-unit.png
-- inbox/2026/07/2026-07-08/img/012-ch2-sec2-2-1-shifter-circuit.png
-- inbox/2026/07/2026-07-08/img/013-ch2-sec2-2-3-addition-subtraction-circuit.png
-- inbox/2026/07/2026-07-08/img/014-ch2-sec2-2-4-unsigned-multiplication.png
-- inbox/2026/07/2026-07-08/img/015-ch2-sec2-2-4-booth-multiplication.png
-- inbox/2026/07/2026-07-08/img/016-ch2-sec2-2-4-division-operation.png
-- inbox/2026/07/2026-07-08/img/017-ch2-sec2-3-1-ieee754-floating-point.png
-- inbox/2026/07/2026-07-08/img/018-ch2-sec2-3-4-data-width-and-storage.png
-- inbox/2026/07/2026-07-08/img/019-ch2-sec2-3-4-little-and-big-endian.png
-- inbox/2026/07/2026-07-08/img/020-ch3-sec3-1-2-main-memory-basic-structure.png
-- inbox/2026/07/2026-07-08/img/021-ch3-sec3-1-3-multilevel-memory-structure.png
-- inbox/2026/07/2026-07-08/img/022-ch3-sec3-1-3-three-level-storage-hierarchy.png
-- inbox/2026/07/2026-07-08/img/023-ch3-sec3-2-1-memory-chip-structure.png
-- inbox/2026/07/2026-07-08/img/024-ch3-sec3-2-1-4mx4-dram-logic-structure.png
-- inbox/2026/07/2026-07-08/img/025-ch3-sec3-2-1-dram-chip-simplified.png
-- inbox/2026/07/2026-07-08/img/026-ch3-sec3-2-3-sequential-interleaved-memory.png
-- inbox/2026/07/2026-07-08/img/027-ch3-sec3-2-3-interleaved-memory.png
-- inbox/2026/07/2026-07-08/img/028-ch3-sec3-3-1-bit-extension-connection.png
-- inbox/2026/07/2026-07-08/img/029-ch3-sec3-3-1-word-extension-connection.png
-- inbox/2026/07/2026-07-08/img/030-ch3-sec3-4-1-disk-drive.png
-- inbox/2026/07/2026-07-08/img/031-ch3-sec3-5-1-instructions-and-data-in-memory.png
-- inbox/2026/07/2026-07-08/img/032-ch3-sec3-5-2-cache-access-flow.png
-- inbox/2026/07/2026-07-08/img/033-ch3-sec3-5-3-direct-mapped-cache.png
-- inbox/2026/07/2026-07-08/img/034-ch3-sec3-5-3-fully-associative-cache.png
-- inbox/2026/07/2026-07-08/img/035-ch3-sec3-5-3-two-way-set-associative-cache.png
-- inbox/2026/07/2026-07-08/img/036-ch3-sec3-5-4-lru-replacement-process.png
-- inbox/2026/07/2026-07-08/img/037-ch3-sec3-5-5-cache-write-buffer.png
-- inbox/2026/07/2026-07-08/img/038-ch3-sec3-5-6-cache-field-layouts.png
-- inbox/2026/07/2026-07-08/img/039-ch3-sec3-6-2-page-table-in-memory.png
-- inbox/2026/07/2026-07-08/img/040-ch3-sec3-6-2-paged-virtual-address-translation.png
-- inbox/2026/07/2026-07-08/img/041-ch3-sec3-6-2-tlb-and-cache-access.png
-- inbox/2026/07/2026-07-08/img/042-ch3-sec3-6-2-cpu-memory-access-with-tlb.png
-- inbox/2026/07/2026-07-08/img/043-ch3-sec3-6-3-segmented-address-translation.png
-- inbox/2026/07/2026-07-08/img/044-ch4-sec4-1-4-extended-opcode-layout.png
-- inbox/2026/07/2026-07-08/img/045-ch4-sec4-2-2-implied-addressing.png
-- inbox/2026/07/2026-07-08/img/046-ch4-sec4-2-2-immediate-addressing.png
-- inbox/2026/07/2026-07-08/img/047-ch4-sec4-2-2-direct-addressing.png
-- inbox/2026/07/2026-07-08/img/048-ch4-sec4-2-2-indirect-addressing.png
-- inbox/2026/07/2026-07-08/img/049-ch4-sec4-2-2-register-addressing.png
-- inbox/2026/07/2026-07-08/img/050-ch4-sec4-2-2-register-indirect-addressing.png
-- inbox/2026/07/2026-07-08/img/051-ch4-sec4-2-2-relative-addressing.png
-- inbox/2026/07/2026-07-08/img/052-ch4-sec4-2-2-base-addressing.png
-- inbox/2026/07/2026-07-08/img/053-ch4-sec4-2-2-indexed-addressing.png
-- inbox/2026/07/2026-07-08/img/054-ch4-sec4-3-1-x86-main-registers.png
-- inbox/2026/07/2026-07-08/img/055-ch4-sec4-3-4-caller-and-add-stack-frames.png
-- inbox/2026/07/2026-07-08/img/056-ch5-sec5-1-2-cpu-basic-structure.png
-- inbox/2026/07/2026-07-08/img/057-ch5-sec5-2-1-instruction-execution-flow.png
-- inbox/2026/07/2026-07-08/img/058-ch5-sec5-2-3-instruction-cycle-division.png
-- inbox/2026/07/2026-07-08/img/059-ch5-sec5-3-2-datapath-clock-cycle.png
-- inbox/2026/07/2026-07-08/img/060-ch5-sec5-3-4-single-bus-datapath.png
-- inbox/2026/07/2026-07-08/img/061-ch5-sec5-3-5-instruction-fetch-unit.png
-- inbox/2026/07/2026-07-08/img/062-ch5-sec5-3-5-r-type-datapath.png
-- inbox/2026/07/2026-07-08/img/063-ch5-sec5-3-5-i-type-datapath.png
-- inbox/2026/07/2026-07-08/img/064-ch5-sec5-3-5-load-store-datapath.png
-- inbox/2026/07/2026-07-08/img/065-ch5-sec5-4-2-hardwired-cu-simplified.png
-- inbox/2026/07/2026-07-08/img/066-ch5-sec5-4-3-microprogram-hierarchy.png
-- inbox/2026/07/2026-07-08/img/067-ch5-sec5-4-3-microprogram-controller-structure.png
-- inbox/2026/07/2026-07-08/img/068-ch5-sec5-4-3-direct-encoding.png
-- inbox/2026/07/2026-07-08/img/069-ch5-sec5-4-3-field-direct-encoding.png
-- inbox/2026/07/2026-07-08/img/070-ch5-sec5-4-3-horizontal-microinstruction-format.png
-- inbox/2026/07/2026-07-08/img/071-ch5-sec5-4-3-vertical-microinstruction-format.png
-- inbox/2026/07/2026-07-08/img/072-ch5-sec5-6-2-pipeline-logic-structure.png
-- inbox/2026/07/2026-07-08/img/073-ch5-sec5-6-2-pipeline-space-time-diagram.png
-- inbox/2026/07/2026-07-08/img/074-ch5-sec5-6-5-superscalar-pipeline.png
-- inbox/2026/07/2026-07-08/img/075-ch5-sec5-7-2-hardware-multithreading-schedule.png
-- inbox/2026/07/2026-07-08/img/076-ch5-sec5-7-3-dual-core-no-shared-cache.png
-- inbox/2026/07/2026-07-08/img/077-ch6-sec6-1-4-single-bus-structure.png
-- inbox/2026/07/2026-07-08/img/078-ch6-sec6-1-4-north-south-bridge.png
-- inbox/2026/07/2026-07-08/img/079-ch6-sec6-2-2-request-response-interlock.png
-- inbox/2026/07/2026-07-08/img/080-ch7-sec7-2-2-io-interface-structure.png
-- inbox/2026/07/2026-07-08/img/081-ch7-sec7-3-2-program-interrupt-mode.png
-- inbox/2026/07/2026-07-08/img/082-ch7-sec7-3-2-nested-interrupt-flow.png
-- inbox/2026/07/2026-07-08/img/083-ch7-sec7-3-2-single-and-multiple-interrupts.png
-- inbox/2026/07/2026-07-08/img/084-ch7-sec7-3-2-programmable-interrupt-controller.png
-- inbox/2026/07/2026-07-08/img/085-ch7-sec7-3-2-cpu-program-execution-trace.png
-- inbox/2026/07/2026-07-08/img/086-ch7-sec7-3-3-simple-dma-controller.png
-- inbox/2026/07/2026-07-08/img/087-ch7-sec7-3-3-cpu-memory-access-stop.png
-- inbox/2026/07/2026-07-08/img/088-ch7-sec7-3-3-cycle-stealing.png
-- inbox/2026/07/2026-07-08/img/089-ch7-sec7-3-3-dma-cpu-alternating-memory-access.png
-- inbox/2026/07/2026-07-08/img/090-ch7-sec7-3-3-dma-data-transfer-flow.png
 - inbox/2026/07/2026-07-08/manifest.yml
-- "inbox/2026/07/2026-07-08/md/001-\350\256\241\347\256\227\346\234\272\347\273\204\346\210\220\345\216\237\347\220\206_\345\220\210\345\271\266.md"
-- scripts/build-pdf.mjs
 Queue manifests:
 - inbox/2026/07/2026-07-08/manifest.yml
 
 Content checks: 2
-Error: Content check failed for inbox/2026/07/2026-07-08/md/shiki-chatgpt-light-render-test.md: expected at least 2000 characters, got 1967.
-    at validateContentChecks (file:///home/runner/work/md-to-pdf/md-to-pdf/scripts/lib/content-checks.mjs:34:13)
-    at async buildManifest (file:///home/runner/work/md-to-pdf/md-to-pdf/scripts/build-day.mjs:85:3)
-    at async main (file:///home/runner/work/md-to-pdf/md-to-pdf/scripts/build-day.mjs:144:19)
-Error: scripts/build-day.mjs exited with code 1
-    at ChildProcess.<anonymous> (file:///home/runner/work/md-to-pdf/md-to-pdf/scripts/build-queue.mjs:38:19)
-    at ChildProcess.emit (node:events:509:28)
-    at maybeClose (node:internal/child_process:1124:16)
-    at ChildProcess._handle.onexit (node:internal/child_process:306:5)
+- OK inbox/2026/07/2026-07-08/md/shiki-chatgpt-light-render-test.md (2339 bytes, 1967 chars)
+- OK inbox/2026/07/2026-07-08/md/001-计算机组成原理_合并.md (357173 bytes, 163211 chars)
+Manifest: inbox/2026/07/2026-07-08/manifest.yml
+Date: 2026-07-08
+Theme: chatgpt-light
 
-finished_at=2026-07-08T06:33:20.050Z
-exit_code=1
+Job shiki-chatgpt-light-render-test (merge)
+Theme: chatgpt-light
+Inputs: inbox/2026/07/2026-07-08/md/shiki-chatgpt-light-render-test.md
+Build merged: .tmp/combined/2026/07/2026-07-08/shiki-chatgpt-light-render-test.md -> dist/queue/2026/07/2026-07-08/shiki-chatgpt-light-render-test.pdf
+Theme: chatgpt-light
+Shiki theme: github-light
+Shiki languages: text, typescript, python, shellscript, json, css
+HTML written to dist/queue/2026/07/2026-07-08/shiki-chatgpt-light-render-test.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-08/shiki-chatgpt-light-render-test.pdf
+PDF outline check: found /Outlines; /Title entries=8; PageMode not UseOutlines
+
+Job computer-organization-merged-full (merge)
+Theme: chatgpt-light
+Inputs: inbox/2026/07/2026-07-08/md/001-计算机组成原理_合并.md
+Build merged: .tmp/combined/2026/07/2026-07-08/computer-organization-merged-full.md -> dist/queue/2026/07/2026-07-08/2026-07-08-计算机组成原理.pdf
+Theme: chatgpt-light
+Shiki theme: github-light
+Shiki languages: text, c, asm
+HTML written to dist/queue/2026/07/2026-07-08/2026-07-08-计算机组成原理.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-08/2026-07-08-计算机组成原理.pdf
+PDF outline check: found /Outlines; /Title entries=146; PageMode not UseOutlines
+
+Built 2 output(s) from inbox/2026/07/2026-07-08/manifest.yml.
+Built 1 manifest(s).
+Will consume after successful publish:
+- inbox/2026/07/2026-07-08
+
+finished_at=2026-07-08T06:48:13.327Z
+exit_code=0
