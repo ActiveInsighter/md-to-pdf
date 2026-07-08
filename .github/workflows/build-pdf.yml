@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - rebuild-20260708-computer-org-katex
     paths:
       - 'inbox/**/manifest.yml'
       - 'inbox/**/manifest.yaml'
@@ -11,6 +12,8 @@ on:
       - 'inbox/**/md/**'
       - 'inbox/**/img/**'
       - 'inbox/**/attachments/**'
+      - 'themes/**'
+      - 'style.css'
       - 'scripts/**'
       - 'package.json'
       - '.github/workflows/build-pdf.yml'
@@ -19,13 +22,14 @@ on:
       mode:
         description: 'queue | day | single | notes | validate'
         required: true
-        default: 'queue'
+        default: 'day'
       source:
         description: 'Manifest path, Markdown path, or day target depending on mode'
         required: false
       day:
         description: 'Day like 2026-07-02, used by day/validate mode'
         required: false
+        default: '2026-07-08'
       publish_output_branch:
         description: 'Publish generated files to the output branch'
         required: true
@@ -86,9 +90,9 @@ jobs:
         id: build_pdf
         continue-on-error: true
         env:
-          BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'queue' }}
+          BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'day' }}
           BUILD_SOURCE: ${{ github.event_name == 'workflow_dispatch' && inputs.source || '' }}
-          BUILD_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.day || '' }}
+          BUILD_DAY: ${{ github.event_name == 'workflow_dispatch' && inputs.day || '2026-07-08' }}
           BEFORE_SHA: ${{ github.event.before }}
           CURRENT_SHA: ${{ github.sha }}
         run: npm run ci:build
