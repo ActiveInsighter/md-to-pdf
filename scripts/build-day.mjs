@@ -8,6 +8,7 @@ import {
   resolveManifestTarget
 } from './lib/manifest.mjs';
 import { validateContentChecks } from './lib/content-checks.mjs';
+import { validateMarkdownForRender } from './lib/render-preflight.mjs';
 import {
   ensureInside,
   rewriteMarkdownResourcePaths,
@@ -88,6 +89,7 @@ async function buildManifest(manifestPath) {
   await fs.mkdir(outputBase, { recursive: true });
 
   const results = [];
+  const validatedInputs = new Set();
   console.log(`Manifest: ${manifest.manifestRel}`);
   console.log(`Date: ${manifest.date}`);
   console.log(`Theme: ${manifest.theme}`);
@@ -97,6 +99,13 @@ async function buildManifest(manifestPath) {
     console.log(`\nJob ${job.id} (${job.type})`);
     console.log(`Theme: ${job.theme}`);
     console.log(`Inputs: ${inputs.map((file) => toPosix(path.relative(projectRoot, file))).join(', ')}`);
+
+    for (const inputFile of inputs) {
+      const key = path.resolve(inputFile);
+      if (validatedInputs.has(key)) continue;
+      await validateMarkdownForRender(inputFile, projectRoot);
+      validatedInputs.add(key);
+    }
 
     if (job.type === 'single') {
       for (const inputFile of inputs) {
