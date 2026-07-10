@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "status": "success",
+  "generated_at": "2026-07-10T12:38:15.202Z",
+  "run_id": "29093153222",
+  "files": {
+    "pdf": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.pdf",
+    "html": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.html",
+    "preview": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.preview.png",
+    "quality": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.quality.json"
+  },
+  "pdf": {
+    "bytes": 931110,
+    "pages": 7,
+    "header_valid": true,
+    "text_chars": 3455,
+    "page_text_chars": [
+      558,
+      289,
+      385,
+      345,
+      772,
+      735,
+      371
+    ],
+    "suspected_blank_pages": [],
+    "metadata": {
+      "title": "Markdown 综合结构展示",
+      "creator": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+      "producer": "Skia/PDF m150",
+      "creationdate": "Fri Jul 10 12:38:11 2026 UTC",
+      "moddate": "Fri Jul 10 12:38:11 2026 UTC",
+      "custom_metadata": "no",
+      "metadata_stream": "no",
+      "tagged": "yes",
+      "userproperties": "no",
+      "suspects": "no",
+      "form": "none",
+      "javascript": "no",
+      "pages": "7",
+      "encrypted": "no",
+      "page_size": "594.96 x 841.92 pts (A4)",
+      "page_rot": "0",
+      "file_size": "931110 bytes",
+      "optimized": "no",
+      "pdf_version": "1.4"
+    }
+  },
+  "render": {
+    "title": "Markdown 综合结构展示",
+    "image_count": 1,
+    "missing_images": [],
+    "katex_error_count": 0,
+    "overflow_elements": [],
+    "document_overflow_px": 0,
+    "main_overflow_px": 0,
+    "body_text_chars": 3594,
+    "console_errors": [],
+    "page_errors": []
+  },
+  "preview": {
+    "strategy": "random-four-pages",
+    "selected_pages": [
+      2,
+      4,
+      5,
+      6
+    ],
+    "total_pages": 7,
+    "layout": "2x2",
+    "dpi": 110
+  },
+  "checks": [
+    {
+      "id": "pdf-header",
+      "status": "pass",
+      "message": "PDF 文件头有效。"
+    },
+    {
+      "id": "pdf-size",
+      "status": "pass",
+      "message": "PDF 大小为 931110 字节。"
+    },
+    {
+      "id": "pdf-pages",
+      "status": "pass",
+      "message": "PDF 页数为 7。"
+    },
+    {
+      "id": "html-sidecar",
+      "status": "pass",
+      "message": "HTML 旁路文件存在。"
+    },
+    {
+      "id": "preview",
+      "status": "pass",
+      "message": "合成预览图已生成。"
+    },
+    {
+      "id": "images",
+      "status": "pass",
+      "message": "所有图片均成功加载。",
+      "details": []
+    },
+    {
+      "id": "katex",
+      "status": "pass",
+      "message": "未检测到 KaTeX 渲染错误。"
+    },
+    {
+      "id": "blank-pages",
+      "status": "pass",
+      "message": "未检测到疑似空白页。",
+      "details": []
+    },
+    {
+      "id": "overflow",
+      "status": "pass",
+      "message": "未检测到明显横向溢出。",
+      "details": []
+    }
+  ]
+}

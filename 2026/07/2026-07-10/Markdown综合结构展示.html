@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="file:///home/runner/work/md-to-pdf/md-to-pdf/.tmp/combined/2026/07/2026-07-10/">
+  <title>Markdown 综合结构展示</title>
+  <meta name="pdf-theme" content="chatgpt-light">
+  <style>@font-face{font-display:block;font-family:KaTeX_AMS;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_AMS-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Caligraphic;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Caligraphic-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Fraktur;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Fraktur-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Main;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Main-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-BoldItalic.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Math;font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Math-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:700;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Bold.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:italic;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Italic.ttf) format("truetype")}@font-face{font-display:block;font-family:"KaTeX_SansSerif";font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_SansSerif-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Script;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Script-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size1;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size1-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size2;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size2-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size3;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size3-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Size4;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Size4-Regular.ttf) format("truetype")}@font-face{font-display:block;font-family:KaTeX_Typewriter;font-style:normal;font-weight:400;src:url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff2) format("woff2"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.woff) format("woff"),url(file:///home/runner/work/md-to-pdf/md-to-pdf/node_modules/katex/dist/fonts/KaTeX_Typewriter-Regular.ttf) format("truetype")}.katex{font:normal 1.21em KaTeX_Main,Times New Roman,serif;line-height:1.2;position:relative;text-indent:0;text-rendering:auto}.katex *{-ms-high-contrast-adjust:none!important;border-color:currentColor}.katex .katex-version:after{content:"0.16.47"}.katex .katex-mathml{border:0;-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;overflow:hidden;padding:0;position:absolute;width:1px}.katex .katex-html>.newline{display:block}.katex .base{position:relative;white-space:nowrap;width:-webkit-min-content;width:-moz-min-content;width:min-content}.katex .base,.katex .strut{display:inline-block}.katex .textbf{font-weight:700}.katex .textit{font-style:italic}.katex .textrm{font-family:KaTeX_Main}.katex .textsf{font-family:KaTeX_SansSerif}.katex .texttt{font-family:KaTeX_Typewriter}.katex .mathnormal{font-family:KaTeX_Math;font-style:italic}.katex .mathit{font-family:KaTeX_Main;font-style:italic}.katex .mathrm{font-style:normal}.katex .mathbf{font-family:KaTeX_Main;font-weight:700}.katex .boldsymbol{font-family:KaTeX_Math;font-style:italic;font-weight:700}.katex .amsrm,.katex .mathbb,.katex .textbb{font-family:KaTeX_AMS}.katex .mathcal{font-family:KaTeX_Caligraphic}.katex .mathfrak,.katex .textfrak{font-family:KaTeX_Fraktur}.katex .mathboldfrak,.katex .textboldfrak{font-family:KaTeX_Fraktur;font-weight:700}.katex .mathtt{font-family:KaTeX_Typewriter}.katex .mathscr,.katex .textscr{font-family:KaTeX_Script}.katex .mathsf,.katex .textsf{font-family:KaTeX_SansSerif}.katex .mathboldsf,.katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}.katex .mathitsf,.katex .mathsfit,.katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}.katex .mainrm{font-family:KaTeX_Main;font-style:normal}.katex .vlist-t{border-collapse:collapse;display:inline-table;table-layout:fixed}.katex .vlist-r{display:table-row}.katex .vlist{display:table-cell;position:relative;vertical-align:bottom}.katex .vlist>span{display:block;height:0;position:relative}.katex .vlist>span>span{display:inline-block}.katex .vlist>span>.pstrut{overflow:hidden;width:0}.katex .vlist-t2{margin-right:-2px}.katex .vlist-s{display:table-cell;font-size:1px;min-width:2px;vertical-align:bottom;width:2px}.katex .vbox{align-items:baseline;display:inline-flex;flex-direction:column}.katex .hbox{width:100%}.katex .hbox,.katex .thinbox{display:inline-flex;flex-direction:row}.katex .thinbox{max-width:0;width:0}.katex .msupsub{text-align:left}.katex .mfrac>span>span{text-align:center}.katex .mfrac .frac-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline,.katex .hline,.katex .mfrac .frac-line,.katex .overline .overline-line,.katex .rule,.katex .underline .underline-line{min-height:1px}.katex .mspace{display:inline-block}.katex .smash{display:inline;line-height:0}.katex .clap,.katex .llap,.katex .rlap{position:relative;width:0}.katex .clap>.inner,.katex .llap>.inner,.katex .rlap>.inner{position:absolute}.katex .clap>.fix,.katex .llap>.fix,.katex .rlap>.fix{display:inline-block}.katex .llap>.inner{right:0}.katex .clap>.inner,.katex .rlap>.inner{left:0}.katex .clap>.inner>span{margin-left:-50%;margin-right:50%}.katex .rule{border:0 solid;display:inline-block;position:relative}.katex .hline,.katex .overline .overline-line,.katex .underline .underline-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline{border-bottom-style:dashed;display:inline-block;width:100%}.katex .sqrt>.root{margin-left:.2777777778em;margin-right:-.5555555556em}.katex .fontsize-ensurer.reset-size1.size1,.katex .sizing.reset-size1.size1{font-size:1em}.katex .fontsize-ensurer.reset-size1.size2,.katex .sizing.reset-size1.size2{font-size:1.2em}.katex .fontsize-ensurer.reset-size1.size3,.katex .sizing.reset-size1.size3{font-size:1.4em}.katex .fontsize-ensurer.reset-size1.size4,.katex .sizing.reset-size1.size4{font-size:1.6em}.katex .fontsize-ensurer.reset-size1.size5,.katex .sizing.reset-size1.size5{font-size:1.8em}.katex .fontsize-ensurer.reset-size1.size6,.katex .sizing.reset-size1.size6{font-size:2em}.katex .fontsize-ensurer.reset-size1.size7,.katex .sizing.reset-size1.size7{font-size:2.4em}.katex .fontsize-ensurer.reset-size1.size8,.katex .sizing.reset-size1.size8{font-size:2.88em}.katex .fontsize-ensurer.reset-size1.size9,.katex .sizing.reset-size1.size9{font-size:3.456em}.katex .fontsize-ensurer.reset-size1.size10,.katex .sizing.reset-size1.size10{font-size:4.148em}.katex .fontsize-ensurer.reset-size1.size11,.katex .sizing.reset-size1.size11{font-size:4.976em}.katex .fontsize-ensurer.reset-size2.size1,.katex .sizing.reset-size2.size1{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size2.size2,.katex .sizing.reset-size2.size2{font-size:1em}.katex .fontsize-ensurer.reset-size2.size3,.katex .sizing.reset-size2.size3{font-size:1.1666666667em}.katex .fontsize-ensurer.reset-size2.size4,.katex .sizing.reset-size2.size4{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size2.size5,.katex .sizing.reset-size2.size5{font-size:1.5em}.katex .fontsize-ensurer.reset-size2.size6,.katex .sizing.reset-size2.size6{font-size:1.6666666667em}.katex .fontsize-ensurer.reset-size2.size7,.katex .sizing.reset-size2.size7{font-size:2em}.katex .fontsize-ensurer.reset-size2.size8,.katex .sizing.reset-size2.size8{font-size:2.4em}.katex .fontsize-ensurer.reset-size2.size9,.katex .sizing.reset-size2.size9{font-size:2.88em}.katex .fontsize-ensurer.reset-size2.size10,.katex .sizing.reset-size2.size10{font-size:3.4566666667em}.katex .fontsize-ensurer.reset-size2.size11,.katex .sizing.reset-size2.size11{font-size:4.1466666667em}.katex .fontsize-ensurer.reset-size3.size1,.katex .sizing.reset-size3.size1{font-size:.7142857143em}.katex .fontsize-ensurer.reset-size3.size2,.katex .sizing.reset-size3.size2{font-size:.8571428571em}.katex .fontsize-ensurer.reset-size3.size3,.katex .sizing.reset-size3.size3{font-size:1em}.katex .fontsize-ensurer.reset-size3.size4,.katex .sizing.reset-size3.size4{font-size:1.1428571429em}.katex .fontsize-ensurer.reset-size3.size5,.katex .sizing.reset-size3.size5{font-size:1.2857142857em}.katex .fontsize-ensurer.reset-size3.size6,.katex .sizing.reset-size3.size6{font-size:1.4285714286em}.katex .fontsize-ensurer.reset-size3.size7,.katex .sizing.reset-size3.size7{font-size:1.7142857143em}.katex .fontsize-ensurer.reset-size3.size8,.katex .sizing.reset-size3.size8{font-size:2.0571428571em}.katex .fontsize-ensurer.reset-size3.size9,.katex .sizing.reset-size3.size9{font-size:2.4685714286em}.katex .fontsize-ensurer.reset-size3.size10,.katex .sizing.reset-size3.size10{font-size:2.9628571429em}.katex .fontsize-ensurer.reset-size3.size11,.katex .sizing.reset-size3.size11{font-size:3.5542857143em}.katex .fontsize-ensurer.reset-size4.size1,.katex .sizing.reset-size4.size1{font-size:.625em}.katex .fontsize-ensurer.reset-size4.size2,.katex .sizing.reset-size4.size2{font-size:.75em}.katex .fontsize-ensurer.reset-size4.size3,.katex .sizing.reset-size4.size3{font-size:.875em}.katex .fontsize-ensurer.reset-size4.size4,.katex .sizing.reset-size4.size4{font-size:1em}.katex .fontsize-ensurer.reset-size4.size5,.katex .sizing.reset-size4.size5{font-size:1.125em}.katex .fontsize-ensurer.reset-size4.size6,.katex .sizing.reset-size4.size6{font-size:1.25em}.katex .fontsize-ensurer.reset-size4.size7,.katex .sizing.reset-size4.size7{font-size:1.5em}.katex .fontsize-ensurer.reset-size4.size8,.katex .sizing.reset-size4.size8{font-size:1.8em}.katex .fontsize-ensurer.reset-size4.size9,.katex .sizing.reset-size4.size9{font-size:2.16em}.katex .fontsize-ensurer.reset-size4.size10,.katex .sizing.reset-size4.size10{font-size:2.5925em}.katex .fontsize-ensurer.reset-size4.size11,.katex .sizing.reset-size4.size11{font-size:3.11em}.katex .fontsize-ensurer.reset-size5.size1,.katex .sizing.reset-size5.size1{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size5.size2,.katex .sizing.reset-size5.size2{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size5.size3,.katex .sizing.reset-size5.size3{font-size:.7777777778em}.katex .fontsize-ensurer.reset-size5.size4,.katex .sizing.reset-size5.size4{font-size:.8888888889em}.katex .fontsize-ensurer.reset-size5.size5,.katex .sizing.reset-size5.size5{font-size:1em}.katex .fontsize-ensurer.reset-size5.size6,.katex .sizing.reset-size5.size6{font-size:1.1111111111em}.katex .fontsize-ensurer.reset-size5.size7,.katex .sizing.reset-size5.size7{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size5.size8,.katex .sizing.reset-size5.size8{font-size:1.6em}.katex .fontsize-ensurer.reset-size5.size9,.katex .sizing.reset-size5.size9{font-size:1.92em}.katex .fontsize-ensurer.reset-size5.size10,.katex .sizing.reset-size5.size10{font-size:2.3044444444em}.katex .fontsize-ensurer.reset-size5.size11,.katex .sizing.reset-size5.size11{font-size:2.7644444444em}.katex .fontsize-ensurer.reset-size6.size1,.katex .sizing.reset-size6.size1{font-size:.5em}.katex .fontsize-ensurer.reset-size6.size2,.katex .sizing.reset-size6.size2{font-size:.6em}.katex .fontsize-ensurer.reset-size6.size3,.katex .sizing.reset-size6.size3{font-size:.7em}.katex .fontsize-ensurer.reset-size6.size4,.katex .sizing.reset-size6.size4{font-size:.8em}.katex .fontsize-ensurer.reset-size6.size5,.katex .sizing.reset-size6.size5{font-size:.9em}.katex .fontsize-ensurer.reset-size6.size6,.katex .sizing.reset-size6.size6{font-size:1em}.katex .fontsize-ensurer.reset-size6.size7,.katex .sizing.reset-size6.size7{font-size:1.2em}.katex .fontsize-ensurer.reset-size6.size8,.katex .sizing.reset-size6.size8{font-size:1.44em}.katex .fontsize-ensurer.reset-size6.size9,.katex .sizing.reset-size6.size9{font-size:1.728em}.katex .fontsize-ensurer.reset-size6.size10,.katex .sizing.reset-size6.size10{font-size:2.074em}.katex .fontsize-ensurer.reset-size6.size11,.katex .sizing.reset-size6.size11{font-size:2.488em}.katex .fontsize-ensurer.reset-size7.size1,.katex .sizing.reset-size7.size1{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size7.size2,.katex .sizing.reset-size7.size2{font-size:.5em}.katex .fontsize-ensurer.reset-size7.size3,.katex .sizing.reset-size7.size3{font-size:.5833333333em}.katex .fontsize-ensurer.reset-size7.size4,.katex .sizing.reset-size7.size4{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size7.size5,.katex .sizing.reset-size7.size5{font-size:.75em}.katex .fontsize-ensurer.reset-size7.size6,.katex .sizing.reset-size7.size6{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size7.size7,.katex .sizing.reset-size7.size7{font-size:1em}.katex .fontsize-ensurer.reset-size7.size8,.katex .sizing.reset-size7.size8{font-size:1.2em}.katex .fontsize-ensurer.reset-size7.size9,.katex .sizing.reset-size7.size9{font-size:1.44em}.katex .fontsize-ensurer.reset-size7.size10,.katex .sizing.reset-size7.size10{font-size:1.7283333333em}.katex .fontsize-ensurer.reset-size7.size11,.katex .sizing.reset-size7.size11{font-size:2.0733333333em}.katex .fontsize-ensurer.reset-size8.size1,.katex .sizing.reset-size8.size1{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size8.size2,.katex .sizing.reset-size8.size2{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size8.size3,.katex .sizing.reset-size8.size3{font-size:.4861111111em}.katex .fontsize-ensurer.reset-size8.size4,.katex .sizing.reset-size8.size4{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size8.size5,.katex .sizing.reset-size8.size5{font-size:.625em}.katex .fontsize-ensurer.reset-size8.size6,.katex .sizing.reset-size8.size6{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size8.size7,.katex .sizing.reset-size8.size7{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size8.size8,.katex .sizing.reset-size8.size8{font-size:1em}.katex .fontsize-ensurer.reset-size8.size9,.katex .sizing.reset-size8.size9{font-size:1.2em}.katex .fontsize-ensurer.reset-size8.size10,.katex .sizing.reset-size8.size10{font-size:1.4402777778em}.katex .fontsize-ensurer.reset-size8.size11,.katex .sizing.reset-size8.size11{font-size:1.7277777778em}.katex .fontsize-ensurer.reset-size9.size1,.katex .sizing.reset-size9.size1{font-size:.2893518519em}.katex .fontsize-ensurer.reset-size9.size2,.katex .sizing.reset-size9.size2{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size9.size3,.katex .sizing.reset-size9.size3{font-size:.4050925926em}.katex .fontsize-ensurer.reset-size9.size4,.katex .sizing.reset-size9.size4{font-size:.462962963em}.katex .fontsize-ensurer.reset-size9.size5,.katex .sizing.reset-size9.size5{font-size:.5208333333em}.katex .fontsize-ensurer.reset-size9.size6,.katex .sizing.reset-size9.size6{font-size:.5787037037em}.katex .fontsize-ensurer.reset-size9.size7,.katex .sizing.reset-size9.size7{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size9.size8,.katex .sizing.reset-size9.size8{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size9.size9,.katex .sizing.reset-size9.size9{font-size:1em}.katex .fontsize-ensurer.reset-size9.size10,.katex .sizing.reset-size9.size10{font-size:1.2002314815em}.katex .fontsize-ensurer.reset-size9.size11,.katex .sizing.reset-size9.size11{font-size:1.4398148148em}.katex .fontsize-ensurer.reset-size10.size1,.katex .sizing.reset-size10.size1{font-size:.2410800386em}.katex .fontsize-ensurer.reset-size10.size2,.katex .sizing.reset-size10.size2{font-size:.2892960463em}.katex .fontsize-ensurer.reset-size10.size3,.katex .sizing.reset-size10.size3{font-size:.337512054em}.katex .fontsize-ensurer.reset-size10.size4,.katex .sizing.reset-size10.size4{font-size:.3857280617em}.katex .fontsize-ensurer.reset-size10.size5,.katex .sizing.reset-size10.size5{font-size:.4339440694em}.katex .fontsize-ensurer.reset-size10.size6,.katex .sizing.reset-size10.size6{font-size:.4821600771em}.katex .fontsize-ensurer.reset-size10.size7,.katex .sizing.reset-size10.size7{font-size:.5785920926em}.katex .fontsize-ensurer.reset-size10.size8,.katex .sizing.reset-size10.size8{font-size:.6943105111em}.katex .fontsize-ensurer.reset-size10.size9,.katex .sizing.reset-size10.size9{font-size:.8331726133em}.katex .fontsize-ensurer.reset-size10.size10,.katex .sizing.reset-size10.size10{font-size:1em}.katex .fontsize-ensurer.reset-size10.size11,.katex .sizing.reset-size10.size11{font-size:1.1996142719em}.katex .fontsize-ensurer.reset-size11.size1,.katex .sizing.reset-size11.size1{font-size:.2009646302em}.katex .fontsize-ensurer.reset-size11.size2,.katex .sizing.reset-size11.size2{font-size:.2411575563em}.katex .fontsize-ensurer.reset-size11.size3,.katex .sizing.reset-size11.size3{font-size:.2813504823em}.katex .fontsize-ensurer.reset-size11.size4,.katex .sizing.reset-size11.size4{font-size:.3215434084em}.katex .fontsize-ensurer.reset-size11.size5,.katex .sizing.reset-size11.size5{font-size:.3617363344em}.katex .fontsize-ensurer.reset-size11.size6,.katex .sizing.reset-size11.size6{font-size:.4019292605em}.katex .fontsize-ensurer.reset-size11.size7,.katex .sizing.reset-size11.size7{font-size:.4823151125em}.katex .fontsize-ensurer.reset-size11.size8,.katex .sizing.reset-size11.size8{font-size:.578778135em}.katex .fontsize-ensurer.reset-size11.size9,.katex .sizing.reset-size11.size9{font-size:.6945337621em}.katex .fontsize-ensurer.reset-size11.size10,.katex .sizing.reset-size11.size10{font-size:.8336012862em}.katex .fontsize-ensurer.reset-size11.size11,.katex .sizing.reset-size11.size11{font-size:1em}.katex .delimsizing.size1{font-family:KaTeX_Size1}.katex .delimsizing.size2{font-family:KaTeX_Size2}.katex .delimsizing.size3{font-family:KaTeX_Size3}.katex .delimsizing.size4{font-family:KaTeX_Size4}.katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}.katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}.katex .nulldelimiter{display:inline-block;width:.12em}.katex .delimcenter,.katex .op-symbol{position:relative}.katex .op-symbol.small-op{font-family:KaTeX_Size1}.katex .op-symbol.large-op{font-family:KaTeX_Size2}.katex .accent>.vlist-t,.katex .op-limits>.vlist-t{text-align:center}.katex .accent .accent-body{position:relative}.katex .accent .accent-body:not(.accent-full){width:0}.katex .overlay{display:block}.katex .mtable .vertical-separator{display:inline-block;min-width:1px}.katex .mtable .arraycolsep{display:inline-block}.katex .mtable .col-align-c>.vlist-t{text-align:center}.katex .mtable .col-align-l>.vlist-t{text-align:left}.katex .mtable .col-align-r>.vlist-t{text-align:right}.katex .svg-align{text-align:left}.katex svg{fill:currentColor;stroke:currentColor;display:block;height:inherit;position:absolute;width:100%}.katex svg path{stroke:none}.katex svg{fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1}.katex img{border-style:none;max-height:none;max-width:none;min-height:0;min-width:0}.katex .stretchy{display:block;overflow:hidden;position:relative;width:100%}.katex .stretchy:after,.katex .stretchy:before{content:""}.katex .hide-tail{overflow:hidden;position:relative;width:100%}.katex .halfarrow-left{left:0;overflow:hidden;position:absolute;width:50.2%}.katex .halfarrow-right{overflow:hidden;position:absolute;right:0;width:50.2%}.katex .brace-left{left:0;overflow:hidden;position:absolute;width:25.1%}.katex .brace-center{left:25%;overflow:hidden;position:absolute;width:50%}.katex .brace-right{overflow:hidden;position:absolute;right:0;width:25.1%}.katex .x-arrow-pad{padding:0 .5em}.katex .cd-arrow-pad{padding:0 .55556em 0 .27778em}.katex .mover,.katex .munder,.katex .x-arrow{text-align:center}.katex .boxpad{padding:0 .3em}.katex .fbox,.katex .fcolorbox{border:.04em solid;box-sizing:border-box}.katex .cancel-pad{padding:0 .2em}.katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}.katex .sout{border-bottom-style:solid;border-bottom-width:.08em}.katex .angl{border-right:.049em solid;border-top:.049em solid;box-sizing:border-box;margin-right:.03889em}.katex .anglpad{padding:0 .03889em}.katex .eqn-num:before{content:"(" counter(katexEqnNo) ")";counter-increment:katexEqnNo}.katex .mml-eqn-num:before{content:"(" counter(mmlEqnNo) ")";counter-increment:mmlEqnNo}.katex .mtr-glue{width:50%}.katex .cd-vert-arrow{display:inline-block;position:relative}.katex .cd-label-left{display:inline-block;position:absolute;right:calc(50% + .3em);text-align:left}.katex .cd-label-right{display:inline-block;left:calc(50% + .3em);position:absolute;text-align:right}.katex-display{display:block;margin:1em 0;text-align:center}.katex-display>.katex{display:block;text-align:center;white-space:nowrap}.katex-display>.katex>.katex-html{display:block;position:relative}.katex-display>.katex>.katex-html>.tag{position:absolute;right:0}.katex-display.leqno>.katex>.katex-html>.tag{left:0;right:auto}.katex-display.fleqn>.katex{padding-left:2em;text-align:left}body{counter-reset:katexEqnNo mmlEqnNo}
+</style>
+  <style>/* themes/base.css */
+
+/*
+  Shared PDF rendering base.
+  Keep layout rules here; put visual tokens in themes/<name>.css.
+*/
+
+@page {
+  size: A4;
+  margin: var(--ky-page-margin, 14mm 15mm 17mm 15mm);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  --ky-font-body: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ky-font-heading: var(--ky-font-body);
+  --ky-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", "Fira Code", "Consolas", monospace;
+
+  --ky-text: #20252d;
+  --ky-text-soft: #303946;
+  --ky-muted: #67707d;
+  --ky-faint: #8a93a0;
+  --ky-bg: #ffffff;
+  --ky-bg-soft: #f7f8fa;
+  --ky-bg-mute: #f1f3f6;
+  --ky-bg-inline-code: #eef1f5;
+  --ky-bg-code: #f7f7f8;
+  --ky-border-soft: #e5e8ee;
+  --ky-border: #d4d9e2;
+  --ky-border-strong: #aeb7c4;
+  --ky-accent: #64748b;
+  --ky-radius-s: 5px;
+  --ky-radius-m: 8px;
+  --ky-radius-l: 12px;
+
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  --inline-code-color: #384152;
+  --code-normal: #2f3742;
+  --code-comment: #858b94;
+  --code-keyword: #6f5bd7;
+  --code-string: #39745c;
+  --code-function: #2f73a7;
+  --code-property: #8a6833;
+  --code-tag: #566fb0;
+  --code-operator: #6d6673;
+  --code-punctuation: #7a828d;
+  --code-important: #a15b4e;
+  --code-value: #4f6fa8;
+  --code-deletion: #b42318;
+  --code-addition: #2f7d50;
+
+  --math-color: var(--ky-text);
+  --math-display-gap: 0.68em;
+
+  color: var(--ky-text) !important;
+  background: var(--ky-bg) !important;
+  color-scheme: light !important;
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  font-weight: 400 !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0.006em !important;
+  line-break: strict !important;
+  word-break: normal !important;
+}
+
+html,
+body,
+body.theme-light,
+body.minimal-light,
+body.minimal-light-white {
+  margin: 0 !important;
+  background: var(--ky-bg) !important;
+  color: var(--ky-text) !important;
+}
+
+body {
+  font-family: var(--ky-font-body) !important;
+  font-size: var(--ky-font-size) !important;
+  line-height: var(--ky-line-height) !important;
+}
+
+.markdown-preview-view,
+.markdown-rendered {
+  font-family: var(--ky-font-body) !important;
+}
+
+.markdown-preview-view .markdown-preview-sizer {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) p {
+  margin: var(--ky-para-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--ky-link, var(--ky-text)) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.16em !important;
+  text-decoration-thickness: 0.06em !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) :is(a, .header-anchor) {
+  color: inherit !important;
+  text-decoration: none !important;
+  border: 0 !important;
+  font: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(strong, b) {
+  color: var(--ky-text) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) em {
+  color: var(--ky-muted) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) mark {
+  color: var(--ky-text) !important;
+  background: var(--ky-mark-bg, #fff3bd) !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.02em 0.2em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) hr {
+  border: 0 !important;
+  border-top: 1px solid var(--ky-border-soft) !important;
+  margin: calc(var(--ky-block-gap) * 1.4) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ky-heading, var(--ky-text)) !important;
+  font-family: var(--ky-font-heading) !important;
+  line-height: var(--ky-heading-line-height) !important;
+  letter-spacing: 0 !important;
+  margin: 0.72em 0 0.28em !important;
+  break-after: avoid !important;
+  page-break-after: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h1 {
+  font-size: 1.46em !important;
+  font-weight: 760 !important;
+  padding-bottom: 0.18em !important;
+  border-bottom: 1px solid var(--ky-border-soft) !important;
+  break-before: auto !important;
+  page-break-before: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h2 {
+  font-size: 1.28em !important;
+  font-weight: 720 !important;
+  border-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h3 {
+  font-size: 1.16em !important;
+  font-weight: 680 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h4 {
+  font-size: 1.08em !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h5 {
+  font-size: 1.03em !important;
+  font-weight: 620 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h6 {
+  color: var(--ky-muted) !important;
+  font-size: 1em !important;
+  font-weight: 600 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(ul, ol) {
+  margin: 0.24em 0 0.34em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ul {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol {
+  padding-left: 0 !important;
+  list-style-position: inside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) ol > li > p:first-child {
+  display: inline !important;
+  margin: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li :is(ul, ol) {
+  padding-left: 1.35em !important;
+  list-style-position: outside !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li {
+  margin: var(--ky-list-gap) 0 !important;
+  line-height: calc(var(--ky-line-height) - 0.08) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) li::marker {
+  color: var(--ky-marker, #5f6670) !important;
+  font-weight: 500 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.42em 0.78em 0.44em 0.86em !important;
+  color: var(--ky-muted) !important;
+  background: var(--ky-bg-soft) !important;
+  border: 0 !important;
+  border-left: 3px solid var(--ky-border) !important;
+  border-radius: 0 var(--ky-radius-s) var(--ky-radius-s) 0 !important;
+  box-shadow: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) code {
+  color: var(--inline-code-color) !important;
+  background: var(--ky-bg-inline-code) !important;
+  border: 0 !important;
+  border-radius: var(--ky-radius-s) !important;
+  padding: 0.09em 0.3em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.9em !important;
+  letter-spacing: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs {
+  color: var(--code-normal) !important;
+  background: var(--ky-bg-code) !important;
+  border: 1px solid var(--code-border, var(--ky-border-soft)) !important;
+  border-radius: var(--ky-radius-l) !important;
+  box-shadow: none !important;
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0.78em 0.92em !important;
+  font-family: var(--ky-font-mono) !important;
+  font-size: 0.91em !important;
+  line-height: 1.48 !important;
+  letter-spacing: 0 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  font-variant-ligatures: none !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre code {
+  color: var(--code-normal) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-comment, .hljs-quote) {
+  color: var(--code-comment) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-doctag) {
+  color: var(--code-keyword) !important;
+  font-weight: 650 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-string, .hljs-char, .hljs-regexp, .hljs-template-variable) {
+  color: var(--code-string) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-title, .hljs-title.function_, .hljs-function .hljs-title, .hljs-title.class_, .hljs-section) {
+  color: var(--code-function) !important;
+  font-weight: 580 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-attribute, .hljs-variable, .hljs-params, .hljs-property, .hljs-meta .hljs-keyword) {
+  color: var(--code-property) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-tag, .hljs-selector-id, .hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo) {
+  color: var(--code-tag) !important;
+  font-weight: 560 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-operator, .hljs-link, .hljs-meta) {
+  color: var(--code-operator) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .hljs-punctuation {
+  color: var(--code-punctuation) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-number, .hljs-literal, .hljs-symbol, .hljs-bullet) {
+  color: var(--code-value) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-deletion) {
+  color: var(--code-deletion) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(.hljs-addition) {
+  color: var(--code-addition) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) img,
+:is(.print, .markdown-preview-view, .markdown-rendered) svg[role="img"] {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: var(--ky-image-max-height) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: var(--ky-block-gap) auto !important;
+  object-fit: contain !important;
+  border-radius: var(--ky-radius-l) !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table {
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+  border: 0 !important;
+  margin: 0.62em 0 !important;
+  background: transparent !important;
+  font-size: var(--ky-table-font-size) !important;
+  line-height: var(--ky-table-line-height) !important;
+  overflow: visible !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) thead {
+  display: table-header-group !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) tfoot {
+  display: table-footer-group !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th,
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  min-width: 0 !important;
+  padding: 0.42em 0.56em !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  line-break: strict !important;
+  hyphens: auto !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--table-border-soft, var(--ky-border-soft)) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  background: var(--table-head-bg, var(--ky-bg-soft)) !important;
+  border-bottom: 1.5px solid var(--table-border-strong, var(--ky-border)) !important;
+  color: var(--table-head-text, var(--ky-text)) !important;
+  font-weight: 700 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+  color: var(--table-text, var(--ky-text-soft)) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(a, code) {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table :is(p, ul, ol):not(:last-child) {
+  margin-bottom: 0.18em !important;
+}
+
+/* Math: keep KaTeX's native font stack intact. Do not override .katex font-family. */
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  color: var(--math-color) !important;
+  text-rendering: geometricPrecision !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  max-width: 100% !important;
+  margin: var(--math-display-gap) 0 !important;
+  padding: 0.12em 0 0.18em !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  color: var(--math-color) !important;
+  line-height: 1.35 !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  font-size: 1.02em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :not(pre) > code .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex {
+  font-size: 0.98em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex-display {
+  margin: 0.28em 0 !important;
+  padding: 0.08em 0 !important;
+  line-height: 1.32 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(mjx-container, .math, .math-inline, .math-block) {
+  color: var(--math-color) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  margin: var(--ky-block-gap) 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: var(--ky-text) !important;
+  background: var(--callout-bg, var(--ky-bg-soft)) !important;
+  border: 0 !important;
+  border-left: 3px solid var(--callout-border, var(--ky-border)) !important;
+  border-radius: var(--ky-radius-m) !important;
+  box-shadow: none !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45em !important;
+  color: var(--ky-text-soft) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0.4em 0.68em 0.14em !important;
+  font-size: 0.98em !important;
+  font-weight: 700 !important;
+  line-height: 1.28 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > :not(.callout-title) {
+  color: var(--ky-text) !important;
+  padding: 0.12em 0.68em 0.46em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout-content p,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout > p {
+  margin: var(--ky-tight-gap) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) input[type="checkbox"] {
+  accent-color: var(--ky-text) !important;
+}
+
+@media screen {
+  .markdown-preview-view {
+    max-width: var(--ky-screen-width, 900px) !important;
+    margin: 30px auto !important;
+    padding: 38px 46px !important;
+    background: var(--ky-bg) !important;
+    border: 1px solid var(--ky-border-soft) !important;
+    border-radius: var(--ky-radius-l) !important;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06) !important;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .markdown-preview-view {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  pre,
+  blockquote,
+  table,
+  img,
+  .callout {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+
+/* themes/chatgpt-light.css */
+
+/*
+  ChatGPT-style light PDF theme.
+  Visual tokens sampled from the open ChatGPT Markdown rendering page on 2026-07-02.
+
+  This file is loaded after themes/base.css and before style.css.
+  It maps ChatGPT-like design tokens onto the project-wide --ky-* PDF tokens.
+*/
+
+@page {
+  background: #ffffff;
+}
+
+:root,
+:is(.print, .markdown-preview-view, .markdown-rendered),
+.pdf-theme-chatgpt-light {
+  --chatgpt-bg: #ffffff;
+  --chatgpt-bg-soft: #fafafa;
+  --chatgpt-message: #f7f7f8;
+  --chatgpt-text: #0d0d0d;
+  --chatgpt-muted: #5d5d5d;
+  --chatgpt-faint: #8f8f8f;
+  --chatgpt-border: rgba(0, 0, 0, 0.08);
+  --chatgpt-border-strong: rgba(0, 0, 0, 0.15);
+  --chatgpt-link: #2964aa;
+  --chatgpt-inline-code-bg: #ececec;
+  --chatgpt-code-bg: #f7f7f8;
+  --chatgpt-code-header: #ededed;
+  --chatgpt-code-text: #24292f;
+  --chatgpt-code-keyword: #cf222e;
+  --chatgpt-code-symbol: #0550ae;
+  --chatgpt-code-name: #8250df;
+  --chatgpt-code-title: #953800;
+  --chatgpt-code-comment: #6e7781;
+  --chatgpt-code-string: #0a3069;
+  --chatgpt-code-number: #0550ae;
+  --chatgpt-radius: 7px;
+  --chatgpt-font-sans: -apple-system-body, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --chatgpt-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "JetBrains Mono", "Cascadia Code", monospace;
+
+  --ky-page-margin: 14mm 15mm 17mm 15mm;
+  --ky-font-body: var(--chatgpt-font-sans);
+  --ky-font-heading: var(--chatgpt-font-sans);
+  --ky-font-mono: var(--chatgpt-font-mono);
+
+  --ky-text: var(--chatgpt-text);
+  --ky-text-soft: #262626;
+  --ky-muted: var(--chatgpt-muted);
+  --ky-faint: var(--chatgpt-faint);
+  --ky-heading: var(--chatgpt-text);
+  --ky-link: var(--chatgpt-link);
+  --ky-marker: #5d5d5d;
+
+  --ky-bg: var(--chatgpt-bg);
+  --ky-bg-soft: var(--chatgpt-bg-soft);
+  --ky-bg-mute: var(--chatgpt-message);
+  --ky-bg-inline-code: var(--chatgpt-inline-code-bg);
+  --ky-bg-code: var(--chatgpt-code-bg);
+  --ky-mark-bg: #fff3bd;
+
+  --ky-border-soft: var(--chatgpt-border);
+  --ky-border: var(--chatgpt-border-strong);
+  --ky-border-strong: rgba(0, 0, 0, 0.24);
+  --ky-accent: #5d5d5d;
+  --ky-radius-s: 5px;
+  --ky-radius-m: var(--chatgpt-radius);
+  --ky-radius-l: var(--chatgpt-radius);
+
+  /* Keep the original project PDF font size. */
+  --ky-font-size: 15.6px;
+  --ky-line-height: 1.55;
+  --ky-heading-line-height: 1.24;
+  --ky-para-gap: 0.34em;
+  --ky-block-gap: 0.72em;
+  --ky-tight-gap: 0.14em;
+  --ky-list-gap: 0.1em;
+  --ky-table-font-size: 0.93em;
+  --ky-table-line-height: 1.38;
+  --ky-image-max-height: 66mm;
+
+  --inline-code-color: var(--chatgpt-code-text);
+  --code-normal: var(--chatgpt-code-text);
+  --code-comment: var(--chatgpt-code-comment);
+  --code-keyword: var(--chatgpt-code-keyword);
+  --code-string: var(--chatgpt-code-string);
+  --code-function: var(--chatgpt-code-title);
+  --code-property: var(--chatgpt-code-name);
+  --code-tag: var(--chatgpt-code-symbol);
+  --code-operator: var(--chatgpt-code-symbol);
+  --code-punctuation: #4b5563;
+  --code-important: var(--chatgpt-code-keyword);
+  --code-value: var(--chatgpt-code-number);
+  --code-deletion: #b42318;
+  --code-addition: #0f7b6c;
+  --code-border: transparent;
+
+  --math-color: var(--chatgpt-text);
+  --math-display-gap: 0.72em;
+
+  --table-text: #222222;
+  --table-head-text: var(--chatgpt-text);
+  --table-head-bg: transparent;
+  --table-border-strong: var(--chatgpt-border-strong);
+  --table-border-soft: var(--chatgpt-border);
+
+  --callout-bg: var(--chatgpt-bg-soft);
+  --callout-border: var(--chatgpt-border-strong);
+
+  color-scheme: light !important;
+}
+
+html,
+body,
+body.theme-light,
+body.minimal-light,
+body.minimal-light-white,
+body.pdf-theme-chatgpt-light {
+  background: #ffffff !important;
+  color: var(--chatgpt-text) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) {
+  color: var(--chatgpt-text) !important;
+  background: #ffffff !important;
+  font-family: var(--chatgpt-font-sans) !important;
+  font-size: var(--ky-font-size) !important;
+  line-height: var(--ky-line-height) !important;
+  letter-spacing: 0 !important;
+  overflow-wrap: anywhere !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) > :first-child {
+  margin-top: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--chatgpt-text) !important;
+  letter-spacing: -0.01em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) h1 {
+  border-bottom-color: var(--chatgpt-border) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) :is(a, .internal-link, .external-link) {
+  color: var(--chatgpt-link) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) blockquote {
+  color: var(--chatgpt-muted) !important;
+  background: var(--chatgpt-bg-soft) !important;
+  border-left-color: var(--chatgpt-border-strong) !important;
+  border-radius: 0 var(--chatgpt-radius) var(--chatgpt-radius) 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) code {
+  color: var(--chatgpt-code-text) !important;
+  background: var(--chatgpt-inline-code-bg) !important;
+  border-radius: 0.28em !important;
+  padding: 0.08em 0.28em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.hljs,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code {
+  color: var(--chatgpt-code-text) !important;
+  background: var(--chatgpt-code-bg) !important;
+  border: 0 !important;
+  border-radius: var(--chatgpt-radius) !important;
+  padding: 0.78em 0.92em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki code,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code code {
+  display: block !important;
+  min-width: 0 !important;
+  color: inherit !important;
+  background: transparent !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki span,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code span {
+  background: transparent !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki .line,
+:is(.print, .markdown-preview-view, .markdown-rendered) pre.shiki-code .line {
+  min-height: 1em !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th,
+:is(.print, .markdown-preview-view, .markdown-rendered) table td {
+  background: transparent !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table th {
+  color: var(--chatgpt-text) !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout,
+:is(.print, .markdown-preview-view, .markdown-rendered) .callout[data-callout] {
+  background: var(--chatgpt-bg-soft) !important;
+  border-left-color: var(--chatgpt-border-strong) !important;
+  border-radius: var(--chatgpt-radius) !important;
+}
+
+@media screen {
+  html,
+  body,
+  .markdown-preview-view,
+  .markdown-rendered {
+    background: #ffffff !important;
+  }
+}
+
+@media print {
+  html,
+  body,
+  body.theme-light,
+  body.minimal-light,
+  body.minimal-light-white,
+  .markdown-preview-view,
+  .markdown-rendered {
+    background: #ffffff !important;
+  }
+}
+
+
+/* style.css optional project overrides */
+
+/*
+  Optional project-level overrides.
+
+  The PDF renderer now loads CSS in this order:
+
+  1. themes/base.css       - shared structure and common Markdown rules
+  2. themes/<theme>.css    - selected visual theme, default: clean
+  3. style.css             - optional last-mile overrides
+
+  Keep this file small. Put reusable styles in themes/<name>.css instead.
+*/
+
+/*
+  KaTeX math protection layer.
+
+  Keep KaTeX's own font metrics and span positioning intact. The renderer should
+  protect formulas from global Markdown wrapping rules, but it should not compress
+  their line boxes or turn display math into a clipped scrolling box. Fractions,
+  radicals, limits, accents, and CJK text inside \text{...} need extra vertical
+  room when Chrome prints HTML to PDF.
+*/
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  line-break: auto !important;
+  hyphens: none !important;
+  letter-spacing: normal !important;
+  text-indent: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex {
+  white-space: nowrap !important;
+  line-height: normal !important;
+  font-size: 1em !important;
+  max-width: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex .katex-html {
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+  display: block !important;
+  max-width: 100% !important;
+  margin: var(--math-display-gap, 0.68em) 0 !important;
+  padding: 0.32em 0 0.42em !important;
+  overflow: visible !important;
+  text-align: center !important;
+  line-height: normal !important;
+  white-space: normal !important;
+  min-height: max-content !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) .katex-display > .katex {
+  display: inline-block !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  vertical-align: middle !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex,
+:is(.print, .markdown-preview-view, .markdown-rendered) table .katex * {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/*
+  Print pagination overrides.
+
+  Long tables, code blocks, quotes, and callouts must be allowed to continue on
+  the next page. Individual table rows, images, and display formulas remain
+  indivisible to avoid clipped content.
+*/
+@media print {
+  :is(.print, .markdown-preview-view, .markdown-rendered) :is(pre, blockquote, table, .callout) {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) :is(img, figure, .katex-display) {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) pre code {
+    orphans: 3;
+    widows: 3;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
+    overflow: visible !important;
+  }
+}
+</style>
+  <style>
+.page-break {
+  break-after: page;
+  page-break-after: always;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+@media print {
+  .page-break {
+    break-after: page;
+    page-break-after: always;
+  }
+}
+</style>
+</head>
+<body class="theme-light minimal-light minimal-light-white pdf-theme pdf-theme-chatgpt-light">
+  <main class="markdown-preview-view markdown-rendered">
+<h1 id="markdown-综合结构展示" tabindex="-1"><a class="header-anchor" href="#markdown-综合结构展示">Markdown 综合结构展示</a></h1>
+<!-- source: inbox/2026/07/2026-07-10/md/001-Markdown综合结构展示.md -->
+<h1 id="markdown-综合结构展示-1" tabindex="-1"><a class="header-anchor" href="#markdown-综合结构展示-1">Markdown 综合结构展示</a></h1>
+<blockquote>
+<p>这是一份用于测试 Markdown 到 PDF 渲染效果的综合文档，覆盖标题、段落、强调、列表、任务列表、引用、表格、链接、图片、公式、代码块、HTML、Obsidian 语法与分页边界等常见结构。</p>
+</blockquote>
+<p><a href="#8-%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F">跳转到公式部分</a> · <a href="#9-%E4%BB%A3%E7%A0%81%E5%9D%97">跳转到代码部分</a> · <a href="#6-%E8%A1%A8%E6%A0%BC">跳转到表格部分</a></p>
+<hr>
+<h2 id="1-标题层级" tabindex="-1"><a class="header-anchor" href="#1-标题层级">1. 标题层级</a></h2>
+<p>下面依次展示六级标题。实际写作中，建议一级标题作为文档标题，二级标题作为章节，三级及以下标题用于细分内容。</p>
+<h3 id="三级标题章节小节" tabindex="-1"><a class="header-anchor" href="#三级标题章节小节">三级标题：章节小节</a></h3>
+<h4 id="四级标题知识点" tabindex="-1"><a class="header-anchor" href="#四级标题知识点">四级标题：知识点</a></h4>
+<h5 id="五级标题补充说明" tabindex="-1"><a class="header-anchor" href="#五级标题补充说明">五级标题：补充说明</a></h5>
+<h6 id="六级标题最小标题" tabindex="-1"><a class="header-anchor" href="#六级标题最小标题">六级标题：最小标题</a></h6>
+<p>标题后的普通段落用于观察标题与正文之间的留白、字重、行高以及自动书签效果。</p>
+<hr>
+<h2 id="2-段落与文本样式" tabindex="-1"><a class="header-anchor" href="#2-段落与文本样式">2. 段落与文本样式</a></h2>
+<p>这是一个普通段落。Markdown 会自动将连续文字组成段落；不同段落之间保留一个空行，可以让结构更加清晰。</p>
+<p>这段文字包含 <strong>粗体文本</strong>、<em>斜体文本</em>、<em><strong>粗斜体文本</strong></em>、<s>删除线文本</s>、<mark>Obsidian 高亮文本</mark> 和 <code>inline code</code>。还可以组合使用，例如 <strong>重点中的 <code>代码</code></strong>。</p>
+<p>常见行内元素：</p>
+<ul>
+<li>键盘按键：<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></li>
+<li>上标与下标：H<sub>2</sub>O，x<sup>2</sup></li>
+<li>拼音标注：<ruby>考研<rt>kǎo yán</rt></ruby></li>
+<li>强制换行：第一行<br>第二行</li>
+<li>转义字符：*不是斜体*，# 不是标题，[不是链接开头</li>
+</ul>
+<p>自动链接测试：<a href="https://example.com">https://example.com</a></p>
+<p>显式链接测试：<a href="https://example.com" title="链接标题">示例链接</a></p>
+<p>Obsidian 双链会被转为普通文本：概率统计笔记。</p>
+<hr>
+<h2 id="3-无序列表与嵌套列表" tabindex="-1"><a class="header-anchor" href="#3-无序列表与嵌套列表">3. 无序列表与嵌套列表</a></h2>
+<ul>
+<li>一级项目 A</li>
+<li>一级项目 B
+<ul>
+<li>二级项目 B.1</li>
+<li>二级项目 B.2
+<ul>
+<li>三级项目 B.2.1</li>
+<li>三级项目 B.2.2</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>一级项目 C</li>
+</ul>
+<p>列表项中也可以包含多个段落。</p>
+<ul>
+<li>
+<p>第一个段落说明主要内容。</p>
+<p>第二个段落继续补充细节，并保持在同一个列表项中。</p>
+</li>
+<li>
+<p>下一个列表项恢复正常。</p>
+</li>
+</ul>
+<hr>
+<h2 id="4-有序列表与任务列表" tabindex="-1"><a class="header-anchor" href="#4-有序列表与任务列表">4. 有序列表与任务列表</a></h2>
+<ol>
+<li>收集资料</li>
+<li>整理结构</li>
+<li>编写内容
+<ol>
+<li>编写标题</li>
+<li>编写正文</li>
+<li>插入示例</li>
+</ol>
+</li>
+<li>导出并检查 PDF</li>
+</ol>
+<p>从指定编号开始：</p>
+<ol start="5">
+<li>第五项</li>
+<li>第六项</li>
+<li>第七项</li>
+</ol>
+<p>任务列表：</p>
+<ul class="contains-task-list">
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox" id="task-item-2720781"><label class="task-list-item-label" for="task-item-2720781"> 标题与段落</label></li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox" id="task-item-4986020"><label class="task-list-item-label" for="task-item-4986020"> 列表与表格</label></li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox" id="task-item-3143432"><label class="task-list-item-label" for="task-item-3143432"> 数学公式</label></li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox" checked=""type="checkbox" id="task-item-1811051"><label class="task-list-item-label" for="task-item-1811051"> 代码高亮</label></li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox" id="task-item-3431314"><label class="task-list-item-label" for="task-item-3431314"> 后续添加新的主题样式</label></li>
+<li class="task-list-item enabled"><input class="task-list-item-checkbox"type="checkbox" id="task-item-9424609"><label class="task-list-item-label" for="task-item-9424609"> 继续完善边界测试</label></li>
+</ul>
+<hr>
+<h2 id="5-引用嵌套引用与提示块" tabindex="-1"><a class="header-anchor" href="#5-引用嵌套引用与提示块">5. 引用、嵌套引用与提示块</a></h2>
+<blockquote>
+<p>这是一级引用。</p>
+<p>引用中可以包含 <strong>粗体</strong>、<code>代码</code> 和行内公式 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2+b^2=c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>。</p>
+<blockquote>
+<p>这是二级嵌套引用。</p>
+<ul>
+<li>引用中的列表项一</li>
+<li>引用中的列表项二</li>
+</ul>
+</blockquote>
+</blockquote>
+<p>Obsidian 风格提示块：</p>
+<blockquote>
+<p>[!NOTE]
+这是一条说明信息，用于观察提示块语法在当前渲染器中的降级效果。</p>
+</blockquote>
+<blockquote>
+<p>[!WARNING]
+这是一条警告信息。即使没有专门的 Callout 插件，也应保持内容可读。</p>
+</blockquote>
+<hr>
+<h2 id="6-表格" tabindex="-1"><a class="header-anchor" href="#6-表格">6. 表格</a></h2>
+<h3 id="61-基础表格" tabindex="-1"><a class="header-anchor" href="#61-基础表格">6.1 基础表格</a></h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th style="text-align:center">支持情况</th>
+<th style="text-align:right">示例</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>标题</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">6 级</td>
+<td>自动生成锚点</td>
+</tr>
+<tr>
+<td>数学公式</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">KaTeX</td>
+<td>支持行内与块级公式</td>
+</tr>
+<tr>
+<td>代码高亮</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">Shiki</td>
+<td>自动识别常见语言</td>
+</tr>
+<tr>
+<td>任务列表</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:right">已完成/未完成</td>
+<td>可显示复选框</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-长文本表格" tabindex="-1"><a class="header-anchor" href="#62-长文本表格">6.2 长文本表格</a></h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自动换行</td>
+<td>当单元格内容较长时，应在页面宽度内自动换行，不能超出右侧页边距，也不能覆盖相邻列。</td>
+</tr>
+<tr>
+<td>中英文混排</td>
+<td>English words、中文字符、数字 12345 与符号 <code>&lt;&gt;[]{}()</code> 应保持清晰。</td>
+</tr>
+<tr>
+<td>行内格式</td>
+<td>单元格中可以包含 <strong>粗体</strong>、<em>斜体</em>、<code>代码</code> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">f(x)=x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>。</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-图片与图注" tabindex="-1"><a class="header-anchor" href="#7-图片与图注">7. 图片与图注</a></h2>
+<p>下面的 SVG 图片用于检查矢量图、中文文字、箭头和相对路径引用是否正常。</p>
+<p><img src="../../../../../inbox/2026/07/2026-07-10/img/markdown-render-flow.svg" alt="Markdown 渲染流程示意图"></p>
+<p><em>图 1：Markdown 经过解析、样式处理与 Chromium 打印后生成 PDF。</em></p>
+<hr>
+<h2 id="8-数学公式" tabindex="-1"><a class="header-anchor" href="#8-数学公式">8. 数学公式</a></h2>
+<h3 id="81-行内公式" tabindex="-1"><a class="header-anchor" href="#81-行内公式">8.1 行内公式</a></h3>
+<p>勾股定理可写为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2+b^2=c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>。正态分布的随机变量可记作 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>∼</mo><mi>N</mi><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X\sim N(\mu,\sigma^2)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∼</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="mopen">(</span><span class="mord mathnormal">μ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>，其数学期望为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>=</mo><mi>μ</mi></mrow><annotation encoding="application/x-tex">E(X)=\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">E</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0785em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span>。</p>
+<h3 id="82-块级公式" tabindex="-1"><a class="header-anchor" href="#82-块级公式">8.2 块级公式</a></h3>
+<p>二次方程 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>b</mi><mi>x</mi><mo>+</mo><mi>c</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">ax^2+bx+c=0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">a</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">b</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">c</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span> 的求根公式为</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2764em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5904em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span><span class="mord mathnormal">a</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">−</span><span class="mord mathnormal">b</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">±</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9134em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">4</span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span></span></span><span style="top:-2.8734em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1266em;"><span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span>
+<p>积分示例：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup><msup><mi>x</mi><mi>n</mi></msup><mtext> </mtext><mi mathvariant="normal">d</mi><mi>x</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></mfrac><mo separator="true">,</mo><mspace width="2em"/><mi>n</mi><mo>&gt;</mo><mo>−</mo><mn>1.</mn></mrow><annotation encoding="application/x-tex">\int_0^1 x^n\,\mathrm{d}x=\frac{1}{n+1},\qquad n&gt;-1.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.476em;vertical-align:-0.9119em;"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.4445em;position:relative;top:-0.0011em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.564em;"><span style="top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span><span style="top:-3.8129em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9119em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7144em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">d</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0908em;vertical-align:-0.7693em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">1</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7693em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">1.</span></span></span></span></span>
+<h3 id="83-多行公式" tabindex="-1"><a class="header-anchor" href="#83-多行公式">8.3 多行公式</a></h3>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mtable rowspacing="0.25em" columnalign="right left" columnspacing="0em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>b</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><mn>2</mn><mi>a</mi><mi>b</mi><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo separator="true">,</mo></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mo stretchy="false">(</mo><mi>a</mi><mo>−</mo><mi>b</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><msup><mi>a</mi><mn>2</mn></msup><mo>−</mo><mn>2</mn><mi>a</mi><mi>b</mi><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo separator="true">,</mo></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>b</mi><mo stretchy="false">)</mo><mo stretchy="false">(</mo><mi>a</mi><mo>−</mo><mi>b</mi><mo stretchy="false">)</mo></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><msup><mi>a</mi><mn>2</mn></msup><mo>−</mo><msup><mi>b</mi><mn>2</mn></msup><mi mathvariant="normal">.</mi></mrow></mstyle></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{aligned}
+(a+b)^2 &amp;= a^2+2ab+b^2,\\
+(a-b)^2 &amp;= a^2-2ab+b^2,\\
+(a+b)(a-b) &amp;= a^2-b^2.
+\end{aligned}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:4.2723em;vertical-align:-1.8862em;"></span><span class="mord"><span class="mtable"><span class="col-align-r"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3862em;"><span style="top:-4.5221em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">b</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-2.9979em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">b</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-1.4738em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">b</span><span class="mclose">)</span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">b</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8862em;"><span></span></span></span></span></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:2.3862em;"><span style="top:-4.5221em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">2</span><span class="mord mathnormal">ab</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mpunct">,</span></span></span><span style="top:-2.9979em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">2</span><span class="mord mathnormal">ab</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mpunct">,</span></span></span><span style="top:-1.4738em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord">.</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.8862em;"><span></span></span></span></span></span></span></span></span></span></span></span>
+<p>矩阵与行列式：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>A</mi><mo>=</mo><mrow><mo fence="true">(</mo><mtable rowspacing="0.16em" columnalign="center center" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>2</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>3</mn></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>4</mn></mstyle></mtd></mtr></mtable><mo fence="true">)</mo></mrow><mo separator="true">,</mo><mspace width="2em"/><mi>det</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>A</mi><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn><mo>×</mo><mn>4</mn><mo>−</mo><mn>2</mn><mo>×</mo><mn>3</mn><mo>=</mo><mo>−</mo><mn>2.</mn></mrow><annotation encoding="application/x-tex">A=\begin{pmatrix}
+1 &amp; 2\\
+3 &amp; 4
+\end{pmatrix},\qquad
+\det(A)=1\times4-2\times3=-2.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.4em;vertical-align:-0.95em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">(</span></span><span class="mord"><span class="mtable"><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.45em;"><span style="top:-3.61em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span><span style="top:-2.41em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.95em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:0.5em;"></span><span class="arraycolsep" style="width:0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.45em;"><span style="top:-3.61em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-2.41em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">4</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.95em;"><span></span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">)</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop">det</span><span class="mopen">(</span><span class="mord mathnormal">A</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord">2.</span></span></span></span></span>
+<p>概率公式：</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>B</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo stretchy="false">)</mo></mrow><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>B</mi><mo stretchy="false">)</mo></mrow></mfrac><mo separator="true">,</mo><mspace width="2em"/><mi>P</mi><mo stretchy="false">(</mo><mi>B</mi><mo stretchy="false">)</mo><mo>&gt;</mo><mn>0.</mn></mrow><annotation encoding="application/x-tex">P(A\mid B)=\frac{P(A\cap B)}{P(B)},\qquad P(B)&gt;0.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">P</span><span class="mopen">(</span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.363em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">P</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mclose">)</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.1389em;">P</span><span class="mopen">(</span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∩</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">P</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0.</span></span></span></span></span>
+<hr>
+<h2 id="9-代码块" tabindex="-1"><a class="header-anchor" href="#9-代码块">9. 代码块</a></h2>
+<h3 id="91-python" tabindex="-1"><a class="header-anchor" href="#91-python">9.1 Python</a></h3>
+<pre data-language="python" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">from</span><span style="color:#24292E"> dataclasses </span><span style="color:#D73A49">import</span><span style="color:#24292E"> dataclass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1">@dataclass</span></span>
+<span class="line"><span style="color:#D73A49">class</span><span style="color:#6F42C1"> Student</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#24292E">    name: </span><span style="color:#005CC5">str</span></span>
+<span class="line"><span style="color:#24292E">    score: </span><span style="color:#005CC5">float</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">def</span><span style="color:#6F42C1"> average</span><span style="color:#24292E">(students: list[Student]) -> </span><span style="color:#005CC5">float</span><span style="color:#24292E">:</span></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#D73A49"> not</span><span style="color:#24292E"> students:</span></span>
+<span class="line"><span style="color:#D73A49">        raise</span><span style="color:#005CC5"> ValueError</span><span style="color:#24292E">(</span><span style="color:#032F62">"students must not be empty"</span><span style="color:#24292E">)</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#005CC5"> sum</span><span style="color:#24292E">(item.score </span><span style="color:#D73A49">for</span><span style="color:#24292E"> item </span><span style="color:#D73A49">in</span><span style="color:#24292E"> students) </span><span style="color:#D73A49">/</span><span style="color:#005CC5"> len</span><span style="color:#24292E">(students)</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E">students </span><span style="color:#D73A49">=</span><span style="color:#24292E"> [Student(</span><span style="color:#032F62">"Alice"</span><span style="color:#24292E">, </span><span style="color:#005CC5">92.5</span><span style="color:#24292E">), Student(</span><span style="color:#032F62">"Bob"</span><span style="color:#24292E">, </span><span style="color:#005CC5">87.0</span><span style="color:#24292E">)]</span></span>
+<span class="line"><span style="color:#005CC5">print</span><span style="color:#24292E">(</span><span style="color:#D73A49">f</span><span style="color:#032F62">"average = </span><span style="color:#005CC5">{</span><span style="color:#24292E">average(students)</span><span style="color:#D73A49">:.2f</span><span style="color:#005CC5">}</span><span style="color:#032F62">"</span><span style="color:#24292E">)</span></span>
+<span class="line"></span></code></pre>
+<h3 id="92-typescript" tabindex="-1"><a class="header-anchor" href="#92-typescript">9.2 TypeScript</a></h3>
+<pre data-language="typescript" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">interface</span><span style="color:#6F42C1"> ApiResult</span><span style="color:#24292E">&#x3C;</span><span style="color:#6F42C1">T</span><span style="color:#24292E">> {</span></span>
+<span class="line"><span style="color:#E36209">  data</span><span style="color:#D73A49">:</span><span style="color:#6F42C1"> T</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#E36209">  error</span><span style="color:#D73A49">:</span><span style="color:#005CC5"> string</span><span style="color:#D73A49"> |</span><span style="color:#005CC5"> null</span><span style="color:#24292E">;</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49">async</span><span style="color:#D73A49"> function</span><span style="color:#6F42C1"> fetchJson</span><span style="color:#24292E">&#x3C;</span><span style="color:#6F42C1">T</span><span style="color:#24292E">>(</span><span style="color:#E36209">url</span><span style="color:#D73A49">:</span><span style="color:#005CC5"> string</span><span style="color:#24292E">)</span><span style="color:#D73A49">:</span><span style="color:#6F42C1"> Promise</span><span style="color:#24292E">&#x3C;</span><span style="color:#6F42C1">ApiResult</span><span style="color:#24292E">&#x3C;</span><span style="color:#6F42C1">T</span><span style="color:#24292E">>> {</span></span>
+<span class="line"><span style="color:#D73A49">  try</span><span style="color:#24292E"> {</span></span>
+<span class="line"><span style="color:#D73A49">    const</span><span style="color:#005CC5"> response</span><span style="color:#D73A49"> =</span><span style="color:#D73A49"> await</span><span style="color:#6F42C1"> fetch</span><span style="color:#24292E">(url);</span></span>
+<span class="line"><span style="color:#D73A49">    if</span><span style="color:#24292E"> (</span><span style="color:#D73A49">!</span><span style="color:#24292E">response.ok) </span><span style="color:#D73A49">throw</span><span style="color:#D73A49"> new</span><span style="color:#6F42C1"> Error</span><span style="color:#24292E">(</span><span style="color:#032F62">`HTTP ${</span><span style="color:#24292E">response</span><span style="color:#032F62">.</span><span style="color:#24292E">status</span><span style="color:#032F62">}`</span><span style="color:#24292E">);</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> { data: </span><span style="color:#D73A49">await</span><span style="color:#24292E"> response.</span><span style="color:#6F42C1">json</span><span style="color:#24292E">() </span><span style="color:#D73A49">as</span><span style="color:#6F42C1"> T</span><span style="color:#24292E">, error: </span><span style="color:#005CC5">null</span><span style="color:#24292E"> };</span></span>
+<span class="line"><span style="color:#24292E">  } </span><span style="color:#D73A49">catch</span><span style="color:#24292E"> (error) {</span></span>
+<span class="line"><span style="color:#D73A49">    return</span><span style="color:#24292E"> { data: </span><span style="color:#005CC5">null</span><span style="color:#D73A49"> as</span><span style="color:#6F42C1"> T</span><span style="color:#24292E">, error: </span><span style="color:#6F42C1">String</span><span style="color:#24292E">(error) };</span></span>
+<span class="line"><span style="color:#24292E">  }</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<h3 id="93-sql" tabindex="-1"><a class="header-anchor" href="#93-sql">9.3 SQL</a></h3>
+<pre data-language="sql" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#D73A49">SELECT</span></span>
+<span class="line"><span style="color:#24292E">  user_id,</span></span>
+<span class="line"><span style="color:#005CC5">  COUNT</span><span style="color:#24292E">(</span><span style="color:#D73A49">*</span><span style="color:#24292E">) </span><span style="color:#D73A49">AS</span><span style="color:#24292E"> task_count,</span></span>
+<span class="line"><span style="color:#005CC5">  AVG</span><span style="color:#24292E">(duration_ms) </span><span style="color:#D73A49">AS</span><span style="color:#24292E"> avg_duration_ms</span></span>
+<span class="line"><span style="color:#D73A49">FROM</span><span style="color:#24292E"> workflow_tasks</span></span>
+<span class="line"><span style="color:#D73A49">WHERE</span><span style="color:#24292E"> created_at </span><span style="color:#D73A49">>=</span><span style="color:#D73A49"> DATE</span><span style="color:#032F62"> '2026-07-01'</span></span>
+<span class="line"><span style="color:#D73A49">GROUP BY</span><span style="color:#24292E"> user_id</span></span>
+<span class="line"><span style="color:#D73A49">HAVING</span><span style="color:#005CC5"> COUNT</span><span style="color:#24292E">(</span><span style="color:#D73A49">*</span><span style="color:#24292E">) </span><span style="color:#D73A49">>=</span><span style="color:#005CC5"> 3</span></span>
+<span class="line"><span style="color:#D73A49">ORDER BY</span><span style="color:#24292E"> task_count </span><span style="color:#D73A49">DESC</span><span style="color:#24292E">;</span></span>
+<span class="line"></span></code></pre>
+<h3 id="94-bash-与-json" tabindex="-1"><a class="header-anchor" href="#94-bash-与-json">9.4 Bash 与 JSON</a></h3>
+<pre data-language="shellscript" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#6F42C1">npm</span><span style="color:#032F62"> install</span></span>
+<span class="line"><span style="color:#6F42C1">npm</span><span style="color:#032F62"> run</span><span style="color:#032F62"> test</span></span>
+<span class="line"><span style="color:#6F42C1">npm</span><span style="color:#032F62"> run</span><span style="color:#032F62"> build:queue</span></span>
+<span class="line"></span></code></pre>
+<pre data-language="json" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#24292E">{</span></span>
+<span class="line"><span style="color:#005CC5">  "name"</span><span style="color:#24292E">: </span><span style="color:#032F62">"markdown-structures"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "theme"</span><span style="color:#24292E">: </span><span style="color:#032F62">"chatgpt-light"</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  "features"</span><span style="color:#24292E">: [</span><span style="color:#032F62">"math"</span><span style="color:#24292E">, </span><span style="color:#032F62">"tables"</span><span style="color:#24292E">, </span><span style="color:#032F62">"code"</span><span style="color:#24292E">, </span><span style="color:#032F62">"tasks"</span><span style="color:#24292E">],</span></span>
+<span class="line"><span style="color:#005CC5">  "success"</span><span style="color:#24292E">: </span><span style="color:#005CC5">true</span></span>
+<span class="line"><span style="color:#24292E">}</span></span>
+<span class="line"></span></code></pre>
+<h3 id="95-diff" tabindex="-1"><a class="header-anchor" href="#95-diff">9.5 Diff</a></h3>
+<pre data-language="diff" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span style="color:#B31D28">- const theme = "old-light";</span></span>
+<span class="line"><span style="color:#22863A">+ const theme = "chatgpt-light";</span></span>
+<span class="line"><span style="color:#22863A">+ const verifyOutput = true;</span></span>
+<span class="line"></span></code></pre>
+<h3 id="96-无语言代码块" tabindex="-1"><a class="header-anchor" href="#96-无语言代码块">9.6 无语言代码块</a></h3>
+<pre data-language="text" class="shiki-code shiki github-light" style="background-color:#fff;color:#24292e" tabindex="0"><code><span class="line"><span>Plain text code block</span></span>
+<span class="line"><span>Line 2: symbols &#x3C;> [] {} ()</span></span>
+<span class="line"><span>Line 3: 中文与 English 混排</span></span>
+<span class="line"><span></span></span></code></pre>
+<hr>
+<h2 id="10-html-结构" tabindex="-1"><a class="header-anchor" href="#10-html-结构">10. HTML 结构</a></h2>
+<details>
+<summary><strong>点击展开详细内容</strong></summary>
+<p>这里是折叠区域中的内容。PDF 中通常会按照浏览器打印时的展开状态渲染；该结构主要用于检查原生 HTML 的兼容性。</p>
+<ul>
+<li>折叠区列表一</li>
+<li>折叠区列表二</li>
+</ul>
+</details>
+<div style="border-left: 4px solid #9ca3af; padding: 8px 12px; margin: 16px 0;">
+这是一个使用原生 HTML 和内联样式创建的自定义信息块，用于检查 HTML 是否被保留。
+</div>
+<hr>
+<h2 id="11-长文本与分页边界" tabindex="-1"><a class="header-anchor" href="#11-长文本与分页边界">11. 长文本与分页边界</a></h2>
+<p>下面是一段较长的文字，用于观察中英文混排、自动换行、标点避头尾和跨页时的段落表现。Markdown 文档导出为 PDF 时，最重要的不只是“能够生成文件”，还要确保标题不会被截断、表格不会溢出、代码不会覆盖页脚、数学公式不会错位、图片不会拉伸变形，同时还要保证页面背景、页边距、字体回退与书签结构保持一致。对于学习笔记而言，稳定的排版比复杂的装饰更加重要，因为长文档通常会频繁修改和重复构建，任何偶发的布局错误都会显著降低使用体验。</p>
+<p>重复段落用于制造自然分页：当内容接近页面底部时，浏览器需要决定标题、引用、表格和代码块是否整体移动到下一页。理想情况下，短标题不应孤立在页尾，代码块不应出现大面积裁切，块级公式也应保持完整。当前项目使用 Chromium 生成 PDF，因此最终效果应以实际渲染后的页面图片为准，而不能只根据 HTML 预览判断。</p>
+<h3 id="111-边界检查清单" tabindex="-1"><a class="header-anchor" href="#111-边界检查清单">11.1 边界检查清单</a></h3>
+<ul>
+<li>标题是否被截断</li>
+<li>中文是否出现方框或缺字</li>
+<li>公式是否错位或超出页边距</li>
+<li>表格是否横向溢出</li>
+<li>代码块是否完整显示</li>
+<li>图片是否保持比例</li>
+<li>页脚是否覆盖正文</li>
+<li>书签是否包含主要标题</li>
+</ul>
+<hr>
+<h2 id="12-综合小结" tabindex="-1"><a class="header-anchor" href="#12-综合小结">12. 综合小结</a></h2>
+<p>本文档覆盖了当前项目常用且明确支持的 Markdown 结构：</p>
+<ol>
+<li>六级标题与自动锚点</li>
+<li>粗体、斜体、删除线、高亮和行内代码</li>
+<li>有序、无序、嵌套和任务列表</li>
+<li>引用与 Obsidian 风格提示块</li>
+<li>对齐表格与长文本单元格</li>
+<li>本地 SVG 图片</li>
+<li>KaTeX 行内、块级和多行公式</li>
+<li>多语言 Shiki 代码高亮</li>
+<li>原生 HTML 元素</li>
+<li>长文本和分页边界</li>
+</ol>
+<blockquote>
+<p>构建完成后，应同时检查 PDF 文件、预览拼图、构建日志与书签信息，确保最终产物没有明显排版问题。</p>
+</blockquote>
+
+  </main>
+  <script>
+    function enhanceCallouts() {
+      document.querySelectorAll('blockquote').forEach((blockquote) => {
+        const first = blockquote.querySelector('p, li, div');
+        if (!first) return;
+
+        const rawText = first.textContent.trim();
+        const firstLine = rawText.split(/\n/)[0].trim();
+        const match = firstLine.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO|QUESTION|EXAMPLE|QUOTE|BUG|SUCCESS|FAILURE|DANGER)\]\s*(.*)$/i);
+        if (!match) return;
+
+        const type = match[1].toLowerCase();
+        const title = match[2] || match[1].toUpperCase();
+        blockquote.classList.add('callout', 'callout-' + type);
+
+        const htmlLines = first.innerHTML.split(/(?:\r?\n|<br\s*\/?>)/i);
+        first.innerHTML = htmlLines.slice(1).join('<br>').trim();
+
+        const titleNode = document.createElement('div');
+        titleNode.className = 'callout-title';
+        titleNode.textContent = title;
+        blockquote.prepend(titleNode);
+      });
+    }
+
+    enhanceCallouts();
+  </script>
+</body>
+</html>
