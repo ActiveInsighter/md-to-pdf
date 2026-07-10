@@ -69,7 +69,34 @@
   word-break: normal !important;
 }
 
+/*
+  Print pagination overrides.
+
+  Long tables, code blocks, quotes, and callouts must be allowed to continue on
+  the next page. Individual table rows, images, and display formulas remain
+  indivisible to avoid clipped content.
+*/
 @media print {
+  :is(.print, .markdown-preview-view, .markdown-rendered) :is(pre, blockquote, table, .callout) {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) :is(img, figure, .katex-display) {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  :is(.print, .markdown-preview-view, .markdown-rendered) pre code {
+    orphans: 3;
+    widows: 3;
+  }
+
   :is(.print, .markdown-preview-view, .markdown-rendered) .katex-display {
     overflow: visible !important;
   }
