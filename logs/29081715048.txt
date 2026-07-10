@@ -1,0 +1,115 @@
+## apt install CJK fonts
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Get:6 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
+Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+Get:9 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
+Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [175 kB]
+Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
+Get:12 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [208 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1092 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [269 kB]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [181 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1660 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1225 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [276 kB]
+Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5740 B]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.6 kB]
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [827 kB]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [187 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.8 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
+Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1174 kB]
+Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [231 kB]
+Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:32 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1218 B]
+Fetched 8797 kB in 1s (8071 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Suggested packages:
+  fonts-noto-cjk-extra
+The following NEW packages will be installed:
+  fonts-noto-cjk
+0 upgraded, 1 newly installed, 0 to remove and 37 not upgraded.
+Need to get 61.2 MB of archives.
+After this operation, 93.2 MB of additional disk space will be used.
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
+Fetched 61.2 MB in 2s (35.5 MB/s)
+Selecting previously unselected package fonts-noto-cjk.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202701 files and directories currently installed.)
+Preparing to unpack .../fonts-noto-cjk_1%3a20230817+repack1-3_all.deb ...
+Unpacking fonts-noto-cjk (1:20230817+repack1-3) ...
+Setting up fonts-noto-cjk (1:20230817+repack1-3) ...
+Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+## npm ci
+
+added 157 packages, and audited 158 packages in 2s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn allow-scripts   puppeteer@24.43.1 (postinstall: node install.mjs)
+npm warn allow-scripts
+npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+
+## Chrome setup
+Using system Chrome: /usr/bin/google-chrome
+
+## PDF build
+started_at=2026-07-10T09:02:55.208Z
+mode=queue
+command=node scripts/build-queue.mjs
+
+Changed files:
+- inbox/2026/07/2026-07-10/manifest.yml
+- "inbox/2026/07/2026-07-10/md/001-\344\272\214\347\273\264\351\232\217\346\234\272\345\217\230\351\207\217\345\207\275\346\225\260\345\210\206\345\270\203\350\257\246\350\247\243.md"
+Queue manifests:
+- inbox/2026/07/2026-07-10/manifest.yml
+Manifest: inbox/2026/07/2026-07-10/manifest.yml
+Date: 2026-07-10
+Theme: chatgpt-light
+
+Job bivariate-function-distributions (merge)
+Theme: chatgpt-light
+Inputs: inbox/2026/07/2026-07-10/md/001-二维随机变量函数分布详解.md
+Render preflight OK: inbox/2026/07/2026-07-10/md/001-二维随机变量函数分布详解.md
+Build merged: .tmp/combined/2026/07/2026-07-10/bivariate-function-distributions.md -> dist/queue/2026/07/2026-07-10/二维随机变量函数分布详解.pdf
+Theme: chatgpt-light
+Shiki theme: github-light
+Shiki languages: text
+HTML written to dist/queue/2026/07/2026-07-10/二维随机变量函数分布详解.html
+Using Chrome executable: /usr/bin/google-chrome
+PDF written to dist/queue/2026/07/2026-07-10/二维随机变量函数分布详解.pdf
+PDF outline check: found /Outlines; /Title entries=121; PageMode not UseOutlines
+
+Built 1 output(s) from inbox/2026/07/2026-07-10/manifest.yml.
+Built 1 manifest(s).
+Will consume after successful publish:
+- inbox/2026/07/2026-07-10
+
+finished_at=2026-07-10T09:03:11.912Z
+exit_code=0
