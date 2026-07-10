@@ -11,11 +11,6 @@ on:
       - 'inbox/**/md/**'
       - 'inbox/**/img/**'
       - 'inbox/**/attachments/**'
-      - 'themes/**'
-      - 'style.css'
-      - 'scripts/**'
-      - 'package.json'
-      - '.github/workflows/build-pdf.yml'
   workflow_dispatch:
     inputs:
       mode:
@@ -37,12 +32,20 @@ on:
         required: true
         default: 'true'
 
+concurrency:
+  group: md-to-pdf-build-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
 
     steps:
       - name: Checkout
@@ -50,17 +53,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
       - name: Record run start
         run: node scripts/record-run-state.mjs start
 
       - name: Commit run start
         continue-on-error: true
         run: node scripts/git-commit-state.mjs "Record workflow start [skip ci]"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
 
       - name: Install dependencies, fonts, and Chrome
         run: |
@@ -72,8 +76,8 @@ jobs:
           sudo apt-get install -y fonts-noto-cjk 2>&1 | tee -a .github/latest-build-log.txt
           fc-cache -f 2>&1 | tee -a .github/latest-build-log.txt
           echo "" | tee -a .github/latest-build-log.txt
-          echo "## npm install" | tee -a .github/latest-build-log.txt
-          npm install 2>&1 | tee -a .github/latest-build-log.txt
+          echo "## npm ci" | tee -a .github/latest-build-log.txt
+          npm ci 2>&1 | tee -a .github/latest-build-log.txt
           echo "" | tee -a .github/latest-build-log.txt
           echo "## Chrome setup" | tee -a .github/latest-build-log.txt
           CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
@@ -106,6 +110,7 @@ jobs:
             dist/**
             .github/latest-build-log.txt
             .github/last-build-summary.json
+          if-no-files-found: error
 
       - name: Publish output branch
         id: publish_output
@@ -129,6 +134,8 @@ jobs:
         env:
           BUILD_OUTCOME: ${{ steps.build_pdf.outcome }}
           ARTIFACT_OUTCOME: ${{ steps.upload_artifact.outcome }}
+          PUBLISH_OUTCOME: ${{ steps.publish_output.outcome }}
+          CONSUME_OUTCOME: ${{ steps.consume_queue.outcome }}
         run: node scripts/record-run-state.mjs finish
 
       - name: Commit run finish
@@ -136,21 +143,27 @@ jobs:
         continue-on-error: true
         run: node scripts/git-commit-state.mjs "Record workflow finish [skip ci]"
 
-      - name: Cleanup merged temporary branches
-        if: always()
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAX_PULLS: '200'
-        run: npm run cleanup:branches
-
-      - name: Fail if build failed
+      - name: Fail if transaction failed
         if: always()
         env:
           BUILD_OUTCOME: ${{ steps.build_pdf.outcome }}
           ARTIFACT_OUTCOME: ${{ steps.upload_artifact.outcome }}
           PUBLISH_OUTCOME: ${{ steps.publish_output.outcome }}
+          CONSUME_OUTCOME: ${{ steps.consume_queue.outcome }}
         run: |
-          if [ "$BUILD_OUTCOME" != "success" ] || [ "$ARTIFACT_OUTCOME" != "success" ] || [ "$PUBLISH_OUTCOME" != "success" ]; then
+          if [ "$BUILD_OUTCOME" != "success" ]; then
+            echo "PDF build failed: $BUILD_OUTCOME"
+            exit 1
+          fi
+          if [ "$ARTIFACT_OUTCOME" != "success" ]; then
+            echo "Artifact upload failed: $ARTIFACT_OUTCOME"
+            exit 1
+          fi
+          if [ "$PUBLISH_OUTCOME" != "success" ]; then
+            echo "Output publish failed: $PUBLISH_OUTCOME"
+            exit 1
+          fi
+          if [ "$CONSUME_OUTCOME" != "success" ] && [ "$CONSUME_OUTCOME" != "skipped" ]; then
+            echo "Queue consume failed: $CONSUME_OUTCOME"
             exit 1
           fi
