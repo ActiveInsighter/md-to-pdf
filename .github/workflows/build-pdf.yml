@@ -46,6 +46,8 @@ jobs:
 
     env:
       PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PDF_POSTPROCESS_STRICT: 'true'
+      PDF_PREVIEW_DPI: '110'
 
     steps:
       - name: Checkout
@@ -66,14 +68,14 @@ jobs:
         continue-on-error: true
         run: node scripts/git-commit-state.mjs "Record workflow start [skip ci]"
 
-      - name: Install dependencies, fonts, and Chrome
+      - name: Install dependencies, fonts, Chrome, and PDF tools
         run: |
           set -o pipefail
           mkdir -p .github
           : > .github/latest-build-log.txt
-          echo "## apt install CJK fonts" | tee -a .github/latest-build-log.txt
+          echo "## apt install CJK fonts and Poppler" | tee -a .github/latest-build-log.txt
           sudo apt-get update 2>&1 | tee -a .github/latest-build-log.txt
-          sudo apt-get install -y fonts-noto-cjk 2>&1 | tee -a .github/latest-build-log.txt
+          sudo apt-get install -y fonts-noto-cjk poppler-utils 2>&1 | tee -a .github/latest-build-log.txt
           fc-cache -f 2>&1 | tee -a .github/latest-build-log.txt
           echo "" | tee -a .github/latest-build-log.txt
           echo "## npm ci" | tee -a .github/latest-build-log.txt
@@ -110,6 +112,7 @@ jobs:
             dist/**
             .github/latest-build-log.txt
             .github/last-build-summary.json
+            .github/latest-output.json
           if-no-files-found: error
 
       - name: Publish output branch
