@@ -19,6 +19,16 @@ function run(command, args, options = {}) {
   return result.status ?? 1;
 }
 
+function pushWithRetry() {
+  const firstPush = run('git', ['push', 'origin', 'HEAD:main'], { stdio: 'inherit' });
+  if (firstPush === 0) return 0;
+
+  console.log('Initial state push failed; rebasing on origin/main and retrying.');
+  if (run('git', ['fetch', 'origin', 'main']) !== 0) return 1;
+  if (run('git', ['rebase', 'origin/main']) !== 0) return 1;
+  return run('git', ['push', 'origin', 'HEAD:main']);
+}
+
 run('git', ['config', 'user.name', 'github-actions[bot]']);
 run('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
 
@@ -41,5 +51,4 @@ if (commitStatus !== 0) {
   process.exit(commitStatus);
 }
 
-const pushStatus = run('git', ['push']);
-process.exit(pushStatus);
+process.exit(pushWithRetry());
