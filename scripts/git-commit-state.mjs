@@ -7,7 +7,8 @@ const stateFiles = [
   '.github/latest-run-url.txt',
   '.github/latest-run.json',
   '.github/build-history.json',
-  '.github/latest-build-log.txt'
+  '.github/latest-build-log.txt',
+  '.github/latest-output.json'
 ];
 
 function run(command, args, options = {}) {
