@@ -8,6 +8,7 @@ const logPath = path.resolve(projectRoot, '.github/latest-build-log.txt');
 const mode = (process.env.BUILD_MODE || 'queue').trim() || 'queue';
 const source = (process.env.BUILD_SOURCE || '').trim();
 const day = (process.env.BUILD_DAY || '').trim();
+const postprocessEnabled = process.env.PDF_POSTPROCESS !== 'false';
 
 await fsp.mkdir(path.dirname(logPath), { recursive: true });
 
@@ -52,28 +53,43 @@ function commandForMode() {
   throw new Error(`Unsupported BUILD_MODE: ${mode}`);
 }
 
+function runNode(commandArgs, sectionTitle) {
+  write(`\n## ${sectionTitle}\n`);
+  write(`started_at=${new Date().toISOString()}\n`);
+  write(`command=node ${commandArgs.join(' ')}\n\n`);
+
+  const child = spawn(process.execPath, commandArgs, {
+    cwd: projectRoot,
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  child.stdout.on('data', write);
+  child.stderr.on('data', writeErr);
+
+  return new Promise((resolve) => {
+    child.on('error', (error) => {
+      writeErr(`${error.stack || error}\n`);
+      resolve(1);
+    });
+    child.on('close', (code) => {
+      write(`\nfinished_at=${new Date().toISOString()}\n`);
+      write(`exit_code=${code}\n`);
+      resolve(code ?? 1);
+    });
+  });
+}
+
 const commandArgs = commandForMode();
-
-write(`\n## PDF build\n`);
-write(`started_at=${new Date().toISOString()}\n`);
+write(`\n## PDF pipeline\n`);
 write(`mode=${mode}\n`);
-write(`command=node ${commandArgs.join(' ')}\n\n`);
+write(`postprocess=${postprocessEnabled && mode !== 'validate' ? 'enabled' : 'disabled'}\n`);
 
-const child = spawn(process.execPath, commandArgs, {
-  cwd: projectRoot,
-  env: process.env,
-  stdio: ['ignore', 'pipe', 'pipe']
-});
+let exitCode = await runNode(commandArgs, 'PDF build');
 
-child.stdout.on('data', write);
-child.stderr.on('data', writeErr);
-
-const exitCode = await new Promise((resolve) => {
-  child.on('close', resolve);
-});
-
-write(`\nfinished_at=${new Date().toISOString()}\n`);
-write(`exit_code=${exitCode}\n`);
+if (exitCode === 0 && postprocessEnabled && mode !== 'validate') {
+  exitCode = await runNode(['scripts/postprocess-pdfs.mjs'], 'PDF preview and quality postprocessing');
+}
 
 await new Promise((resolve) => logStream.end(resolve));
-process.exit(exitCode ?? 1);
+process.exit(exitCode);
