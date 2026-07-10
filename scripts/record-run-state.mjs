@@ -7,6 +7,7 @@ const latestPath = path.resolve(projectRoot, '.github/latest-run.json');
 const historyPath = path.resolve(projectRoot, '.github/build-history.json');
 const latestIdPath = path.resolve(projectRoot, '.github/latest-run-id.txt');
 const latestUrlPath = path.resolve(projectRoot, '.github/latest-run-url.txt');
+const summaryPath = path.resolve(projectRoot, '.github/last-build-summary.json');
 
 function now() {
   return new Date().toISOString();
@@ -44,6 +45,9 @@ function baseRecord(status) {
     duration_seconds: null,
     build_outcome: null,
     artifact_outcome: null,
+    publish_outcome: null,
+    consume_outcome: null,
+    summary_status: null,
     artifact_name: 'obsidian-style-pdf',
     log_file: '.github/latest-build-log.txt'
   };
@@ -68,6 +72,17 @@ function upsert(history, record) {
   return arr.slice(0, 10);
 }
 
+function finalStatus({ buildOutcome, artifactOutcome, publishOutcome, consumeOutcome, summaryStatus }) {
+  if (summaryStatus === 'skipped') return 'skipped';
+  if (buildOutcome !== 'success') return 'failure';
+  if (artifactOutcome !== 'success') return 'artifact_failed';
+  if (publishOutcome !== 'success') return 'publish_failed';
+  if (consumeOutcome && consumeOutcome !== 'success' && consumeOutcome !== 'skipped') {
+    return 'consume_failed';
+  }
+  return 'success';
+}
+
 await fsp.mkdir(path.dirname(latestPath), { recursive: true });
 
 let latest = await readJson(latestPath, null);
@@ -79,16 +94,31 @@ if (action === 'start') {
 } else {
   const buildOutcome = process.env.BUILD_OUTCOME || '';
   const artifactOutcome = process.env.ARTIFACT_OUTCOME || '';
-  const status = buildOutcome === 'success' && artifactOutcome === 'success' ? 'success' : 'failure';
+  const publishOutcome = process.env.PUBLISH_OUTCOME || '';
+  const consumeOutcome = process.env.CONSUME_OUTCOME || '';
+  const summary = await readJson(summaryPath, null);
+  const summaryStatus = summary?.status || null;
+  const status = finalStatus({
+    buildOutcome,
+    artifactOutcome,
+    publishOutcome,
+    consumeOutcome,
+    summaryStatus
+  });
+
   record = latest && String(latest.run_id) === String(process.env.GITHUB_RUN_ID)
     ? { ...latest }
     : baseRecord(status);
+
   const finishedAt = now();
   record.status = status;
   record.finished_at = finishedAt;
   record.duration_seconds = secondsBetween(record.started_at, finishedAt);
   record.build_outcome = buildOutcome;
   record.artifact_outcome = artifactOutcome;
+  record.publish_outcome = publishOutcome;
+  record.consume_outcome = consumeOutcome;
+  record.summary_status = summaryStatus;
 }
 
 latest = record;

@@ -87,6 +87,19 @@ async function copyOutputs() {
   return copied;
 }
 
+function pushWithRetry() {
+  const firstPush = run('git', ['push', 'origin', `HEAD:${outputBranch}`], {
+    cwd: tmpDir,
+    allowFailure: true
+  });
+  if (firstPush.status === 0) return;
+
+  console.log('Initial output push failed; rebasing on the latest remote output branch and retrying.');
+  run('git', ['fetch', 'origin', outputBranch], { cwd: tmpDir });
+  run('git', ['rebase', `origin/${outputBranch}`], { cwd: tmpDir });
+  run('git', ['push', 'origin', `HEAD:${outputBranch}`], { cwd: tmpDir });
+}
+
 async function commitAndPush() {
   run('git', ['config', 'user.name', 'github-actions[bot]'], { cwd: tmpDir });
   run('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], { cwd: tmpDir });
@@ -99,7 +112,7 @@ async function commitAndPush() {
   }
 
   run('git', ['commit', '-m', `Publish generated PDFs from run ${runId} [skip ci]`], { cwd: tmpDir });
-  run('git', ['push', 'origin', `HEAD:${outputBranch}`], { cwd: tmpDir });
+  pushWithRetry();
 }
 
 async function main() {

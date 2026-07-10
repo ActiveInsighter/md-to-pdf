@@ -11,6 +11,8 @@
     "build:queue": "node scripts/build-queue.mjs",
     "validate:manifest": "node scripts/validate-manifest.mjs",
     "cleanup:branches": "node scripts/cleanup-merged-branches.mjs",
+    "test": "node scripts/test-render.mjs",
+    "test:render": "node scripts/test-render.mjs",
     "ci:build": "node scripts/build-with-log.mjs"
   },
   "devDependencies": {
