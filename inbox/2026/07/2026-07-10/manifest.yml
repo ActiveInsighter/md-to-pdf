@@ -1,0 +1,13 @@
+version: 1
+date: 2026-07-10
+title: Markdown 综合结构展示
+theme: chatgpt-light
+
+jobs:
+  - id: markdown-structures-showcase
+    type: merge
+    title: Markdown 综合结构展示
+    inputs:
+      - md/001-Markdown综合结构展示.md
+    page_break: false
+    output: Markdown综合结构展示.pdf
