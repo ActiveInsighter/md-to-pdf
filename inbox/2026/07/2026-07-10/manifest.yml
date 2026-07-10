@@ -1,0 +1,13 @@
+version: 1
+date: 2026-07-10
+title: 二维随机变量函数分布详解
+theme: chatgpt-light
+
+jobs:
+  - id: bivariate-function-distributions
+    type: merge
+    title: 二维随机变量函数分布详解
+    inputs:
+      - md/001-二维随机变量函数分布详解.md
+    page_break: true
+    output: 二维随机变量函数分布详解.pdf
