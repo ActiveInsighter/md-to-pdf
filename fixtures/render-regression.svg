@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320" role="img" aria-labelledby="title desc" data-regression="pdf-renderer">
   <title id="title">PDF renderer regression diagram</title>
-  <desc id="desc">Markdown to HTML to Chromium to PDF pipeline.</desc>
+  <desc id="desc">Automated Markdown to HTML to Chromium to PDF regression pipeline.</desc>
   <rect width="900" height="320" fill="#ffffff"/>
   <g fill="#f7f8fa" stroke="#d4d9e2" stroke-width="2">
     <rect x="40" y="105" width="170" height="90" rx="14"/>
