@@ -9,6 +9,7 @@
     "build:single": "node scripts/build-single.mjs",
     "build:day": "node scripts/build-day.mjs",
     "build:queue": "node scripts/build-queue.mjs",
+    "postprocess:pdf": "node scripts/postprocess-pdfs.mjs",
     "validate:manifest": "node scripts/validate-manifest.mjs",
     "cleanup:branches": "node scripts/cleanup-merged-branches.mjs",
     "test": "node scripts/test-render.mjs",
