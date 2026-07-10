@@ -298,8 +298,8 @@ function createMarkdownRenderer(highlighter) {
 
 function buildFooterTemplate() {
   return `
-    <div style="width:100%; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, &quot;Microsoft YaHei UI&quot;, sans-serif; font-size:8.5px; color:#8a8f98; text-align:center; padding:0 12mm;">
-      <span class="pageNumber"></span> / <span class="totalPages"></span>
+    <div style="width:100%; box-sizing:border-box; padding:0 15mm 1mm; font-family:&quot;Aptos&quot;, &quot;Segoe UI Variable Text&quot;, &quot;Segoe UI&quot;, &quot;Noto Sans&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, &quot;Microsoft YaHei UI&quot;, sans-serif; font-size:10.5px; line-height:1; font-weight:500; color:#667085; text-align:center; letter-spacing:0.035em;">
+      <span style="font-variant-numeric:tabular-nums;"><span class="pageNumber"></span><span style="display:inline-block; padding:0 4px; color:#98a2b3;">/</span><span class="totalPages"></span></span>
     </div>`;
 }
 
@@ -438,7 +438,7 @@ async function main() {
       margin: {
         top: '16mm',
         right: '15mm',
-        bottom: '18mm',
+        bottom: '19mm',
         left: '15mm'
       }
     });
