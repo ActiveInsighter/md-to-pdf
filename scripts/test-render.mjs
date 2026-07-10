@@ -54,7 +54,7 @@ function samplingDocument() {
     const pageNumber = index + 1;
     const pageBreak = index === 0 ? '' : '<div class="page-break"></div>\n\n';
     const title = index === 0 ? '# PDF 随机预览抽样回归\n\n' : '';
-    return `${pageBreak}${title}## 第 ${pageNumber} 页\n\n这是用于验证超过四页时随机抽取四页的第 ${pageNumber} 页。\n\n\[\n${pageNumber}^2 = ${pageNumber ** 2}\n\]\n`;
+    return `${pageBreak}${title}## 第 ${pageNumber} 页\n\n这是用于验证超过四页时随机抽取四页的第 ${pageNumber} 页。\n\n\\[\n${pageNumber}^2 = ${pageNumber ** 2}\n\\]\n`;
   }).join('\n');
 }
 
