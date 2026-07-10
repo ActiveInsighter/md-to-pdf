@@ -1,8 +1,8 @@
 {
   "version": 1,
   "status": "success",
-  "generated_at": "2026-07-10T12:38:15.373Z",
-  "run_id": "29093153222",
+  "generated_at": "2026-07-10T13:30:48.917Z",
+  "run_id": "29096281400",
   "artifact_name": "obsidian-style-pdf",
   "scan_root": "dist",
   "output_count": 1,
@@ -10,18 +10,16 @@
   "warning_count": 0,
   "outputs": [
     {
-      "pdf": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.pdf",
-      "html": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.html",
-      "preview": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.preview.png",
-      "quality": "dist/queue/2026/07/2026-07-10/Markdown综合结构展示.quality.json",
-      "bytes": 931110,
-      "pages": 7,
+      "pdf": "dist/queue/2026/07/2026-07-10/PDF快速路径回归测试.pdf",
+      "html": "dist/queue/2026/07/2026-07-10/PDF快速路径回归测试.html",
+      "preview": "dist/queue/2026/07/2026-07-10/PDF快速路径回归测试.preview.png",
+      "quality": "dist/queue/2026/07/2026-07-10/PDF快速路径回归测试.quality.json",
+      "bytes": 408246,
+      "pages": 2,
       "quality_status": "success",
       "selected_preview_pages": [
-        2,
-        4,
-        5,
-        6
+        1,
+        2
       ],
       "warnings": []
     }
