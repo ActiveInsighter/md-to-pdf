@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "status": "success",
+  "generated_at": "2026-07-10T15:14:03.086Z",
+  "run_id": "29102822789",
+  "files": {
+    "pdf": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.pdf",
+    "html": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.html",
+    "preview": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.preview.png",
+    "quality": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.quality.json"
+  },
+  "pdf": {
+    "bytes": 1461849,
+    "pages": 32,
+    "header_valid": true,
+    "text_chars": 11983,
+    "page_text_chars": [
+      562,
+      333,
+      136,
+      368,
+      187,
+      442,
+      372,
+      387,
+      112,
+      350,
+      535,
+      455,
+      414,
+      397,
+      509,
+      275,
+      446,
+      491,
+      393,
+      398,
+      364,
+      350,
+      496,
+      46,
+      588,
+      503,
+      336,
+      292,
+      333,
+      362,
+      335,
+      416
+    ],
+    "suspected_blank_pages": [],
+    "metadata": {
+      "title": "参数估计与假设检验详解",
+      "creator": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+      "producer": "Skia/PDF m150",
+      "creationdate": "Fri Jul 10 15:13:58 2026 UTC",
+      "moddate": "Fri Jul 10 15:13:58 2026 UTC",
+      "custom_metadata": "no",
+      "metadata_stream": "no",
+      "tagged": "yes",
+      "userproperties": "no",
+      "suspects": "no",
+      "form": "none",
+      "javascript": "no",
+      "pages": "32",
+      "encrypted": "no",
+      "page_size": "594.96 x 841.92 pts (A4)",
+      "page_rot": "0",
+      "file_size": "1461849 bytes",
+      "optimized": "no",
+      "pdf_version": "1.4"
+    }
+  },
+  "render": {
+    "title": "参数估计与假设检验详解",
+    "image_count": 0,
+    "missing_images": [],
+    "katex_error_count": 0,
+    "overflow_elements": [],
+    "document_overflow_px": 0,
+    "main_overflow_px": 0,
+    "body_text_chars": 17348,
+    "console_errors": [],
+    "page_errors": []
+  },
+  "preview": {
+    "strategy": "random-four-pages",
+    "selected_pages": [
+      11,
+      17,
+      19,
+      23
+    ],
+    "total_pages": 32,
+    "layout": "2x2",
+    "dpi": 110
+  },
+  "checks": [
+    {
+      "id": "pdf-header",
+      "status": "pass",
+      "message": "PDF 文件头有效。"
+    },
+    {
+      "id": "pdf-size",
+      "status": "pass",
+      "message": "PDF 大小为 1461849 字节。"
+    },
+    {
+      "id": "pdf-pages",
+      "status": "pass",
+      "message": "PDF 页数为 32。"
+    },
+    {
+      "id": "html-sidecar",
+      "status": "pass",
+      "message": "HTML 旁路文件存在。"
+    },
+    {
+      "id": "preview",
+      "status": "pass",
+      "message": "合成预览图已生成。"
+    },
+    {
+      "id": "images",
+      "status": "pass",
+      "message": "所有图片均成功加载。",
+      "details": []
+    },
+    {
+      "id": "katex",
+      "status": "pass",
+      "message": "未检测到 KaTeX 渲染错误。"
+    },
+    {
+      "id": "blank-pages",
+      "status": "pass",
+      "message": "未检测到疑似空白页。",
+      "details": []
+    },
+    {
+      "id": "overflow",
+      "status": "pass",
+      "message": "未检测到明显横向溢出。",
+      "details": []
+    }
+  ]
+}
