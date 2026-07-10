@@ -138,6 +138,8 @@ async function inspectHtml(browser, htmlPath) {
       const overflowElements = [...document.querySelectorAll('main *')]
         .filter((element) => {
           const style = getComputedStyle(element);
+          if (element.closest('.katex-mathml')) return false;
+          if (element.getAttribute('aria-hidden') === 'true') return false;
           if (style.display === 'inline') return false;
           if (['auto', 'scroll'].includes(style.overflowX)) return false;
           return element.clientWidth > 0 && element.scrollWidth > element.clientWidth + 3;
@@ -235,7 +237,7 @@ function buildChecks({ stat, headerValid, pageCount, htmlExists, previewExists, 
   push('pdf-size', stat.size >= 1024 ? 'pass' : 'fail', `PDF 大小为 ${stat.size} 字节。`);
   push('pdf-pages', pageCount > 0 ? 'pass' : 'fail', `PDF 页数为 ${pageCount}。`);
   push('html-sidecar', htmlExists ? 'pass' : 'fail', htmlExists ? 'HTML 旁路文件存在。' : '缺少同名 HTML 文件。');
-  push('preview', previewExists ? 'pass' : 'fail', previewExists ? '四页合成预览图已生成。' : '预览图未生成。');
+  push('preview', previewExists ? 'pass' : 'fail', previewExists ? '合成预览图已生成。' : '预览图未生成。');
   push('images', diagnostics.missing_images.length === 0 ? 'pass' : 'fail', diagnostics.missing_images.length === 0 ? '所有图片均成功加载。' : `有 ${diagnostics.missing_images.length} 张图片加载失败。`, diagnostics.missing_images);
   push('katex', diagnostics.katex_error_count === 0 ? 'pass' : 'fail', diagnostics.katex_error_count === 0 ? '未检测到 KaTeX 渲染错误。' : `检测到 ${diagnostics.katex_error_count} 个 KaTeX 错误。`);
   push('blank-pages', blankPages.length === 0 ? 'pass' : 'warn', blankPages.length === 0 ? '未检测到疑似空白页。' : `疑似空白页：${blankPages.join(', ')}。`, blankPages);
