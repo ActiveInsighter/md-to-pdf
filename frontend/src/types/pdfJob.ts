@@ -1,6 +1,17 @@
 export type PdfJobStatus =
   'created' | 'uploaded' | 'queued' | 'building' | 'uploading' | 'completed' | 'failed' | 'expired'
 
+export const PDF_JOB_STATUS_LABELS: Record<PdfJobStatus, string> = {
+  created: '准备上传',
+  uploaded: '上传完成',
+  queued: '等待构建',
+  building: '正在构建',
+  uploading: '正在上传 PDF',
+  completed: '已完成',
+  failed: '构建失败',
+  expired: '已过期',
+}
+
 export type PdfJob = {
   id: string
   user_id: string
