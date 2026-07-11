@@ -61,7 +61,7 @@ inbox/** 提交到 main
 → 用户获取短期签名下载地址
 ```
 
-网页用户文件不会提交到 Git 仓库，也不会为每次转换创建 commit。
+网页用户文件不会提交到 Git 仓库，也不会为每次转换创建 commit。尚未进入队列的 `created/uploaded` 任务可以由用户取消，取消接口会先安全终止任务，再清理对应的私有输入文件。
 
 ## 本地快速开始
 
@@ -113,6 +113,7 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 supabase functions deploy create-pdf-job
 supabase functions deploy start-pdf-job
+supabase functions deploy cancel-pdf-job
 supabase functions deploy get-pdf-download
 ```
 
@@ -181,6 +182,7 @@ jobs/{job_id}/output.pdf
 - 路径最大 240 字符；
 - 禁止绝对路径、Windows 盘符、`..`、符号链接和 Zip Slip；
 - 用户只能读取自己的任务；
+- 取消操作仅允许任务所有者处理尚未启动的 `created/uploaded` 任务；
 - `output.pdf` 只能通过短期签名 URL 下载；
 - 用户文件只保存于私有 Supabase Storage；
 - `GITHUB_TOKEN`、`SUPABASE_SECRET_KEY` 和 `SUPABASE_SERVICE_ROLE_KEY` 不得进入浏览器、日志或 Artifact。
@@ -210,6 +212,7 @@ Edge Functions：
 npx deno check \
   supabase/functions/create-pdf-job/index.ts \
   supabase/functions/start-pdf-job/index.ts \
+  supabase/functions/cancel-pdf-job/index.ts \
   supabase/functions/get-pdf-download/index.ts
 ```
 
@@ -218,8 +221,3 @@ npx deno check \
 - AI 与自动化代理规则：[`AGENTS.md`](AGENTS.md)
 - 仓库队列操作：[`docs/workflow-guide.md`](docs/workflow-guide.md)
 - Supabase 网页服务：[`docs/supabase-pdf-service.md`](docs/supabase-pdf-service.md)
-- Cloudflare Pages 部署：[`docs/cloudflare-pages-actions-deploy.md`](docs/cloudflare-pages-actions-deploy.md)
-- PDF 质量检查：[`docs/pdf-preview-and-quality.md`](docs/pdf-preview-and-quality.md)
-- 分支策略：[`docs/branch-policy.md`](docs/branch-policy.md)
-
-项目修改必须通过独立分支和 Pull Request；纯 PDF 导出任务按 [`AGENTS.md`](AGENTS.md) 的快速路径执行。
