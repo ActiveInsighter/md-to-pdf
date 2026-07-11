@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import {
+  cancelPdfJob,
   createPdfJob,
   getDownloadUrl,
   getPdfJob,
@@ -361,7 +362,7 @@ export function usePdfBuilder() {
     }
   }, [job])
 
-  const reset = useCallback(() => {
+  const clearWorkspace = useCallback(() => {
     if (userId) localStorage.removeItem(activeJobKey(userId))
     setJob(null)
     setSubmissionRecovery(null)
@@ -371,6 +372,50 @@ export function usePdfBuilder() {
     setUploadPhase('idle')
     setError('')
   }, [userId])
+
+  const reset = useCallback(async () => {
+    if (busy) return
+
+    const recovery = submissionRecovery
+    if (!recovery) {
+      clearWorkspace()
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    setProgress(0)
+    setUploadPhase('cancelling')
+
+    try {
+      await cancelPdfJob(recovery.jobId)
+      clearWorkspace()
+      await refreshHistory()
+    } catch (cause) {
+      const cancelError = readableError(cause)
+
+      try {
+        const latest = await getPdfJob(recovery.jobId)
+        const latestRecovery = getSubmissionRecovery(latest)
+        if (!latestRecovery) {
+          clearWorkspace()
+          await refreshHistory()
+          return
+        }
+
+        applyJobUpdate(latest)
+        setSubmissionRecovery(latestRecovery)
+      } catch {
+        // Preserve the original recovery context when status reconciliation also fails.
+      }
+
+      setError(`${cancelError} 未启动任务仍保留，可再次取消或继续恢复。`)
+      setProgress(0)
+      setUploadPhase('failed')
+    } finally {
+      setBusy(false)
+    }
+  }, [applyJobUpdate, busy, clearWorkspace, refreshHistory, submissionRecovery])
 
   const selectJob = useCallback((selected: PdfJob) => {
     const nextRecovery = getSubmissionRecovery(selected)
