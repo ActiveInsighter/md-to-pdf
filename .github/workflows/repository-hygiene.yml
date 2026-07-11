@@ -14,6 +14,7 @@ on:
       - 'docs/supabase-pdf-service.md'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
+      - 'frontend/src/**'
       - 'frontend/scripts/**'
       - 'scripts/**'
       - 'supabase/functions/.env.example'
