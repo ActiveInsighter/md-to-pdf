@@ -29,7 +29,7 @@ jobs:
               state: 'pending',
               context: 'jsx-a11y-dependency',
               target_url: runUrl,
-              description: 'Installing JSX accessibility lint dependency',
+              description: 'Installing ESLint 9 accessibility toolchain',
             })
 
       - name: Checkout
@@ -42,15 +42,20 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install JSX accessibility lint dependency
+      - name: Install compatible accessibility lint toolchain
         working-directory: frontend
-        run: npm install --save-dev eslint-plugin-jsx-a11y@latest --no-audit --no-fund
+        run: |
+          npm install --save-dev \
+            '@eslint/js@^9' \
+            'eslint@^9' \
+            'eslint-plugin-jsx-a11y@6.10.2' \
+            --no-audit --no-fund
 
-      - name: Verify clean install
+      - name: Verify clean install and dependency tree
         working-directory: frontend
         run: |
           npm ci --no-audit --no-fund
-          npm ls eslint-plugin-jsx-a11y
+          npm ls eslint @eslint/js eslint-plugin-jsx-a11y
 
       - name: Commit package metadata
         run: |
@@ -61,7 +66,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add frontend/package.json frontend/package-lock.json
-          git commit -m 'build(frontend): add JSX accessibility lint plugin'
+          git commit -m 'build(frontend): add compatible JSX accessibility lint toolchain'
           git push
 
       - name: Publish dependency installation result
@@ -79,6 +84,6 @@ jobs:
               context: 'jsx-a11y-dependency',
               target_url: runUrl,
               description: state === 'success'
-                ? 'JSX accessibility lint dependency installed'
-                : 'JSX accessibility lint dependency installation failed',
+                ? 'Compatible JSX accessibility lint toolchain installed'
+                : 'Accessibility lint toolchain installation failed',
             })
