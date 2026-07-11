@@ -123,6 +123,7 @@ jobs:
             .github/last-build-summary.json
             .github/latest-output.json
           if-no-files-found: error
+          retention-days: 7
 
       - name: Publish output branch
         id: publish_output
