@@ -1,60 +1,89 @@
 import { FileDropField } from './FileDropField'
-import type { UploadPhase } from '../types/upload'
+import type { SubmissionRecovery, UploadPhase } from '../types/upload'
 import { uploadPhaseLabels } from '../types/upload'
 import { validateAssetsFile, validateMarkdownFile } from '../utils/uploadFiles'
 
 type Props = {
   markdown: File | null
   assets: File | null
+  recovery: SubmissionRecovery | null
   busy: boolean
   progress: number
   phase: UploadPhase
   onMarkdown: (file: File | null) => void
   onAssets: (file: File | null) => void
   onStart: () => void
+  onReset: () => void
 }
 
 export function PdfUpload({
   markdown,
   assets,
+  recovery,
   busy,
   progress,
   phase,
   onMarkdown,
   onAssets,
   onStart,
+  onReset,
 }: Props) {
   const submitted = phase === 'submitted'
   const locked = busy || submitted
+  const filesLocked = locked || recovery?.status === 'uploaded'
   const phaseLabel = uploadPhaseLabels[phase]
+  const requiresAssets = recovery?.status === 'created' && recovery.hasAssets
+  const canStart = recovery?.status === 'uploaded'
+    || Boolean(markdown && (!requiresAssets || assets))
+
+  const actionLabel = recovery
+    ? recovery.status === 'uploaded'
+      ? '继续启动构建'
+      : '重试上传并提交'
+    : '开始生成 PDF'
 
   return (
     <section className="card upload-card">
       <div className="upload-heading">
         <div>
-          <p className="eyebrow">NEW PDF JOB</p>
-          <h2>新建 PDF 任务</h2>
+          <p className="eyebrow">{recovery ? 'RECOVER PDF JOB' : 'NEW PDF JOB'}</p>
+          <h2>{recovery ? '恢复未完成任务' : '新建 PDF 任务'}</h2>
         </div>
         <span className={`upload-state-badge phase-${phase}`}>{phaseLabel}</span>
       </div>
 
+      {recovery && (
+        <div className="upload-recovery-note" role="status">
+          <strong>继续任务 {recovery.jobId.slice(0, 8)}</strong>
+          <span>
+            {recovery.status === 'uploaded'
+              ? '文件已上传，将直接重新请求构建。'
+              : '任务记录与存储路径已保留，请重新选择所需文件后重试。'}
+          </span>
+        </div>
+      )}
+
       <div className="upload-grid">
         <FileDropField
           title="Markdown 文件"
-          hint=".md 文件，最大 10 MiB"
+          hint={recovery?.status === 'uploaded' ? '文件已上传，无需重新选择' : '.md 文件，最大 10 MiB'}
           accept=".md,text/markdown,text/plain"
           file={markdown}
-          disabled={locked}
+          disabled={filesLocked}
           validate={validateMarkdownFile}
           onChange={onMarkdown}
         />
         <FileDropField
           title="资源压缩包"
-          hint="assets.zip，最大 50 MiB"
+          hint={recovery?.status === 'uploaded'
+            ? '文件已上传，无需重新选择'
+            : requiresAssets
+              ? '原任务需要 ZIP，最大 50 MiB'
+              : 'assets.zip，最大 50 MiB'}
           accept=".zip,application/zip"
           file={assets}
-          optional
-          disabled={locked}
+          optional={!requiresAssets}
+          disabled={filesLocked}
           validate={validateAssetsFile}
           onChange={onAssets}
         />
@@ -87,15 +116,22 @@ export function PdfUpload({
       </div>
 
       <div className="upload-actions">
-        <button disabled={locked || !markdown} onClick={onStart}>
-          {submitted ? '已提交，等待构建' : busy ? phaseLabel : '开始生成 PDF'}
+        <button disabled={locked || !canStart} onClick={onStart}>
+          {submitted ? '已提交，等待构建' : busy ? phaseLabel : actionLabel}
         </button>
+        {recovery && (
+          <button className="secondary recovery-reset-button" disabled={busy} onClick={onReset}>
+            放弃并新建
+          </button>
+        )}
         <p className="muted upload-help" role="status" aria-live="polite">
           {submitted
             ? '任务已提交，可在下方查看实时构建状态。'
             : busy
               ? `${phaseLabel}，请勿关闭页面。`
-              : '文件仅上传到私有存储，不会写入 Git 仓库。'}
+              : recovery
+                ? '将复用原任务，不会创建重复记录。'
+                : '文件仅上传到私有存储，不会写入 Git 仓库。'}
         </p>
       </div>
     </section>
