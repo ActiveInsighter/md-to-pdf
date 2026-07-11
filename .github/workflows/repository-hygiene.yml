@@ -152,7 +152,7 @@ jobs:
           grep -q './node_modules/.bin/wrangler pages deploy dist' .github/workflows/deploy-pages.yml
 
           npm ci --prefix frontend --prefer-offline --no-audit --no-fund
-          frontend/node_modules/.bin/wrangler --version | grep -q "$expected"
+          frontend/node_modules/.bin/wrangler --version | grep -q '4.110.0'
           npm run --prefix frontend typecheck
           npm run --prefix frontend build
 
