@@ -52,9 +52,12 @@ export async function listPdfJobs(): Promise<PdfJob[]> {
 }
 
 export async function getDownloadUrl(jobId: string): Promise<string> {
-  const { data, error } = await supabase.functions.invoke<{ downloadUrl: string }>('get-pdf-download', {
-    body: { jobId },
-  })
+  const { data, error } = await supabase.functions.invoke<{ downloadUrl: string }>(
+    'get-pdf-download',
+    {
+      body: { jobId },
+    },
+  )
   if (error) throw new Error(error.message)
   if (!data?.downloadUrl) throw new Error('下载地址生成失败。')
   return data.downloadUrl

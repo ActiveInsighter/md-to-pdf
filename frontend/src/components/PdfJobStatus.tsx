@@ -22,19 +22,39 @@ export function PdfJobStatus({ job, onDownload, onNew }: Props) {
   return (
     <section className="card status-card">
       <div className="row spread">
-        <div><span className={`badge status-${job.status}`}>{labels[job.status]}</span><h2>任务状态</h2></div>
+        <div>
+          <span className={`badge status-${job.status}`}>{labels[job.status]}</span>
+          <h2>任务状态</h2>
+        </div>
         <code>{job.id}</code>
       </div>
       <dl>
-        <div><dt>主题</dt><dd>{job.theme}</dd></div>
-        <div><dt>创建时间</dt><dd>{new Date(job.created_at).toLocaleString()}</dd></div>
-        <div><dt>到期时间</dt><dd>{new Date(job.expires_at).toLocaleString()}</dd></div>
+        <div>
+          <dt>主题</dt>
+          <dd>{job.theme}</dd>
+        </div>
+        <div>
+          <dt>创建时间</dt>
+          <dd>{new Date(job.created_at).toLocaleString()}</dd>
+        </div>
+        <div>
+          <dt>到期时间</dt>
+          <dd>{new Date(job.expires_at).toLocaleString()}</dd>
+        </div>
       </dl>
-      {job.github_run_url && <a href={job.github_run_url} target="_blank" rel="noreferrer">查看 GitHub Actions 运行</a>}
+      {job.github_run_url && (
+        <a href={job.github_run_url} target="_blank" rel="noreferrer">
+          查看 GitHub Actions 运行
+        </a>
+      )}
       {job.error_message && <p className="error-text">{job.error_message}</p>}
       <div className="row">
         {job.status === 'completed' && <button onClick={onDownload}>下载 PDF</button>}
-        {(job.status === 'completed' || job.status === 'failed' || job.status === 'expired') && <button className="secondary" onClick={onNew}>重新生成</button>}
+        {(job.status === 'completed' || job.status === 'failed' || job.status === 'expired') && (
+          <button className="secondary" onClick={onNew}>
+            重新生成
+          </button>
+        )}
       </div>
     </section>
   )

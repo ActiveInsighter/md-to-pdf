@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { createPdfJob, getDownloadUrl, getPdfJob, listPdfJobs, readableError, startPdfJob, uploadAssets, uploadInput } from '../api/pdfJobs'
+import {
+  createPdfJob,
+  getDownloadUrl,
+  getPdfJob,
+  listPdfJobs,
+  readableError,
+  startPdfJob,
+  uploadAssets,
+  uploadInput,
+} from '../api/pdfJobs'
 import { AuthPanel } from '../components/AuthPanel'
 import { PdfJobHistory } from '../components/PdfJobHistory'
 import { PdfJobStatus } from '../components/PdfJobStatus'
@@ -25,18 +34,25 @@ export function PdfBuilderPage() {
 
   const refreshHistory = useCallback(async () => {
     if (!session) return
-    try { setHistory(await listPdfJobs()) } catch (cause) { setError(readableError(cause)) }
-  }, [session])
-
-  const loadJob = useCallback(async (jobId: string) => {
     try {
-      const next = await getPdfJob(jobId)
-      setJob(next)
-      if (TERMINAL.has(next.status)) await refreshHistory()
+      setHistory(await listPdfJobs())
     } catch (cause) {
       setError(readableError(cause))
     }
-  }, [refreshHistory])
+  }, [session])
+
+  const loadJob = useCallback(
+    async (jobId: string) => {
+      try {
+        const next = await getPdfJob(jobId)
+        setJob(next)
+        if (TERMINAL.has(next.status)) await refreshHistory()
+      } catch (cause) {
+        setError(readableError(cause))
+      }
+    },
+    [refreshHistory],
+  )
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => setSession(data.session))
@@ -45,7 +61,11 @@ export function PdfBuilderPage() {
   }, [])
 
   useEffect(() => {
-    if (!session) { setHistory([]); setJob(null); return }
+    if (!session) {
+      setHistory([])
+      setJob(null)
+      return
+    }
     void refreshHistory()
     const saved = localStorage.getItem(ACTIVE_JOB_KEY)
     if (saved) void loadJob(saved)
@@ -55,19 +75,34 @@ export function PdfBuilderPage() {
     if (!session || !activeJobId || !activeJobStatus || TERMINAL.has(activeJobStatus)) return
     const channel = supabase
       .channel(`pdf-job-${activeJobId}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pdf_jobs', filter: `id=eq.${activeJobId}` }, (payload) => {
-        setJob(payload.new as PdfJob)
-      })
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'pdf_jobs', filter: `id=eq.${activeJobId}` },
+        (payload) => {
+          setJob(payload.new as PdfJob)
+        },
+      )
       .subscribe()
     const timer = window.setInterval(() => void loadJob(activeJobId), 10_000)
-    return () => { window.clearInterval(timer); void supabase.removeChannel(channel) }
+    return () => {
+      window.clearInterval(timer)
+      void supabase.removeChannel(channel)
+    }
   }, [session, activeJobId, activeJobStatus, loadJob])
 
   async function start() {
     if (!markdown) return
-    if (markdown.size <= 0 || markdown.size > 10 * 1024 * 1024) { setError('Markdown 必须大于 0 且不超过 10 MiB。'); return }
-    if (assets && (assets.size <= 0 || assets.size > 50 * 1024 * 1024)) { setError('assets.zip 必须大于 0 且不超过 50 MiB。'); return }
-    setBusy(true); setError(''); setProgress(5)
+    if (markdown.size <= 0 || markdown.size > 10 * 1024 * 1024) {
+      setError('Markdown 必须大于 0 且不超过 10 MiB。')
+      return
+    }
+    if (assets && (assets.size <= 0 || assets.size > 50 * 1024 * 1024)) {
+      setError('assets.zip 必须大于 0 且不超过 50 MiB。')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setProgress(5)
     try {
       const created = await createPdfJob(Boolean(assets))
       localStorage.setItem(ACTIVE_JOB_KEY, created.jobId)
@@ -89,26 +124,62 @@ export function PdfBuilderPage() {
 
   async function download() {
     if (!job) return
-    try { window.location.assign(await getDownloadUrl(job.id)) } catch (cause) { setError(readableError(cause)) }
+    try {
+      window.location.assign(await getDownloadUrl(job.id))
+    } catch (cause) {
+      setError(readableError(cause))
+    }
   }
 
   function reset() {
     localStorage.removeItem(ACTIVE_JOB_KEY)
-    setJob(null); setMarkdown(null); setAssets(null); setProgress(0); setError('')
+    setJob(null)
+    setMarkdown(null)
+    setAssets(null)
+    setProgress(0)
+    setError('')
   }
 
-  if (!session) return <main className="page"><header><h1>Markdown 转 PDF</h1><p>Supabase Auth + Storage + GitHub Actions</p></header><AuthPanel /></main>
+  if (!session)
+    return (
+      <main className="page">
+        <header>
+          <h1>Markdown 转 PDF</h1>
+          <p>Supabase Auth + Storage + GitHub Actions</p>
+        </header>
+        <AuthPanel />
+      </main>
+    )
 
   return (
     <main className="page">
       <header className="row spread">
-        <div><h1>Markdown 转 PDF</h1><p>源文件不会提交到 Git 仓库。</p></div>
-        <button className="secondary" onClick={() => void supabase.auth.signOut()}>退出登录</button>
+        <div>
+          <h1>Markdown 转 PDF</h1>
+          <p>源文件不会提交到 Git 仓库。</p>
+        </div>
+        <button className="secondary" onClick={() => void supabase.auth.signOut()}>
+          退出登录
+        </button>
       </header>
       {error && <div className="alert">{error}</div>}
-      <PdfUpload markdown={markdown} assets={assets} busy={busy} progress={progress} onMarkdown={setMarkdown} onAssets={setAssets} onStart={() => void start()} />
+      <PdfUpload
+        markdown={markdown}
+        assets={assets}
+        busy={busy}
+        progress={progress}
+        onMarkdown={setMarkdown}
+        onAssets={setAssets}
+        onStart={() => void start()}
+      />
       <PdfJobStatus job={job} onDownload={() => void download()} onNew={reset} />
-      <PdfJobHistory jobs={history} onSelect={(selected) => { setJob(selected); localStorage.setItem(ACTIVE_JOB_KEY, selected.id) }} />
+      <PdfJobHistory
+        jobs={history}
+        onSelect={(selected) => {
+          setJob(selected)
+          localStorage.setItem(ACTIVE_JOB_KEY, selected.id)
+        }}
+      />
     </main>
   )
 }

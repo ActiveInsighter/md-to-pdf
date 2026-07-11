@@ -131,8 +131,16 @@ export function AuthPanel() {
           </button>
         </div>
       </form>
-      {notice && <p className="success-text" role="status">{notice}</p>}
-      {error && <p className="error-text" role="alert">{error}</p>}
+      {notice && (
+        <p className="success-text" role="status">
+          {notice}
+        </p>
+      )}
+      {error && (
+        <p className="error-text" role="alert">
+          {error}
+        </p>
+      )}
     </section>
   )
 }

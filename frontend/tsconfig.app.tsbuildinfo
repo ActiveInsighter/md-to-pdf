@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/api/pdfJobs.ts","./src/components/AuthPanel.tsx","./src/components/PdfJobHistory.tsx","./src/components/PdfJobStatus.tsx","./src/components/PdfUpload.tsx","./src/lib/supabase.ts","./src/pages/PdfBuilderPage.tsx","./src/types/pdfJob.ts"],"version":"5.8.3"}

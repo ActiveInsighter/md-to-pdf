@@ -1,12 +1,5 @@
 export type PdfJobStatus =
-  | 'created'
-  | 'uploaded'
-  | 'queued'
-  | 'building'
-  | 'uploading'
-  | 'completed'
-  | 'failed'
-  | 'expired'
+  'created' | 'uploaded' | 'queued' | 'building' | 'uploading' | 'completed' | 'failed' | 'expired'
 
 export type PdfJob = {
   id: string

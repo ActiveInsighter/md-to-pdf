@@ -36,7 +36,9 @@ async function writeDiagnostic(body) {
 
 const supabaseUrl = requiredEnv('SUPABASE_URL').replace(/\/$/, '')
 const publicKey = requiredEnv('VITE_SUPABASE_ANON_KEY')
-const serviceKey = String(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+const serviceKey = String(
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+).trim()
 if (!serviceKey) throw new Error('Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY')
 const bucket = String(process.env.SUPABASE_STORAGE_BUCKET || 'pdf-jobs').trim()
 
@@ -59,13 +61,13 @@ async function cleanup() {
   const cleanupErrors = []
   if (jobId) {
     try {
-      await admin.storage.from(bucket).remove([
-        `jobs/${jobId}/input.md`,
-        `jobs/${jobId}/assets.zip`,
-        `jobs/${jobId}/output.pdf`,
-      ])
+      await admin.storage
+        .from(bucket)
+        .remove([`jobs/${jobId}/input.md`, `jobs/${jobId}/assets.zip`, `jobs/${jobId}/output.pdf`])
     } catch (error) {
-      cleanupErrors.push(`storage cleanup: ${error instanceof Error ? error.message : String(error)}`)
+      cleanupErrors.push(
+        `storage cleanup: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
     try {
       await admin.from('pdf_jobs').delete().eq('id', jobId)
@@ -108,23 +110,32 @@ async function main() {
   console.log('1/7 Temporary Supabase user created')
 
   stage = 'password-login'
-  const { data: login, error: loginError } = await client.auth.signInWithPassword({ email, password })
+  const { data: login, error: loginError } = await client.auth.signInWithPassword({
+    email,
+    password,
+  })
   if (loginError) throw loginError
   assert(login.session?.access_token, 'Password login returned no session')
   console.log('2/7 Password login succeeded')
 
   stage = 'create-pdf-job'
-  const { data: createdJob, error: createJobError } = await client.functions.invoke('create-pdf-job', {
-    body: {
-      theme: 'chatgpt-light',
-      options: { breaks: true, toc: true },
-      hasAssets: false,
+  const { data: createdJob, error: createJobError } = await client.functions.invoke(
+    'create-pdf-job',
+    {
+      body: {
+        theme: 'chatgpt-light',
+        options: { breaks: true, toc: true },
+        hasAssets: false,
+      },
     },
-  })
+  )
   if (createJobError) throw new Error(await functionErrorMessage('create-pdf-job', createJobError))
   jobId = String(createdJob?.jobId || '')
   assert(/^[0-9a-f-]{36}$/i.test(jobId), 'create-pdf-job returned an invalid job ID')
-  assert(createdJob?.inputPath === `jobs/${jobId}/input.md`, 'create-pdf-job returned an unexpected input path')
+  assert(
+    createdJob?.inputPath === `jobs/${jobId}/input.md`,
+    'create-pdf-job returned an unexpected input path',
+  )
   console.log('3/7 PDF job created')
 
   stage = 'upload-markdown'
@@ -150,9 +161,12 @@ async function main() {
   console.log('4/7 Markdown uploaded through authenticated Storage policy')
 
   stage = 'start-pdf-job'
-  const { data: startedJob, error: startJobError } = await client.functions.invoke('start-pdf-job', {
-    body: { jobId },
-  })
+  const { data: startedJob, error: startJobError } = await client.functions.invoke(
+    'start-pdf-job',
+    {
+      body: { jobId },
+    },
+  )
   if (startJobError) {
     const { data: failedJob } = await admin
       .from('pdf_jobs')
@@ -163,7 +177,10 @@ async function main() {
     const details = await functionErrorMessage('start-pdf-job', startJobError)
     throw new Error(`${details}; job=${JSON.stringify(failedJob)}`)
   }
-  assert(['queued', 'building', 'uploading', 'completed'].includes(String(startedJob?.status || '')), 'start-pdf-job returned an unexpected status')
+  assert(
+    ['queued', 'building', 'uploading', 'completed'].includes(String(startedJob?.status || '')),
+    'start-pdf-job returned an unexpected status',
+  )
   console.log('5/7 GitHub Actions build dispatched')
 
   stage = 'wait-for-build'
@@ -177,7 +194,9 @@ async function main() {
     console.log(`Polling job: ${job.status}`)
     if (job.status === 'completed') break
     if (job.status === 'failed' || job.status === 'expired') {
-      throw new Error(`PDF job ended as ${job.status}: ${job.error_message || 'unknown error'}${job.github_run_url ? `; run=${job.github_run_url}` : ''}`)
+      throw new Error(
+        `PDF job ended as ${job.status}: ${job.error_message || 'unknown error'}${job.github_run_url ? `; run=${job.github_run_url}` : ''}`,
+      )
     }
     await sleep(5000)
   }
@@ -185,9 +204,12 @@ async function main() {
   console.log('6/7 PDF build completed')
 
   stage = 'download-pdf'
-  const { data: download, error: downloadError } = await client.functions.invoke('get-pdf-download', {
-    body: { jobId },
-  })
+  const { data: download, error: downloadError } = await client.functions.invoke(
+    'get-pdf-download',
+    {
+      body: { jobId },
+    },
+  )
   if (downloadError) throw new Error(await functionErrorMessage('get-pdf-download', downloadError))
   assert(download?.downloadUrl, 'get-pdf-download returned no signed URL')
 
@@ -195,7 +217,10 @@ async function main() {
   assert(response.ok, `Signed PDF download failed with HTTP ${response.status}`)
   const bytes = new Uint8Array(await response.arrayBuffer())
   assert(bytes.length > 4, 'Downloaded PDF is empty')
-  assert(new TextDecoder().decode(bytes.slice(0, 4)) === '%PDF', 'Downloaded file does not have a PDF header')
+  assert(
+    new TextDecoder().decode(bytes.slice(0, 4)) === '%PDF',
+    'Downloaded file does not have a PDF header',
+  )
   console.log(`7/7 Signed PDF download succeeded (${bytes.length} bytes)`)
 
   stage = 'completed'
@@ -217,13 +242,15 @@ try {
     runId,
     stage,
     jobId: jobId || null,
-    buildRun: lastJob ? {
-      status: lastJob.status || null,
-      errorMessage: lastJob.error_message || null,
-      githubRunId: lastJob.github_run_id || null,
-      githubRunUrl: lastJob.github_run_url || null,
-      githubCommit: lastJob.github_commit || null,
-    } : null,
+    buildRun: lastJob
+      ? {
+          status: lastJob.status || null,
+          errorMessage: lastJob.error_message || null,
+          githubRunId: lastJob.github_run_id || null,
+          githubRunUrl: lastJob.github_run_url || null,
+          githubCommit: lastJob.github_commit || null,
+        }
+      : null,
     result,
     error: failure instanceof Error ? failure.message : failure ? String(failure) : null,
     cleanupErrors,
