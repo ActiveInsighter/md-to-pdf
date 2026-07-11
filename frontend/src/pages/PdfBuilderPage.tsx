@@ -142,9 +142,9 @@ export function PdfBuilderPage() {
 
   if (!session)
     return (
-      <main className="page">
+      <main className="page" aria-labelledby="page-title">
         <header>
-          <h1>Markdown 转 PDF</h1>
+          <h1 id="page-title">Markdown 转 PDF</h1>
           <p>Supabase Auth + Storage + GitHub Actions</p>
         </header>
         <AuthPanel />
@@ -152,17 +152,21 @@ export function PdfBuilderPage() {
     )
 
   return (
-    <main className="page">
+    <main className="page" aria-labelledby="page-title" aria-busy={busy}>
       <header className="row spread">
         <div>
-          <h1>Markdown 转 PDF</h1>
+          <h1 id="page-title">Markdown 转 PDF</h1>
           <p>源文件不会提交到 Git 仓库。</p>
         </div>
         <button className="secondary" onClick={() => void supabase.auth.signOut()}>
           退出登录
         </button>
       </header>
-      {error && <div className="alert">{error}</div>}
+      {error && (
+        <div className="alert" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      )}
       <PdfUpload
         markdown={markdown}
         assets={assets}
