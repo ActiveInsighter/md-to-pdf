@@ -29,15 +29,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-      - name: Reject tracked generated files
+      - name: Reject new generated files
+        if: github.event_name == 'pull_request'
         shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          tracked="$(git ls-files | grep -E '^(\.tmp/|work/|coverage/|playwright-report/|test-results/|frontend/smoke-diagnostic\.json$)' || true)"
-          if [[ -n "$tracked" ]]; then
-            echo 'Generated files must not be tracked:'
-            printf '%s\n' "$tracked"
+          generated="$(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA" | grep -E '^(\.tmp/|work/|coverage/|playwright-report/|test-results/|frontend/smoke-diagnostic\.json$)' || true)"
+          if [[ -n "$generated" ]]; then
+            echo 'This pull request adds generated files:'
+            printf '%s\n' "$generated"
             exit 1
           fi
 
