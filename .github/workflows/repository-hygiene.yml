@@ -30,7 +30,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -116,7 +116,16 @@ jobs:
         run: |
           set -euo pipefail
           test -s frontend/package-lock.json
-          node -e "const lock = require('./frontend/package-lock.json'); if (lock.lockfileVersion !== 3) process.exit(1)"
+          node - <<'NODE'
+          const pkg = require('./frontend/package.json')
+          const lock = require('./frontend/package-lock.json')
+          const expected = '4.110.0'
+
+          if (lock.lockfileVersion !== 3) throw new Error('frontend lockfile must use version 3')
+          if (pkg.devDependencies?.wrangler !== expected) throw new Error('package.json must pin Wrangler exactly')
+          if (lock.packages?.['']?.devDependencies?.wrangler !== expected) throw new Error('lockfile root must pin Wrangler exactly')
+          if (lock.packages?.['node_modules/wrangler']?.version !== expected) throw new Error('lockfile Wrangler package version mismatch')
+          NODE
 
           workflows=(
             .github/workflows/deploy-pages.yml
@@ -134,7 +143,16 @@ jobs:
             exit 1
           fi
 
+          if grep -nE 'npx[[:space:]]+--yes[[:space:]]+wrangler@' .github/workflows/deploy-pages.yml; then
+            echo 'Deployment must use the Wrangler binary installed from the lockfile.'
+            exit 1
+          fi
+
+          grep -q 'WRANGLER=./node_modules/.bin/wrangler' .github/workflows/deploy-pages.yml
+          grep -q './node_modules/.bin/wrangler pages deploy dist' .github/workflows/deploy-pages.yml
+
           npm ci --prefix frontend --prefer-offline --no-audit --no-fund
+          frontend/node_modules/.bin/wrangler --version | grep -q "$expected"
           npm run --prefix frontend typecheck
           npm run --prefix frontend build
 
