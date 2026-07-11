@@ -15,6 +15,10 @@ import type { AuthSessionStatus } from '../types/authSession'
 import type { PdfJob } from '../types/pdfJob'
 import type { UploadPhase } from '../types/upload'
 import { isTerminalPdfJobStatus } from '../utils/pdfJobStatus'
+import {
+  FALLBACK_POLL_INTERVAL_MS,
+  getPdfJobPollInterval,
+} from '../utils/realtimePolling'
 import { validateAssetsFile, validateMarkdownFile } from '../utils/uploadFiles'
 
 function activeJobKey(userId: string): string {
@@ -124,19 +128,60 @@ export function usePdfBuilder() {
     if (!userId || !job || isTerminalPdfJobStatus(job.status)) return
 
     const jobId = job.id
+    let active = true
+    let polling = false
+    let pollTimer: number | null = null
+    let realtimeStatus = 'CONNECTING'
+
+    const clearPollTimer = () => {
+      if (pollTimer === null) return
+      window.clearTimeout(pollTimer)
+      pollTimer = null
+    }
+
+    const schedulePoll = (delay = getPdfJobPollInterval(realtimeStatus)) => {
+      clearPollTimer()
+      pollTimer = window.setTimeout(async () => {
+        pollTimer = null
+        if (!active) return
+
+        if (polling) {
+          schedulePoll()
+          return
+        }
+
+        polling = true
+        try {
+          await loadJob(jobId)
+        } finally {
+          polling = false
+          if (active) schedulePoll()
+        }
+      }, delay)
+    }
+
     const channel = supabase
       .channel(`pdf-job-${jobId}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'pdf_jobs', filter: `id=eq.${jobId}` },
-        (payload) => applyJobUpdate(payload.new as PdfJob),
+        (payload) => {
+          if (!active) return
+          applyJobUpdate(payload.new as PdfJob)
+          schedulePoll()
+        },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (!active) return
+        realtimeStatus = status
+        schedulePoll()
+      })
 
-    const timer = window.setInterval(() => void loadJob(jobId), 10_000)
+    schedulePoll(FALLBACK_POLL_INTERVAL_MS)
 
     return () => {
-      window.clearInterval(timer)
+      active = false
+      clearPollTimer()
       void supabase.removeChannel(channel)
     }
   }, [applyJobUpdate, job?.id, job?.status, loadJob, userId])
