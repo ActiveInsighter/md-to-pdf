@@ -1,0 +1,69 @@
+.auth-session-card {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-height: 100%;
+  margin: 0;
+  background: var(--glass-strong);
+}
+
+.auth-session-card > .muted {
+  margin: 12px 0 0;
+}
+
+.auth-session-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 22px;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.auth-session-card.is-error .auth-session-icon {
+  background: rgba(254, 228, 226, .86);
+  color: var(--danger);
+}
+
+.auth-session-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(49, 87, 213, .2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: auth-session-spin .8s linear infinite;
+}
+
+.auth-session-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.auth-session-actions .muted {
+  font-size: 12px;
+}
+
+@keyframes auth-session-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 840px) {
+  .auth-session-card {
+    min-height: 300px;
+    order: -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-session-spinner {
+    animation: none;
+    border-color: var(--primary);
+  }
+}
