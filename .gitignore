@@ -1,10 +1,16 @@
 node_modules/
 dist/
+.tmp/
+work/
+coverage/
+playwright-report/
+test-results/
 .wrangler/
 supabase/.temp/
 .DS_Store
 *.log
 npm-debug.log*
+smoke-diagnostic.json
 .env
 .env.*
 !.env.example
