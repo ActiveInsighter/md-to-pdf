@@ -50,27 +50,33 @@ const client = createClient(supabaseUrl, publicKey, {
 const runId = String(process.env.GITHUB_RUN_ID || Date.now())
 const email = `md-to-pdf-ci-${runId}-${randomBytes(4).toString('hex')}@example.invalid`
 const password = `${randomBytes(24).toString('base64url')}Aa1!`
+const jobIds = new Set()
 let userId = ''
-let jobId = ''
+let cancelJobId = ''
+let buildJobId = ''
 let stage = 'initializing'
 let lastJob = null
+let cancellationResult = null
 
 async function cleanup() {
   const cleanupErrors = []
-  if (jobId) {
+  for (const jobId of jobIds) {
     try {
-      await admin.storage.from(bucket).remove([
+      const { error } = await admin.storage.from(bucket).remove([
         `jobs/${jobId}/input.md`,
         `jobs/${jobId}/assets.zip`,
         `jobs/${jobId}/output.pdf`,
       ])
+      if (error) throw error
     } catch (error) {
-      cleanupErrors.push(`storage cleanup: ${error instanceof Error ? error.message : String(error)}`)
+      cleanupErrors.push(`storage cleanup ${jobId}: ${error instanceof Error ? error.message : String(error)}`)
     }
+
     try {
-      await admin.from('pdf_jobs').delete().eq('id', jobId)
+      const { error } = await admin.from('pdf_jobs').delete().eq('id', jobId)
+      if (error) throw error
     } catch (error) {
-      cleanupErrors.push(`job cleanup: ${error instanceof Error ? error.message : String(error)}`)
+      cleanupErrors.push(`job cleanup ${jobId}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -95,6 +101,85 @@ async function cleanup() {
   return cleanupErrors
 }
 
+async function createPdfJob() {
+  const { data, error } = await client.functions.invoke('create-pdf-job', {
+    body: {
+      theme: 'chatgpt-light',
+      options: { breaks: true, toc: true },
+      hasAssets: false,
+    },
+  })
+  if (error) throw new Error(await functionErrorMessage('create-pdf-job', error))
+
+  const jobId = String(data?.jobId || '')
+  assert(/^[0-9a-f-]{36}$/i.test(jobId), 'create-pdf-job returned an invalid job ID')
+  assert(data?.inputPath === `jobs/${jobId}/input.md`, 'create-pdf-job returned an unexpected input path')
+  jobIds.add(jobId)
+  return { ...data, jobId }
+}
+
+async function uploadMarkdown(path, markdown) {
+  const { error } = await client.storage
+    .from(bucket)
+    .upload(path, new Blob([markdown], { type: 'text/markdown;charset=utf-8' }), {
+      contentType: 'text/markdown;charset=utf-8',
+      upsert: true,
+    })
+  if (error) throw error
+}
+
+async function verifyCancellation(jobId) {
+  const { data: cancelled, error: cancelError } = await client.functions.invoke('cancel-pdf-job', {
+    body: { jobId },
+  })
+  if (cancelError) throw new Error(await functionErrorMessage('cancel-pdf-job', cancelError))
+
+  assert(cancelled?.cancelled === true, 'cancel-pdf-job did not confirm cancellation')
+  assert(cancelled?.status === 'failed', 'cancel-pdf-job returned an unexpected status')
+  assert(cancelled?.idempotent === false, 'first cancellation was unexpectedly idempotent')
+  assert(cancelled?.cleanupPending === false, 'cancel-pdf-job did not remove pending Storage objects')
+
+  const { data: row, error: rowError } = await admin
+    .from('pdf_jobs')
+    .select('status,error_message,input_path,assets_path,completed_at')
+    .eq('id', jobId)
+    .single()
+  if (rowError) throw rowError
+
+  assert(row.status === 'failed', 'cancelled job row is not terminal')
+  assert(row.error_message === '用户已取消未启动任务。', 'cancelled job row has an unexpected error summary')
+  assert(row.input_path === null && row.assets_path === null, 'cancelled job retained input paths after cleanup')
+  assert(Boolean(row.completed_at), 'cancelled job has no completion timestamp')
+
+  const { data: objects, error: listError } = await admin.storage
+    .from(bucket)
+    .list(`jobs/${jobId}`, { limit: 10 })
+  if (listError) throw listError
+  assert(
+    !(objects || []).some((object) => ['input.md', 'assets.zip', 'output.pdf'].includes(object.name)),
+    'cancelled job retained Storage objects',
+  )
+
+  const { data: repeated, error: repeatedError } = await client.functions.invoke('cancel-pdf-job', {
+    body: { jobId },
+  })
+  if (repeatedError) throw new Error(await functionErrorMessage('cancel-pdf-job idempotency', repeatedError))
+  assert(repeated?.idempotent === true, 'repeated cancellation was not idempotent')
+  assert(repeated?.cleanupPending === false, 'repeated cancellation reported pending cleanup')
+
+  const { error: rejectedStartError } = await client.functions.invoke('start-pdf-job', {
+    body: { jobId },
+  })
+  assert(rejectedStartError, 'start-pdf-job accepted a cancelled task')
+
+  return {
+    status: row.status,
+    cleanupVerified: true,
+    idempotentVerified: true,
+    restartRejected: true,
+  }
+}
+
 async function main() {
   stage = 'create-user'
   const { data: createdUser, error: createUserError } = await admin.auth.admin.createUser({
@@ -105,27 +190,31 @@ async function main() {
   if (createUserError) throw createUserError
   userId = createdUser.user?.id || ''
   assert(userId, 'Admin user creation returned no user ID')
-  console.log('1/7 Temporary Supabase user created')
+  console.log('1/10 Temporary Supabase user created')
 
   stage = 'password-login'
   const { data: login, error: loginError } = await client.auth.signInWithPassword({ email, password })
   if (loginError) throw loginError
   assert(login.session?.access_token, 'Password login returned no session')
-  console.log('2/7 Password login succeeded')
+  console.log('2/10 Password login succeeded')
+
+  stage = 'create-cancellation-probe'
+  const cancellationJob = await createPdfJob()
+  cancelJobId = cancellationJob.jobId
+  console.log('3/10 Cancellation probe job created')
+
+  stage = 'upload-cancellation-probe'
+  await uploadMarkdown(cancellationJob.inputPath, '# Cancellation smoke probe\n')
+  console.log('4/10 Cancellation probe input uploaded')
+
+  stage = 'verify-cancellation'
+  cancellationResult = await verifyCancellation(cancelJobId)
+  console.log('5/10 Cancellation, cleanup, idempotency and restart rejection verified')
 
   stage = 'create-pdf-job'
-  const { data: createdJob, error: createJobError } = await client.functions.invoke('create-pdf-job', {
-    body: {
-      theme: 'chatgpt-light',
-      options: { breaks: true, toc: true },
-      hasAssets: false,
-    },
-  })
-  if (createJobError) throw new Error(await functionErrorMessage('create-pdf-job', createJobError))
-  jobId = String(createdJob?.jobId || '')
-  assert(/^[0-9a-f-]{36}$/i.test(jobId), 'create-pdf-job returned an invalid job ID')
-  assert(createdJob?.inputPath === `jobs/${jobId}/input.md`, 'create-pdf-job returned an unexpected input path')
-  console.log('3/7 PDF job created')
+  const createdJob = await createPdfJob()
+  buildJobId = createdJob.jobId
+  console.log('6/10 PDF build job created')
 
   stage = 'upload-markdown'
   const markdown = [
@@ -140,37 +229,31 @@ async function main() {
     '```',
     '',
   ].join('\n')
-  const { error: uploadError } = await client.storage
-    .from(bucket)
-    .upload(createdJob.inputPath, new Blob([markdown], { type: 'text/markdown;charset=utf-8' }), {
-      contentType: 'text/markdown;charset=utf-8',
-      upsert: true,
-    })
-  if (uploadError) throw uploadError
-  console.log('4/7 Markdown uploaded through authenticated Storage policy')
+  await uploadMarkdown(createdJob.inputPath, markdown)
+  console.log('7/10 Markdown uploaded through authenticated Storage policy')
 
   stage = 'start-pdf-job'
   const { data: startedJob, error: startJobError } = await client.functions.invoke('start-pdf-job', {
-    body: { jobId },
+    body: { jobId: buildJobId },
   })
   if (startJobError) {
     const { data: failedJob } = await admin
       .from('pdf_jobs')
       .select('*')
-      .eq('id', jobId)
+      .eq('id', buildJobId)
       .maybeSingle()
     lastJob = failedJob
     const details = await functionErrorMessage('start-pdf-job', startJobError)
     throw new Error(`${details}; job=${JSON.stringify(failedJob)}`)
   }
   assert(['queued', 'building', 'uploading', 'completed'].includes(String(startedJob?.status || '')), 'start-pdf-job returned an unexpected status')
-  console.log('5/7 GitHub Actions build dispatched')
+  console.log('8/10 GitHub Actions build dispatched')
 
   stage = 'wait-for-build'
   const deadline = Date.now() + 12 * 60 * 1000
   let job = null
   while (Date.now() < deadline) {
-    const { data, error } = await admin.from('pdf_jobs').select('*').eq('id', jobId).single()
+    const { data, error } = await admin.from('pdf_jobs').select('*').eq('id', buildJobId).single()
     if (error) throw error
     job = data
     lastJob = data
@@ -182,11 +265,11 @@ async function main() {
     await sleep(5000)
   }
   assert(job?.status === 'completed', 'Timed out waiting for PDF job completion')
-  console.log('6/7 PDF build completed')
+  console.log('9/10 PDF build completed')
 
   stage = 'download-pdf'
   const { data: download, error: downloadError } = await client.functions.invoke('get-pdf-download', {
-    body: { jobId },
+    body: { jobId: buildJobId },
   })
   if (downloadError) throw new Error(await functionErrorMessage('get-pdf-download', downloadError))
   assert(download?.downloadUrl, 'get-pdf-download returned no signed URL')
@@ -196,10 +279,10 @@ async function main() {
   const bytes = new Uint8Array(await response.arrayBuffer())
   assert(bytes.length > 4, 'Downloaded PDF is empty')
   assert(new TextDecoder().decode(bytes.slice(0, 4)) === '%PDF', 'Downloaded file does not have a PDF header')
-  console.log(`7/7 Signed PDF download succeeded (${bytes.length} bytes)`)
+  console.log(`10/10 Signed PDF download succeeded (${bytes.length} bytes)`)
 
   stage = 'completed'
-  return { pdfBytes: bytes.length }
+  return { pdfBytes: bytes.length, cancellation: cancellationResult }
 }
 
 let failure = null
@@ -216,7 +299,9 @@ try {
     ok: failure === null,
     runId,
     stage,
-    jobId: jobId || null,
+    cancelJobId: cancelJobId || null,
+    buildJobId: buildJobId || null,
+    cancellation: cancellationResult,
     buildRun: lastJob ? {
       status: lastJob.status || null,
       errorMessage: lastJob.error_message || null,
