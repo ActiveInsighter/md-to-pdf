@@ -1,56 +1,55 @@
 import { handleOptions, json } from '../_shared/cors.ts'
 import { createAdminClient, requireUser, safeErrorMessage, storageBucket } from '../_shared/supabase.ts'
+import {
+  CANCELLED_ERROR_MESSAGE,
+  cleanupCancelledJob,
+  decideCancellation,
+  isValidJobId,
+  resolveCancellationRace,
+  type PdfJobRow,
+} from './logic.ts'
 
 type CancelBody = { jobId?: string }
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const CANCELLABLE_STATUSES = new Set(['created', 'uploaded'])
-const CANCELLED_ERROR_MESSAGE = '用户已取消未启动任务。'
-
-type PdfJobRow = {
-  id: string
-  user_id: string
-  status: string
-  input_path: string | null
-  assets_path: string | null
-  error_message: string | null
-}
 
 async function removePendingObjects(
   admin: ReturnType<typeof createAdminClient>,
   job: PdfJobRow,
 ): Promise<boolean> {
-  const paths = [job.input_path, job.assets_path].filter((path): path is string => Boolean(path))
-  if (paths.length === 0) return false
+  const result = await cleanupCancelledJob(job, {
+    async removeObjects(paths) {
+      const { error } = await admin.storage.from(storageBucket()).remove(paths)
+      return error?.message || null
+    },
+    async clearPaths(jobId) {
+      const { error } = await admin
+        .from('pdf_jobs')
+        .update({
+          input_path: null,
+          assets_path: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', jobId)
+        .eq('status', 'failed')
+        .eq('error_message', CANCELLED_ERROR_MESSAGE)
+      return error?.message || null
+    },
+  })
 
-  const { error } = await admin.storage.from(storageBucket()).remove(paths)
-  if (error) {
+  if (result.storageError) {
     console.error('cancel-pdf-job storage cleanup failed', JSON.stringify({
       jobId: job.id,
-      message: error.message,
+      message: result.storageError,
     }))
-    return true
   }
 
-  const { error: clearPathsError } = await admin
-    .from('pdf_jobs')
-    .update({
-      input_path: null,
-      assets_path: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', job.id)
-    .eq('status', 'failed')
-    .eq('error_message', CANCELLED_ERROR_MESSAGE)
-
-  if (clearPathsError) {
+  if (result.clearPathsError) {
     console.error('cancel-pdf-job path cleanup failed', JSON.stringify({
       jobId: job.id,
-      message: clearPathsError.message,
+      message: result.clearPathsError,
     }))
   }
 
-  return false
+  return result.cleanupPending
 }
 
 Deno.serve(async (req) => {
@@ -62,7 +61,7 @@ Deno.serve(async (req) => {
     const user = await requireUser(req)
     const body = (await req.json().catch(() => ({}))) as CancelBody
     const jobId = String(body.jobId || '').trim()
-    if (!UUID_RE.test(jobId)) return json({ error: '任务 ID 格式错误。' }, 400)
+    if (!isValidJobId(jobId)) return json({ error: '任务 ID 格式错误。' }, 400)
 
     const admin = createAdminClient()
     const { data: current, error: currentError } = await admin
@@ -72,18 +71,19 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (currentError) throw currentError
-    if (!current || current.user_id !== user.id) {
+
+    const decision = decideCancellation(user.id, current as PdfJobRow | null)
+    if (decision.kind === 'not-found') {
       return json({ error: '任务不存在或无权访问。' }, 404)
     }
+    if (decision.kind === 'conflict') {
+      return json({ error: '任务已经启动，不能再取消。', status: decision.status }, 409)
+    }
 
-    let cancelled = current as PdfJobRow
-    let idempotent = current.status === 'failed' && current.error_message === CANCELLED_ERROR_MESSAGE
+    let cancelled = decision.job
+    let idempotent = decision.kind === 'idempotent'
 
-    if (!idempotent) {
-      if (!CANCELLABLE_STATUSES.has(current.status)) {
-        return json({ error: '任务已经启动，不能再取消。', status: current.status }, 409)
-      }
-
+    if (decision.kind === 'cancel') {
       const now = new Date().toISOString()
       const { data, error } = await admin
         .from('pdf_jobs')
@@ -108,14 +108,16 @@ Deno.serve(async (req) => {
           .maybeSingle()
 
         if (latestError) throw latestError
-        if (!latest || latest.user_id !== user.id) {
+
+        const raceDecision = resolveCancellationRace(user.id, latest as PdfJobRow | null)
+        if (raceDecision.kind === 'not-found') {
           return json({ error: '任务不存在或无权访问。' }, 404)
         }
-        if (latest.status !== 'failed' || latest.error_message !== CANCELLED_ERROR_MESSAGE) {
-          return json({ error: '任务状态已经变化，不能再取消。', status: latest.status }, 409)
+        if (raceDecision.kind === 'conflict') {
+          return json({ error: '任务状态已经变化，不能再取消。', status: raceDecision.status }, 409)
         }
 
-        cancelled = latest as PdfJobRow
+        cancelled = raceDecision.job
         idempotent = true
       } else {
         cancelled = data as PdfJobRow
