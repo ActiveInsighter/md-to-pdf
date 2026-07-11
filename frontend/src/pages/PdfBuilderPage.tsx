@@ -31,6 +31,7 @@ export function PdfBuilderPage() {
     job,
     history,
     historyLoading,
+    submissionRecovery,
     busy,
     progress,
     uploadPhase,
@@ -79,12 +80,14 @@ export function PdfBuilderPage() {
           <PdfUpload
             markdown={markdown}
             assets={assets}
+            recovery={submissionRecovery}
             busy={busy}
             progress={progress}
             phase={uploadPhase}
             onMarkdown={setMarkdown}
             onAssets={setAssets}
             onStart={() => void start()}
+            onReset={reset}
           />
           <PdfJobStatus job={job} onDownload={() => void download()} onNew={reset} />
         </div>
