@@ -8,6 +8,7 @@ on:
       - '.github/workflows/repository-hygiene.yml'
       - '.gitignore'
       - '.env.example'
+      - 'docs/supabase-pdf-service.md'
       - 'frontend/package.json'
       - 'frontend/scripts/**'
       - 'scripts/**'
@@ -47,13 +48,18 @@ jobs:
             exit 1
           fi
 
-      - name: Validate environment examples
+      - name: Validate environment configuration docs
         shell: bash
         run: |
           set -euo pipefail
-          if grep -nE 'GITHUB_(OWNER|REPO|WORKFLOW_FILE|WORKFLOW_REF)' \
-            .env.example supabase/functions/.env.example; then
-            echo 'Environment examples contain repository settings that are fixed in start-pdf-job.'
+          files=(
+            .env.example
+            supabase/functions/.env.example
+            docs/supabase-pdf-service.md
+          )
+
+          if grep -nE 'GITHUB_(OWNER|REPO|WORKFLOW_FILE|WORKFLOW_REF)' "${files[@]}"; then
+            echo 'Configuration docs contain repository settings that are fixed in start-pdf-job.'
             exit 1
           fi
 
@@ -61,6 +67,7 @@ jobs:
           grep -q '^PDF_STORAGE_BUCKET=' .env.example
           grep -q '^GITHUB_TOKEN=' supabase/functions/.env.example
           grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
+          grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
 
       - name: Validate callable smoke test
         shell: bash
