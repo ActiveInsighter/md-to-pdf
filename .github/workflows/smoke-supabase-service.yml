@@ -14,12 +14,13 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: read
   statuses: write
 
 concurrency:
-  group: supabase-pdf-service-smoke
-  cancel-in-progress: false
+  group: supabase-pdf-service-smoke-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke:
@@ -82,6 +83,9 @@ jobs:
       - name: Run end-to-end smoke test
         working-directory: frontend
         env:
+          DIRECT_WORKFLOW_DISPATCH: ${{ github.ref_name != 'main' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_WORKFLOW_REF: ${{ github.ref_name }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
