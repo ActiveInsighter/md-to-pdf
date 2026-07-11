@@ -1,0 +1,173 @@
+name: Build PDF API job
+run-name: PDF API job ${{ inputs.job_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: PDF job UUID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pdf-api-${{ inputs.job_id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      JOB_ID: ${{ inputs.job_id }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PDF_MAX_MARKDOWN_BYTES: '10485760'
+      PDF_MAX_ASSETS_BYTES: '52428800'
+      PDF_MAX_EXTRACTED_BYTES: '209715200'
+      PDF_MAX_EXTRACTED_FILES: '2000'
+      PDF_MAX_EXTRACTED_FILE_BYTES: '26214400'
+      PDF_MAX_PATH_LENGTH: '240'
+
+    steps:
+      - name: Checkout renderer
+        uses: actions/checkout@v7
+
+      - name: Validate job and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$JOB_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ ]] || {
+            echo "Invalid job_id format"
+            exit 1
+          }
+          for name in SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SUPABASE_STORAGE_BUCKET; do
+            [[ -n "${!name:-}" ]] || {
+              echo "Missing required secret: $name"
+              exit 1
+            }
+          done
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install renderer dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk poppler-utils
+          fc-cache -f
+          npm ci
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          [[ -n "$CHROME_PATH" ]] || {
+            echo "Chrome executable not found"
+            exit 1
+          }
+          echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Fetch and validate queued job
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/input work/source dist
+          node scripts/supabase-pdf-job.mjs get --output work/job.json
+          JOB_STATUS="$(node -e 'const j=require("./work/job.json"); process.stdout.write(j.status)')"
+          [[ "$JOB_STATUS" == "queued" ]] || {
+            echo "Job is not queued; current status: $JOB_STATUS"
+            exit 1
+          }
+          THEME="$(node -e 'const j=require("./work/job.json"); const t=String(j.theme||""); if(!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(t)) process.exit(2); process.stdout.write(t)')"
+          [[ -f "themes/${THEME}.css" ]] || {
+            echo "Theme does not exist: $THEME"
+            exit 1
+          }
+          echo "PDF_THEME=$THEME" >> "$GITHUB_ENV"
+
+      - name: Mark building
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs status building
+
+      - name: Download Markdown and optional assets
+        id: download
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/supabase-pdf-job.mjs download-input --output work/input/input.md
+          node scripts/supabase-pdf-job.mjs download-assets --output work/input/assets.zip --github-output "$GITHUB_OUTPUT"
+
+      - name: Prepare source safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS=(
+            --markdown work/input/input.md
+            --work-dir work/source
+            --max-markdown-bytes "$PDF_MAX_MARKDOWN_BYTES"
+            --max-assets-bytes "$PDF_MAX_ASSETS_BYTES"
+            --max-extracted-bytes "$PDF_MAX_EXTRACTED_BYTES"
+            --max-files "$PDF_MAX_EXTRACTED_FILES"
+            --max-file-bytes "$PDF_MAX_EXTRACTED_FILE_BYTES"
+            --max-path-length "$PDF_MAX_PATH_LENGTH"
+          )
+          if [[ "${{ steps.download.outputs.has_assets }}" == "true" ]]; then
+            ARGS+=(--assets work/input/assets.zip)
+          fi
+          python3 scripts/prepare-supabase-input.py "${ARGS[@]}"
+
+      - name: Build and validate PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-pdf.mjs work/source/input.md dist/output.pdf --theme "$PDF_THEME"
+          test -s dist/output.pdf
+          [[ "$(head -c 4 dist/output.pdf)" == "%PDF" ]] || {
+            echo "Invalid PDF header"
+            exit 1
+          }
+          pdfinfo dist/output.pdf | tee dist/pdfinfo.txt
+
+      - name: Mark uploading
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs status uploading
+
+      - name: Upload PDF to Supabase Storage
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs upload-output --input dist/output.pdf
+
+      - name: Mark completed
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs complete
+
+      - name: Delete source objects after success
+        continue-on-error: true
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs delete-inputs
+
+      - name: Upload one-day debug artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: pdf-api-job-${{ inputs.job_id }}
+          path: |
+            dist/output.pdf
+            dist/output.html
+            dist/pdfinfo.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Mark failed
+        if: failure()
+        continue-on-error: true
+        shell: bash
+        run: |
+          node scripts/supabase-pdf-job.mjs fail \
+            --message "GitHub Actions PDF 构建失败，请查看对应运行日志。"
