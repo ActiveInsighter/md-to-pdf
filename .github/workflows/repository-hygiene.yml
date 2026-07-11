@@ -18,7 +18,8 @@ on:
       - 'frontend/scripts/**'
       - 'frontend/tests/**'
       - 'scripts/**'
-      - 'supabase/functions/.env.example'
+      - 'supabase/config.toml'
+      - 'supabase/functions/**'
   workflow_dispatch:
 
 permissions:
@@ -91,6 +92,8 @@ jobs:
           grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
           grep -q 'npm ci --prefer-offline --no-audit --no-fund' README.md
           grep -q 'npm ci --prefer-offline --no-audit --no-fund' docs/supabase-pdf-service.md
+          grep -q 'supabase functions deploy cancel-pdf-job' README.md
+          grep -q 'supabase functions deploy cancel-pdf-job' docs/supabase-pdf-service.md
 
       - name: Validate workflow action security
         shell: bash
@@ -118,6 +121,8 @@ jobs:
           set -euo pipefail
           test -s frontend/package-lock.json
           test -s frontend/tests/frontend-utils.test.mjs
+          test -s supabase/functions/cancel-pdf-job/index.ts
+          grep -q '^\[functions.cancel-pdf-job\]$' supabase/config.toml
           node - <<'NODE'
           const pkg = require('./frontend/package.json')
           const lock = require('./frontend/package-lock.json')
