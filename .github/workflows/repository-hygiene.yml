@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: repository-hygiene-${{ github.ref }}
@@ -32,15 +32,7 @@ jobs:
     timeout-minutes: 8
 
     steps:
-      - name: Checkout pull request branch
-        if: github.event_name == 'pull_request'
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
       - name: Checkout
-        if: github.event_name != 'pull_request'
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -50,29 +42,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: frontend/package.json
-
-      - name: Generate missing frontend lockfile
-        if: github.event_name == 'pull_request'
-        working-directory: frontend
-        shell: bash
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-
-          if git ls-files --error-unmatch package-lock.json >/dev/null 2>&1 \
-            && git diff --quiet -- package-lock.json; then
-            echo 'Frontend lockfile is already current.'
-            exit 0
-          fi
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package-lock.json
-          git commit -m 'chore(frontend): add deterministic package lock'
-          git push origin "HEAD:${HEAD_REF}"
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Reject new generated files
         if: github.event_name == 'pull_request'
@@ -105,8 +75,8 @@ jobs:
             exit 1
           fi
 
-          if grep -nF 'npm install --no-audit --no-fund' README.md docs/supabase-pdf-service.md; then
-            echo 'Frontend documentation must use the prefer-offline install strategy.'
+          if grep -nE 'npm install( |$)' README.md docs/supabase-pdf-service.md; then
+            echo 'Frontend documentation must use npm ci with the committed lockfile.'
             exit 1
           fi
 
@@ -116,13 +86,16 @@ jobs:
           grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
           grep -q 'Direct Upload' README.md
           grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
-          grep -q 'npm install --prefer-offline --no-audit --no-fund' README.md
-          grep -q 'npm install --prefer-offline --no-audit --no-fund' docs/supabase-pdf-service.md
+          grep -q 'npm ci --prefer-offline --no-audit --no-fund' README.md
+          grep -q 'npm ci --prefer-offline --no-audit --no-fund' docs/supabase-pdf-service.md
 
-      - name: Validate frontend workflow dependency strategy
+      - name: Validate frontend lockfile and workflows
         shell: bash
         run: |
           set -euo pipefail
+          test -s frontend/package-lock.json
+          node -e "const lock = require('./frontend/package-lock.json'); if (lock.lockfileVersion !== 3) process.exit(1)"
+
           workflows=(
             .github/workflows/deploy-pages.yml
             .github/workflows/smoke-supabase-service.yml
@@ -130,17 +103,18 @@ jobs:
 
           for workflow in "${workflows[@]}"; do
             grep -q 'cache: npm' "$workflow"
-            grep -q 'cache-dependency-path: frontend/package.json' "$workflow"
-            grep -q 'npm install --prefer-offline --no-audit --no-fund' "$workflow"
+            grep -q 'cache-dependency-path: frontend/package-lock.json' "$workflow"
+            grep -q 'npm ci --prefer-offline --no-audit --no-fund' "$workflow"
           done
 
-          if grep -nF 'npm install --no-audit --no-fund' "${workflows[@]}"; then
-            echo 'Frontend workflows must use the cached prefer-offline install strategy.'
+          if grep -nE 'npm install( |$)' "${workflows[@]}"; then
+            echo 'Frontend workflows must install from the committed lockfile.'
             exit 1
           fi
 
-          npm install --prefix frontend --prefer-offline --no-audit --no-fund
+          npm ci --prefix frontend --prefer-offline --no-audit --no-fund
           npm run --prefix frontend typecheck
+          npm run --prefix frontend build
 
       - name: Validate callable smoke test
         shell: bash
