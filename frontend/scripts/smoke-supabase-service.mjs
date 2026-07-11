@@ -53,6 +53,7 @@ const password = `${randomBytes(24).toString('base64url')}Aa1!`
 let userId = ''
 let jobId = ''
 let stage = 'initializing'
+let lastJob = null
 
 async function cleanup() {
   const cleanupErrors = []
@@ -155,9 +156,10 @@ async function main() {
   if (startJobError) {
     const { data: failedJob } = await admin
       .from('pdf_jobs')
-      .select('status,error_message')
+      .select('*')
       .eq('id', jobId)
       .maybeSingle()
+    lastJob = failedJob
     const details = await functionErrorMessage('start-pdf-job', startJobError)
     throw new Error(`${details}; job=${JSON.stringify(failedJob)}`)
   }
@@ -171,10 +173,11 @@ async function main() {
     const { data, error } = await admin.from('pdf_jobs').select('*').eq('id', jobId).single()
     if (error) throw error
     job = data
+    lastJob = data
     console.log(`Polling job: ${job.status}`)
     if (job.status === 'completed') break
     if (job.status === 'failed' || job.status === 'expired') {
-      throw new Error(`PDF job ended as ${job.status}: ${job.error_message || 'unknown error'}`)
+      throw new Error(`PDF job ended as ${job.status}: ${job.error_message || 'unknown error'}${job.github_run_url ? `; run=${job.github_run_url}` : ''}`)
     }
     await sleep(5000)
   }
@@ -214,6 +217,13 @@ try {
     runId,
     stage,
     jobId: jobId || null,
+    buildRun: lastJob ? {
+      status: lastJob.status || null,
+      errorMessage: lastJob.error_message || null,
+      githubRunId: lastJob.github_run_id || null,
+      githubRunUrl: lastJob.github_run_url || null,
+      githubCommit: lastJob.github_commit || null,
+    } : null,
     result,
     error: failure instanceof Error ? failure.message : failure ? String(failure) : null,
     cleanupErrors,
