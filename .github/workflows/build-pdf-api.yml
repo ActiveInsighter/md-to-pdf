@@ -82,7 +82,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p work/input work/source dist
+          mkdir -p work/input work/source work/logs dist
           node scripts/supabase-pdf-job.mjs get --output work/job.json
           JOB_STATUS="$(node -e 'const j=require("./work/job.json"); process.stdout.write(j.status)')"
           [[ "$JOB_STATUS" == "queued" ]] || {
@@ -100,13 +100,22 @@ jobs:
         shell: bash
         run: node scripts/supabase-pdf-job.mjs status building
 
-      - name: Download Markdown and optional assets
+      - name: Download Markdown
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/supabase-pdf-job.mjs download-input --output work/input/input.md \
+            2>&1 | tee work/logs/download-input.log
+
+      - name: Download optional assets
         id: download
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/supabase-pdf-job.mjs download-input --output work/input/input.md
-          node scripts/supabase-pdf-job.mjs download-assets --output work/input/assets.zip --github-output "$GITHUB_OUTPUT"
+          node scripts/supabase-pdf-job.mjs download-assets \
+            --output work/input/assets.zip \
+            --github-output "$GITHUB_OUTPUT" \
+            2>&1 | tee work/logs/download-assets.log
 
       - name: Prepare source safely
         shell: bash
@@ -166,6 +175,8 @@ jobs:
             dist/output.pdf
             dist/output.html
             dist/pdfinfo.txt
+            work/job.json
+            work/logs/*.log
           if-no-files-found: ignore
           retention-days: 1
 
