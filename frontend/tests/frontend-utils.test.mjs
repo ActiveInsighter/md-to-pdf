@@ -97,6 +97,25 @@ test('Only completed, failed and expired jobs are terminal', () => {
   }
 })
 
+test('Terminal refresh keys are stable for duplicate final updates', () => {
+  assert.equal(
+    pdfJobStatus.getTerminalPdfJobRefreshKey({ id: 'job-1', status: 'building' }),
+    null,
+  )
+  assert.equal(
+    pdfJobStatus.getTerminalPdfJobRefreshKey({ id: 'job-1', status: 'completed' }),
+    'job-1:completed',
+  )
+  assert.equal(
+    pdfJobStatus.getTerminalPdfJobRefreshKey({ id: 'job-1', status: 'completed' }),
+    'job-1:completed',
+  )
+  assert.equal(
+    pdfJobStatus.getTerminalPdfJobRefreshKey({ id: 'job-1', status: 'failed' }),
+    'job-1:failed',
+  )
+})
+
 test('Realtime health selects low-frequency reconciliation or fast fallback polling', () => {
   assert.equal(
     realtimePolling.getPdfJobPollInterval('SUBSCRIBED'),
