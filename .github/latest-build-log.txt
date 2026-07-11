@@ -1,37 +1,37 @@
 ## apt install CJK fonts and Poppler
 Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
 Get:6 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
-Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
 Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
 Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
 Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
-Get:9 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
-Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
-Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [214 kB]
-Get:12 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [181 kB]
-Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1092 kB]
-Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [269 kB]
-Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
-Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1660 kB]
-Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
-Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
-Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1225 kB]
-Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [276 kB]
-Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
-Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
-Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
-Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [827 kB]
-Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [187 kB]
-Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.8 kB]
-Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
-Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1174 kB]
-Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [231 kB]
-Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
-Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
-Get:32 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1218 B]
-Fetched 8809 kB in 1s (7844 kB/s)
+Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1092 kB]
+Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [269 kB]
+Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1660 kB]
+Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [327 kB]
+Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1225 kB]
+Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [276 kB]
+Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:18 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5760 B]
+Get:19 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [827 kB]
+Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [187 kB]
+Get:22 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.8 kB]
+Get:23 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
+Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1174 kB]
+Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [231 kB]
+Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+Get:28 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1218 B]
+Get:29 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
+Get:30 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.6 kB]
+Get:31 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [181 kB]
+Get:32 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [214 kB]
+Fetched 8809 kB in 1s (7863 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
@@ -52,7 +52,7 @@ Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 poppler-data all 0
 Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-noto-cjk all 1:20230817+repack1-3 [61.2 MB]
 Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libpoppler134 amd64 24.02.0-1ubuntu9.9 [1118 kB]
 Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 poppler-utils amd64 24.02.0-1ubuntu9.9 [212 kB]
-Fetched 64.6 MB in 1s (71.6 MB/s)
+Fetched 64.6 MB in 1s (77.1 MB/s)
 Selecting previously unselected package poppler-data.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 202701 files and directories currently installed.)
 Preparing to unpack .../poppler-data_0.4.12-1_all.deb ...
@@ -87,7 +87,7 @@ No VM guests are running outdated hypervisor (qemu) binaries on this host.
 
 ## npm ci
 
-added 157 packages, and audited 158 packages in 3s
+added 157 packages, and audited 158 packages in 4s
 
 38 packages are looking for funding
   run `npm fund` for details
@@ -106,10 +106,12 @@ mode=queue
 postprocess=enabled
 
 ## PDF build
-started_at=2026-07-11T08:35:48.178Z
+started_at=2026-07-11T09:17:08.347Z
 command=node scripts/build-queue.mjs
 
 Changed files:
+- inbox/2026/07/2026-07-11/manifest.yml
+- "inbox/2026/07/2026-07-11/md/001-408\346\250\241\346\213\237\351\200\211\346\213\251\351\242\230\350\257\246\347\273\206\350\247\243\347\255\224_\345\220\210\345\271\266\347\211\210_600\351\242\230.md"
 - inbox/2026/07/2026-07-11/md/images/jc_01_q07.png
 - inbox/2026/07/2026-07-11/md/images/jc_03_q07.png
 - inbox/2026/07/2026-07-11/md/images/jc_03_q34.png
@@ -143,10 +145,10 @@ Content checks: 1
 - OK inbox/2026/07/2026-07-11/md/001-408模拟选择题详细解答_合并版_600题.md (693335 bytes, 340582 chars)
 Manifest: inbox/2026/07/2026-07-11/manifest.yml
 Date: 2026-07-11
-Theme: clean
+Theme: chatgpt-light
 
-Job 408-mock-questions-600 (single)
-Theme: clean
+Job 408-mock-questions-600-chatgpt-light (single)
+Theme: chatgpt-light
 Inputs: inbox/2026/07/2026-07-11/md/001-408模拟选择题详细解答_合并版_600题.md
 No character metrics for '①' in style 'Main-Regular' and mode 'text'
 No character metrics for '②' in style 'Main-Regular' and mode 'text'
@@ -282,7 +284,7 @@ No character metrics for '④' in style 'Main-Regular' and mode 'text'
 No character metrics for '⑤' in style 'Main-Regular' and mode 'text'
 No character metrics for '①' in style 'Main-Regular' and mode 'text'
 No character metrics for '④' in style 'Main-Regular' and mode 'text'
-Theme: clean
+Theme: chatgpt-light
 Shiki theme: github-light
 Shiki languages: text, c
 HTML written to dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.html
@@ -295,15 +297,15 @@ Built 1 manifest(s).
 Will consume after successful publish:
 - inbox/2026/07/2026-07-11
 
-finished_at=2026-07-11T08:36:25.781Z
+finished_at=2026-07-11T09:17:48.776Z
 exit_code=0
 
 ## PDF preview and quality postprocessing
-started_at=2026-07-11T08:36:25.781Z
+started_at=2026-07-11T09:17:48.776Z
 command=node scripts/postprocess-pdfs.mjs
 
-Postprocessed dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.pdf: pages=315, preview=39,175,293,297, status=success
-PDF postprocessing finished: 1 output(s), status=success.
+Postprocessed dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.pdf: pages=313, preview=117,169,232,266, status=warning
+PDF postprocessing finished: 1 output(s), status=warning.
 
-finished_at=2026-07-11T08:36:36.445Z
+finished_at=2026-07-11T09:17:59.409Z
 exit_code=0
