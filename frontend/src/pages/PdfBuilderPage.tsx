@@ -32,6 +32,7 @@ export function PdfBuilderPage() {
     history,
     busy,
     progress,
+    uploadPhase,
     error,
     setMarkdown,
     setAssets,
@@ -79,6 +80,7 @@ export function PdfBuilderPage() {
             assets={assets}
             busy={busy}
             progress={progress}
+            phase={uploadPhase}
             onMarkdown={setMarkdown}
             onAssets={setAssets}
             onStart={() => void start()}
