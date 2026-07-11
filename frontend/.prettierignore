@@ -2,5 +2,5 @@ dist/
 node_modules/
 package-lock.json
 *.tsbuildinfo
-smoke-diagnostic.json
 lint-output.txt
+smoke-diagnostic.json
