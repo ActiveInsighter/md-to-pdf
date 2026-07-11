@@ -74,25 +74,28 @@ supabase functions deploy get-pdf-download
 
 ## Edge Function Secrets
 
+Supabase 不允许自定义 Secret 使用 `SUPABASE_` 保留前缀，因此 Bucket 配置使用 `PDF_STORAGE_BUCKET`：
+
 ```bash
 supabase secrets set GITHUB_TOKEN=github_pat_xxx
 supabase secrets set GITHUB_OWNER=ActiveInsighter
 supabase secrets set GITHUB_REPO=md-to-pdf
 supabase secrets set GITHUB_WORKFLOW_FILE=build-pdf-api.yml
 supabase secrets set GITHUB_WORKFLOW_REF=main
-supabase secrets set SUPABASE_STORAGE_BUCKET=pdf-jobs
+supabase secrets set PDF_STORAGE_BUCKET=pdf-jobs
 ```
 
-Supabase 托管 Edge Functions 通常会自动提供：
+Supabase 托管 Edge Functions 自动提供：
 
 ```text
 SUPABASE_URL
 SUPABASE_ANON_KEY
+SUPABASE_PUBLISHABLE_KEYS
 SUPABASE_SECRET_KEYS
 SUPABASE_SERVICE_ROLE_KEY
 ```
 
-部署后仍应在 Functions Secrets 页面确认这些值存在。`SUPABASE_SECRET_KEYS`、旧版 `SUPABASE_SERVICE_ROLE_KEY` 和 `GITHUB_TOKEN` 绝对不能进入前端。
+这些内置变量不需要、也不能以自定义 Secret 的方式重复添加。`SUPABASE_SECRET_KEYS`、旧版 `SUPABASE_SERVICE_ROLE_KEY` 和 `GITHUB_TOKEN` 绝对不能进入前端。
 
 ## GitHub Fine-grained Token
 
