@@ -1,5 +1,11 @@
 node_modules/
 dist/
+.tmp/
+work/
+coverage/
+playwright-report/
+test-results/
+frontend/smoke-diagnostic.json
 .wrangler/
 supabase/.temp/
 .DS_Store
