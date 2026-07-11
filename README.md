@@ -65,15 +65,12 @@ inbox/** 提交到 main
 
 ## 本地快速开始
 
-要求 Node.js 24，并使用仓库锁文件安装依赖：
+要求 Node.js 24。根项目与前端均提交了 npm 锁文件，安装必须使用 `npm ci`。
+
+根项目：
 
 ```bash
-npm ci
-```
-
-构建示例 PDF：
-
-```bash
+npm ci --prefer-offline --no-audit --no-fund
 npm run build:pdf
 ```
 
@@ -83,26 +80,19 @@ npm run build:pdf
 node scripts/build-pdf.mjs input.md dist/output.pdf --theme chatgpt-light
 ```
 
-运行仓库队列：
+运行仓库队列与渲染回归：
 
 ```bash
 npm run build:queue
-```
-
-运行渲染回归：
-
-```bash
 npm test
 ```
 
 ## 前端本地开发
 
-前端暂未提交独立锁文件，安装命令与 CI 保持一致并优先复用 npm 下载缓存：
-
 ```bash
 cd frontend
 cp .env.example .env.local
-npm install --prefer-offline --no-audit --no-fund
+npm ci --prefer-offline --no-audit --no-fund
 npm run dev
 ```
 
@@ -201,6 +191,7 @@ jobs/{job_id}/output.pdf
 
 ```bash
 cd frontend
+npm ci --prefer-offline --no-audit --no-fund
 npm run typecheck
 npm run build
 ```
