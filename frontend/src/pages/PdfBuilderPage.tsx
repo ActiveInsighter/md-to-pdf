@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { createPdfJob, getDownloadUrl, getPdfJob, listPdfJobs, readableError, startPdfJob, uploadAssets, uploadInput } from '../api/pdfJobs'
+import { AppShell } from '../components/AppShell'
 import { AuthPanel } from '../components/AuthPanel'
 import { PdfJobHistory } from '../components/PdfJobHistory'
 import { PdfJobStatus } from '../components/PdfJobStatus'
@@ -95,18 +96,38 @@ export function PdfBuilderPage() {
     setJob(null); setMarkdown(null); setAssets(null); setProgress(0); setError('')
   }
 
-  if (!session) return <main className="page"><header><h1>Markdown 转 PDF</h1><p>Supabase Auth + Storage + GitHub Actions</p></header><AuthPanel /></main>
+  if (!session) {
+    return (
+      <AppShell authenticated={false}>
+        <div className="auth-layout">
+          <section className="intro-panel glass-panel">
+            <p className="eyebrow">FROM SOURCE TO DOCUMENT</p>
+            <h2>保留 Markdown 结构，交付稳定 PDF</h2>
+            <p className="muted">服务复用现有 KaTeX、Shiki 与 Chromium 渲染链路，用户文件不会写入 Git 仓库。</p>
+            <ol className="process-list">
+              <li><span>01</span><div><strong>上传源文件</strong><p>选择 Markdown 与可选资源压缩包。</p></div></li>
+              <li><span>02</span><div><strong>异步安全构建</strong><p>私有存储与 GitHub Actions 隔离处理。</p></div></li>
+              <li><span>03</span><div><strong>签名链接下载</strong><p>任务完成后获取短期 PDF 下载地址。</p></div></li>
+            </ol>
+          </section>
+          <AuthPanel />
+        </div>
+      </AppShell>
+    )
+  }
 
   return (
-    <main className="page">
-      <header className="row spread">
-        <div><h1>Markdown 转 PDF</h1><p>源文件不会提交到 Git 仓库。</p></div>
-        <button className="secondary" onClick={() => void supabase.auth.signOut()}>退出登录</button>
-      </header>
-      {error && <div className="alert">{error}</div>}
-      <PdfUpload markdown={markdown} assets={assets} busy={busy} progress={progress} onMarkdown={setMarkdown} onAssets={setAssets} onStart={() => void start()} />
-      <PdfJobStatus job={job} onDownload={() => void download()} onNew={reset} />
-      <PdfJobHistory jobs={history} onSelect={(selected) => { setJob(selected); localStorage.setItem(ACTIVE_JOB_KEY, selected.id) }} />
-    </main>
+    <AppShell authenticated onSignOut={() => void supabase.auth.signOut()}>
+      {error && <div className="alert" role="alert">{error}</div>}
+      <div className="workspace-grid">
+        <div className="workspace-main">
+          <PdfUpload markdown={markdown} assets={assets} busy={busy} progress={progress} onMarkdown={setMarkdown} onAssets={setAssets} onStart={() => void start()} />
+          <PdfJobStatus job={job} onDownload={() => void download()} onNew={reset} />
+        </div>
+        <aside className="workspace-sidebar" aria-label="任务历史">
+          <PdfJobHistory jobs={history} onSelect={(selected) => { setJob(selected); localStorage.setItem(ACTIVE_JOB_KEY, selected.id) }} />
+        </aside>
+      </div>
+    </AppShell>
   )
 }
