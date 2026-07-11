@@ -124,7 +124,7 @@ jobs:
               echo "Mutable or invalid GitHub Action reference: $line"
               invalid_ref=true
             fi
-          done < <(grep -hE 'uses:[[:space:]]+actions/' "${workflows[@]}")
+          done < <(grep -hE '^[[:space:]]+uses:[[:space:]]+actions/' "${workflows[@]}")
           if [[ "$invalid_ref" == "true" ]]; then
             exit 1
           fi
