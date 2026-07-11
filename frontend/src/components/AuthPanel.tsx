@@ -32,6 +32,7 @@ export function AuthPanel() {
     () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) && password.length >= 6,
     [normalizedEmail, password],
   )
+  const feedbackId = error ? 'auth-error' : notice ? 'auth-notice' : undefined
 
   async function authenticate(mode: AuthMode) {
     setError('')
@@ -87,13 +88,16 @@ export function AuthPanel() {
   }
 
   return (
-    <section className="card auth-card">
-      <h2>登录后生成 PDF</h2>
-      <p className="muted">使用 Supabase 邮箱密码账号登录。首次使用请先注册。</p>
-      <form className="stack" onSubmit={submitLogin} noValidate>
-        <label>
+    <section className="card auth-card" aria-labelledby="auth-title">
+      <h2 id="auth-title">登录后生成 PDF</h2>
+      <p className="muted" id="auth-help">
+        使用 Supabase 邮箱密码账号登录。首次使用请先注册。
+      </p>
+      <form className="stack" onSubmit={submitLogin} noValidate aria-busy={busyMode !== null}>
+        <label htmlFor="auth-email">
           邮箱
           <input
+            id="auth-email"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -101,12 +105,14 @@ export function AuthPanel() {
             inputMode="email"
             maxLength={254}
             disabled={busyMode !== null}
+            aria-describedby={feedbackId || 'auth-help'}
             required
           />
         </label>
-        <label>
+        <label htmlFor="auth-password">
           密码
           <input
+            id="auth-password"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -114,6 +120,7 @@ export function AuthPanel() {
             minLength={6}
             maxLength={72}
             disabled={busyMode !== null}
+            aria-describedby={feedbackId || 'auth-help'}
             required
           />
         </label>
@@ -132,12 +139,12 @@ export function AuthPanel() {
         </div>
       </form>
       {notice && (
-        <p className="success-text" role="status">
+        <p id="auth-notice" className="success-text" role="status" aria-live="polite" aria-atomic="true">
           {notice}
         </p>
       )}
       {error && (
-        <p className="error-text" role="alert">
+        <p id="auth-error" className="error-text" role="alert">
           {error}
         </p>
       )}
