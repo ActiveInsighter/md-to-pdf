@@ -131,6 +131,9 @@ jobs:
           grep -q '^\[functions.cancel-pdf-job\]$' supabase/config.toml
           grep -q 'updated_at: string' frontend/src/types/pdfJob.ts
           grep -q 'shouldApplyPdfJobUpdate' frontend/src/hooks/usePdfBuilder.ts
+          grep -q 'mergePdfJobHistory' frontend/src/utils/pdfJobUpdates.ts
+          grep -q 'mergePdfJobHistory' frontend/src/hooks/usePdfBuilder.ts
+          grep -q 'onRefresh' frontend/src/components/PdfJobHistory.tsx
           node - <<'NODE'
           const pkg = require('./frontend/package.json')
           const lock = require('./frontend/package-lock.json')
