@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/**'
       - 'scripts/validate-workflows.mjs'
+      - 'scripts/test-validate-workflows.mjs'
       - 'package.json'
       - 'package-lock.json'
   pull_request:
@@ -15,6 +16,7 @@ on:
     paths:
       - '.github/workflows/**'
       - 'scripts/validate-workflows.mjs'
+      - 'scripts/test-validate-workflows.mjs'
       - 'package.json'
       - 'package-lock.json'
   workflow_dispatch:
@@ -48,6 +50,9 @@ jobs:
 
       - name: Install policy validator dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run workflow policy regression tests
+        run: npm run test:workflow-policy
 
       - name: Validate workflow security policy
         run: npm run validate:workflows
