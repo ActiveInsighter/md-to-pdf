@@ -4,6 +4,7 @@ import App from './App'
 import './styles.css'
 import './job-status.css'
 import './auth-session.css'
+import './upload.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
