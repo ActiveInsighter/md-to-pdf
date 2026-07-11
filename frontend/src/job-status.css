@@ -15,13 +15,30 @@
 
 .history-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
-.history-count,
-.history-sync {
+.history-heading-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.history-heading-copy h2 {
+  margin: 0;
+}
+
+.history-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.history-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -35,12 +52,20 @@
   font-weight: 750;
 }
 
-.history-sync {
+.history-sync-summary {
+  display: inline-flex;
+  align-items: center;
   gap: 7px;
-  padding: 5px 9px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
-.history-sync > span,
+.history-sync-summary.is-error {
+  color: #b45309;
+}
+
+.history-inline-spinner,
 .history-state-spinner {
   width: 12px;
   height: 12px;
@@ -48,6 +73,50 @@
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: history-spin .8s linear infinite;
+}
+
+.history-inline-spinner {
+  flex: 0 0 auto;
+}
+
+.history-refresh {
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid rgba(49, 87, 213, .22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .62);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.history-refresh:hover:not(:disabled) {
+  border-color: rgba(49, 87, 213, .46);
+  background: rgba(241, 245, 255, .92);
+  transform: translateY(-1px);
+}
+
+.history-refresh:focus-visible {
+  outline: 3px solid rgba(49, 87, 213, .2);
+  outline-offset: 2px;
+}
+
+.history-refresh:disabled {
+  cursor: progress;
+  opacity: .64;
+}
+
+.history-error {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(245, 158, 11, .24);
+  border-radius: 12px;
+  background: rgba(255, 251, 235, .72);
+  color: #92400e;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .history-state {
@@ -129,4 +198,15 @@
 
 @keyframes history-spin {
   to { transform: rotate(360deg); }
+}
+
+@media (max-width: 520px) {
+  .history-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .history-heading-actions {
+    justify-content: space-between;
+  }
 }
