@@ -31,6 +31,8 @@ export function PdfBuilderPage() {
     job,
     history,
     historyLoading,
+    historySyncedAt,
+    historyError,
     submissionRecovery,
     busy,
     progress,
@@ -39,6 +41,7 @@ export function PdfBuilderPage() {
     setMarkdown,
     setAssets,
     retryAuth,
+    refreshHistory,
     start,
     download,
     reset,
@@ -95,7 +98,10 @@ export function PdfBuilderPage() {
           <PdfJobHistory
             jobs={history}
             loading={historyLoading}
+            lastSyncedAt={historySyncedAt}
+            error={historyError}
             selectedJobId={job?.id ?? null}
+            onRefresh={() => void refreshHistory()}
             onSelect={selectJob}
           />
         </aside>
