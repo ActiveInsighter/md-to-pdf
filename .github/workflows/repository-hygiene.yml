@@ -1,0 +1,73 @@
+name: Repository hygiene
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/repository-hygiene.yml'
+      - '.gitignore'
+      - '.env.example'
+      - 'frontend/package.json'
+      - 'frontend/scripts/**'
+      - 'scripts/**'
+      - 'supabase/functions/.env.example'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Reject tracked generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          tracked="$(git ls-files | grep -E '^(\.tmp/|work/|coverage/|playwright-report/|test-results/|frontend/smoke-diagnostic\.json$)' || true)"
+          if [[ -n "$tracked" ]]; then
+            echo 'Generated files must not be tracked:'
+            printf '%s\n' "$tracked"
+            exit 1
+          fi
+
+      - name: Validate environment examples
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE 'GITHUB_(OWNER|REPO|WORKFLOW_FILE|WORKFLOW_REF)' \
+            .env.example supabase/functions/.env.example; then
+            echo 'Environment examples contain repository settings that are fixed in start-pdf-job.'
+            exit 1
+          fi
+
+          grep -q '^GITHUB_TOKEN=' .env.example
+          grep -q '^PDF_STORAGE_BUCKET=' .env.example
+          grep -q '^GITHUB_TOKEN=' supabase/functions/.env.example
+          grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
+
+      - name: Validate callable smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f frontend/scripts/smoke-supabase-service.mjs
+          node -e "const pkg = require('./frontend/package.json'); if (pkg.scripts?.['smoke:supabase'] !== 'node scripts/smoke-supabase-service.mjs') process.exit(1)"
+          node --check frontend/scripts/smoke-supabase-service.mjs
+
+      - name: Validate service scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/prepare-supabase-input.py
+          node --check scripts/supabase-pdf-job.mjs
+          node --check scripts/cleanup-supabase-pdf-jobs.mjs
