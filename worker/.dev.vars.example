@@ -1,0 +1,5 @@
+GITHUB_TOKEN=github_pat_replace_me
+R2_ACCESS_KEY_ID=replace_me
+R2_SECRET_ACCESS_KEY=replace_me
+PDF_CALLBACK_SECRET=replace_with_long_random_secret
+PDF_API_TOKEN=replace_with_long_random_access_token

@@ -1,0 +1,19 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://replace-with-frontend.pages.dev"
+    ],
+    "AllowedMethods": [
+      "PUT",
+      "GET",
+      "HEAD"
+    ],
+    "AllowedHeaders": [
+      "Content-Type"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]

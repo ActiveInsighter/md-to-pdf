@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "md-to-pdf-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-11",
+  "observability": { "enabled": true },
+  "vars": {
+    "GITHUB_OWNER": "ActiveInsighter",
+    "GITHUB_REPO": "md-to-pdf",
+    "GITHUB_WORKFLOW_FILE": "build-pdf-r2.yml",
+    "GITHUB_WORKFLOW_REF": "main",
+    "R2_ACCOUNT_ID": "replace-with-cloudflare-account-id",
+    "R2_BUCKET": "md-to-pdf-jobs",
+    "FRONTEND_ORIGIN": "https://replace-with-frontend.pages.dev",
+    "MAX_UPLOAD_BYTES": "52428800",
+    "PRESIGNED_URL_TTL_SECONDS": "600"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "PDF_JOBS_DB",
+      "database_id": "replace-with-d1-database-id",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PDF_BUCKET",
+      "bucket_name": "md-to-pdf-jobs"
+    }
+  ]
+}

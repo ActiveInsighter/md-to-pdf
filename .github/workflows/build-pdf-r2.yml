@@ -1,0 +1,173 @@
+name: Build PDF from R2
+run-name: PDF job ${{ inputs.job_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        required: true
+        type: string
+      input_key:
+        required: true
+        type: string
+      input_type:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pdf-${{ inputs.job_id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      JOB_ID: ${{ inputs.job_id }}
+      INPUT_KEY: ${{ inputs.input_key }}
+      INPUT_TYPE: ${{ inputs.input_type }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      PDF_CALLBACK_URL: ${{ secrets.PDF_CALLBACK_URL }}
+      PDF_CALLBACK_SECRET: ${{ secrets.PDF_CALLBACK_SECRET }}
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PDF_MAX_INPUT_BYTES: '52428800'
+      PDF_MAX_EXTRACTED_BYTES: '209715200'
+      PDF_MAX_EXTRACTED_FILES: '2000'
+
+    steps:
+      - name: Checkout renderer
+        uses: actions/checkout@v7
+
+      - name: Validate inputs and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$JOB_ID" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "Invalid job_id"; exit 1; }
+          [[ "$INPUT_TYPE" == "md" || "$INPUT_TYPE" == "zip" ]] || { echo "input_type must be md or zip"; exit 1; }
+          [[ "$INPUT_KEY" == "jobs/${JOB_ID}/input/source.${INPUT_TYPE}" ]] || { echo "Invalid input_key"; exit 1; }
+          for name in R2_ACCOUNT_ID R2_BUCKET PDF_CALLBACK_URL PDF_CALLBACK_SECRET; do
+            [[ -n "${!name:-}" ]] || { echo "Missing secret: $name"; exit 1; }
+          done
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install renderer dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk poppler-utils unzip
+          fc-cache -f
+          npm ci
+          aws --version
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          [[ -n "$CHROME_PATH" ]] || { echo "Chrome executable not found"; exit 1; }
+          echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Mark processing
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(node -e 'console.log(JSON.stringify({status:"processing",runId:process.env.GITHUB_RUN_ID,workflowUrl:`${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,commit:process.env.GITHUB_SHA}))')"
+          curl --fail-with-body --silent --show-error \
+            -X POST "${PDF_CALLBACK_URL%/}/internal/pdf-jobs/${JOB_ID}/status" \
+            -H "Authorization: Bearer ${PDF_CALLBACK_SECRET}" \
+            -H "Content-Type: application/json" --data "$BODY"
+
+      - name: Download source from R2
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          set -euo pipefail
+          mkdir -p work/input
+          aws s3 cp "s3://${R2_BUCKET}/${INPUT_KEY}" "work/input/source.${INPUT_TYPE}" \
+            --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" --no-progress
+
+      - name: Prepare source safely
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+          MARKDOWN_PATH="$(node scripts/prepare-r2-input.mjs --input "work/input/source.${INPUT_TYPE}" --type "$INPUT_TYPE" --work-dir work/source)"
+          [[ -f "$MARKDOWN_PATH" ]] || { echo "Prepared Markdown missing"; exit 1; }
+          echo "markdown_path=$MARKDOWN_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Build and validate PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          node scripts/build-pdf.mjs "${{ steps.prepare.outputs.markdown_path }}" "dist/result.pdf" --theme chatgpt-light
+          test -s dist/result.pdf
+          [[ "$(head -c 4 dist/result.pdf)" == "%PDF" ]] || { echo "Invalid PDF header"; exit 1; }
+          pdfinfo dist/result.pdf | tee dist/pdfinfo.txt
+
+      - name: Mark uploading result
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(node -e 'console.log(JSON.stringify({status:"uploading_result",runId:process.env.GITHUB_RUN_ID,commit:process.env.GITHUB_SHA}))')"
+          curl --fail-with-body --silent --show-error \
+            -X POST "${PDF_CALLBACK_URL%/}/internal/pdf-jobs/${JOB_ID}/status" \
+            -H "Authorization: Bearer ${PDF_CALLBACK_SECRET}" \
+            -H "Content-Type: application/json" --data "$BODY"
+
+      - name: Upload PDF to R2
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          set -euo pipefail
+          RESULT_KEY="jobs/${JOB_ID}/output/result.pdf"
+          aws s3 cp dist/result.pdf "s3://${R2_BUCKET}/${RESULT_KEY}" \
+            --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            --content-type application/pdf --content-disposition 'attachment; filename="result.pdf"' --no-progress
+          echo "RESULT_KEY=$RESULT_KEY" >> "$GITHUB_ENV"
+
+      - name: Mark completed
+        shell: bash
+        run: |
+          set -euo pipefail
+          export FILE_SIZE="$(stat -c %s dist/result.pdf)"
+          BODY="$(node -e 'console.log(JSON.stringify({resultKey:process.env.RESULT_KEY,runId:process.env.GITHUB_RUN_ID,workflowUrl:`${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,commit:process.env.GITHUB_SHA,fileSize:Number(process.env.FILE_SIZE)}))')"
+          curl --fail-with-body --silent --show-error \
+            -X POST "${PDF_CALLBACK_URL%/}/internal/pdf-jobs/${JOB_ID}/complete" \
+            -H "Authorization: Bearer ${PDF_CALLBACK_SECRET}" \
+            -H "Content-Type: application/json" --data "$BODY"
+
+      - name: Upload one-day debug artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: pdf-job-${{ inputs.job_id }}
+          path: |
+            dist/result.pdf
+            dist/result.html
+            dist/pdfinfo.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Mark failed
+        if: failure()
+        continue-on-error: true
+        shell: bash
+        run: |
+          BODY="$(node -e 'console.log(JSON.stringify({runId:process.env.GITHUB_RUN_ID,workflowUrl:`${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,message:"GitHub Actions PDF 构建失败，请查看运行日志。"}))')"
+          curl --fail-with-body --silent --show-error \
+            -X POST "${PDF_CALLBACK_URL%/}/internal/pdf-jobs/${JOB_ID}/failed" \
+            -H "Authorization: Bearer ${PDF_CALLBACK_SECRET}" \
+            -H "Content-Type: application/json" --data "$BODY"
