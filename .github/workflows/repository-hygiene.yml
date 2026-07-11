@@ -5,7 +5,9 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/repository-hygiene.yml'
+      - '.github/workflows/smoke-supabase-service.yml'
       - '.gitignore'
       - '.env.example'
       - 'README.md'
@@ -33,6 +35,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Setup Node with frontend npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package.json
 
       - name: Reject new generated files
         if: github.event_name == 'pull_request'
@@ -76,6 +85,29 @@ jobs:
           grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
           grep -q 'Direct Upload' README.md
           grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
+
+      - name: Validate frontend workflow dependency strategy
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflows=(
+            .github/workflows/deploy-pages.yml
+            .github/workflows/smoke-supabase-service.yml
+          )
+
+          for workflow in "${workflows[@]}"; do
+            grep -q 'cache: npm' "$workflow"
+            grep -q 'cache-dependency-path: frontend/package.json' "$workflow"
+            grep -q 'npm install --prefer-offline --no-audit --no-fund' "$workflow"
+          done
+
+          if grep -nF 'npm install --no-audit --no-fund' "${workflows[@]}"; then
+            echo 'Frontend workflows must use the cached prefer-offline install strategy.'
+            exit 1
+          fi
+
+          npm install --prefix frontend --prefer-offline --no-audit --no-fund
+          npm run --prefix frontend typecheck
 
       - name: Validate callable smoke test
         shell: bash
