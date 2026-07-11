@@ -87,7 +87,7 @@ jobs:
           set -euo pipefail
           PROJECTS_JSON="$(npx --yes wrangler@4 pages project list --json)"
           if printf '%s' "$PROJECTS_JSON" | jq -e --arg project "$CLOUDFLARE_PAGES_PROJECT" \
-            'any(.[]; .name == $project)' >/dev/null; then
+            'any(.[]; .["Project Name"] == $project)' >/dev/null; then
             echo "Cloudflare Pages project already exists: $CLOUDFLARE_PAGES_PROJECT"
           else
             npx --yes wrangler@4 pages project create "$CLOUDFLARE_PAGES_PROJECT" \
