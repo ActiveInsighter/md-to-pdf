@@ -58,6 +58,10 @@ jobs:
         working-directory: frontend
         run: npm ci --no-audit --no-fund
 
+      - name: Check frontend formatting
+        working-directory: frontend
+        run: npm run format:check
+
       - name: Lint frontend
         id: lint
         working-directory: frontend
@@ -96,7 +100,7 @@ jobs:
                 : 'failure'
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
             const description = state === 'success'
-              ? 'Frontend lint, typecheck and build passed'
+              ? 'Frontend format, lint, typecheck and build passed'
               : state === 'error'
                 ? 'Frontend validation was cancelled'
                 : 'Frontend validation failed'
