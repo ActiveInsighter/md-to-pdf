@@ -5,10 +5,14 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/build-pdf.yml'
       - '.github/workflows/build-pdf-api.yml'
+      - '.github/workflows/cleanup-branches.yml'
+      - '.github/workflows/cleanup-supabase-pdf-jobs.yml'
       - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/repository-hygiene.yml'
       - '.github/workflows/smoke-supabase-service.yml'
+      - '.github/workflows/validate-renderer.yml'
       - '.gitignore'
       - '.env.example'
       - 'README.md'
@@ -102,20 +106,61 @@ jobs:
         run: |
           set -euo pipefail
           workflows=(
-            .github/workflows/repository-hygiene.yml
+            .github/workflows/build-pdf.yml
+            .github/workflows/build-pdf-api.yml
+            .github/workflows/cleanup-branches.yml
+            .github/workflows/cleanup-supabase-pdf-jobs.yml
             .github/workflows/deploy-pages.yml
+            .github/workflows/repository-hygiene.yml
             .github/workflows/smoke-supabase-service.yml
+            .github/workflows/validate-renderer.yml
           )
 
-          if grep -nE 'uses:[[:space:]]+[^[:space:]#]+@v[0-9]+' "${workflows[@]}"; then
-            echo 'Frontend workflows must pin actions to immutable commit SHAs.'
+          invalid_ref=false
+          while IFS= read -r line; do
+            ref="${line##*@}"
+            ref="${ref%% *}"
+            if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Mutable or invalid GitHub Action reference: $line"
+              invalid_ref=true
+            fi
+          done < <(grep -hE 'uses:[[:space:]]+actions/' "${workflows[@]}")
+          if [[ "$invalid_ref" == "true" ]]; then
             exit 1
           fi
 
           for workflow in "${workflows[@]}"; do
             grep -q 'uses: actions/checkout@[0-9a-f]\{40\}' "$workflow"
+          done
+
+          read_only_checkouts=(
+            .github/workflows/build-pdf-api.yml
+            .github/workflows/cleanup-branches.yml
+            .github/workflows/cleanup-supabase-pdf-jobs.yml
+            .github/workflows/deploy-pages.yml
+            .github/workflows/repository-hygiene.yml
+            .github/workflows/smoke-supabase-service.yml
+            .github/workflows/validate-renderer.yml
+          )
+          for workflow in "${read_only_checkouts[@]}"; do
             grep -q 'persist-credentials: false' "$workflow"
           done
+
+          grep -q 'persist-credentials: true' .github/workflows/build-pdf.yml
+          grep -q 'contents: write' .github/workflows/build-pdf.yml
+          grep -q 'contents: write' .github/workflows/cleanup-branches.yml
+          grep -q 'pull-requests: read' .github/workflows/cleanup-branches.yml
+          grep -q 'actions/cache@5a3ec84eff668545956fd18022155c47e93e2684' .github/workflows/build-pdf-api.yml
+
+          contents_writers="$(grep -l 'contents: write' "${workflows[@]}" | sort)"
+          expected_writers="$(printf '%s\n' \
+            .github/workflows/build-pdf.yml \
+            .github/workflows/cleanup-branches.yml | sort)"
+          if [[ "$contents_writers" != "$expected_writers" ]]; then
+            echo 'Unexpected workflow contents write permission.'
+            printf 'Expected:\n%s\nActual:\n%s\n' "$expected_writers" "$contents_writers"
+            exit 1
+          fi
 
       - name: Validate frontend manifests and workflows
         shell: bash
