@@ -51,12 +51,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
+          # This workflow intentionally pushes state, output, and consumed queue commits.
+          persist-credentials: true
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -70,16 +72,16 @@ jobs:
 
       - name: Install dependencies, fonts, Chrome, and PDF tools
         run: |
-          set -o pipefail
+          set -euo pipefail
           mkdir -p .github
           : > .github/latest-build-log.txt
           echo "## apt install CJK fonts and Poppler" | tee -a .github/latest-build-log.txt
           sudo apt-get update 2>&1 | tee -a .github/latest-build-log.txt
-          sudo apt-get install -y fonts-noto-cjk poppler-utils 2>&1 | tee -a .github/latest-build-log.txt
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk poppler-utils 2>&1 | tee -a .github/latest-build-log.txt
           fc-cache -f 2>&1 | tee -a .github/latest-build-log.txt
           echo "" | tee -a .github/latest-build-log.txt
           echo "## npm ci" | tee -a .github/latest-build-log.txt
-          npm ci 2>&1 | tee -a .github/latest-build-log.txt
+          npm ci --prefer-offline --no-audit --no-fund 2>&1 | tee -a .github/latest-build-log.txt
           echo "" | tee -a .github/latest-build-log.txt
           echo "## Chrome setup" | tee -a .github/latest-build-log.txt
           CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
@@ -105,7 +107,7 @@ jobs:
         id: upload_artifact
         if: steps.build_pdf.outcome == 'success'
         continue-on-error: true
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: obsidian-style-pdf
           path: |
