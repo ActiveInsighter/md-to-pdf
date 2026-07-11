@@ -8,6 +8,7 @@ on:
       - '.github/workflows/repository-hygiene.yml'
       - '.gitignore'
       - '.env.example'
+      - 'README.md'
       - 'docs/supabase-pdf-service.md'
       - 'frontend/package.json'
       - 'frontend/scripts/**'
@@ -55,6 +56,7 @@ jobs:
           files=(
             .env.example
             supabase/functions/.env.example
+            README.md
             docs/supabase-pdf-service.md
           )
 
@@ -63,10 +65,16 @@ jobs:
             exit 1
           fi
 
+          if grep -nF 'npm install --no-audit --no-fund' README.md docs/supabase-pdf-service.md; then
+            echo 'Documentation must use the committed lockfile through npm ci.'
+            exit 1
+          fi
+
           grep -q '^GITHUB_TOKEN=' .env.example
           grep -q '^PDF_STORAGE_BUCKET=' .env.example
           grep -q '^GITHUB_TOKEN=' supabase/functions/.env.example
           grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
+          grep -q 'Direct Upload' README.md
           grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
 
       - name: Validate callable smoke test
