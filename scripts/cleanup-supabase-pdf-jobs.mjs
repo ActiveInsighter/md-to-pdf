@@ -76,16 +76,23 @@ async function markExpired(id) {
 async function main() {
   const jobs = await expiredJobs();
   let cleaned = 0;
+  let failed = 0;
+
   for (const job of jobs) {
     try {
       await removeJobObjects(job.id);
       await markExpired(job.id);
       cleaned += 1;
     } catch (error) {
+      failed += 1;
       console.error(`Cleanup failed for ${job.id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  console.log(`Expired jobs cleaned: ${cleaned}/${jobs.length}`);
+
+  console.log(`Expired jobs cleaned: ${cleaned}/${jobs.length}; failed: ${failed}`);
+  if (failed > 0) {
+    throw new Error(`Cleanup failed for ${failed}/${jobs.length} expired jobs`);
+  }
 }
 
 main().catch((error) => {
