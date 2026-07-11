@@ -6,6 +6,7 @@ coverage/
 playwright-report/
 test-results/
 frontend/smoke-diagnostic.json
+*.tsbuildinfo
 .wrangler/
 supabase/.temp/
 .DS_Store
