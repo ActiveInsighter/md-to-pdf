@@ -1,0 +1,16 @@
+.status-created,
+.status-uploaded {
+  background: rgba(238, 242, 255, .86);
+  color: #4338ca;
+}
+
+.status-expired {
+  background: rgba(241, 245, 249, .9);
+  color: #475569;
+}
+
+.history-item .badge {
+  justify-self: end;
+  margin: 0;
+  white-space: nowrap;
+}
