@@ -152,7 +152,7 @@ jobs:
           grep -q 'pull-requests: read' .github/workflows/cleanup-branches.yml
           grep -q 'actions/cache@5a3ec84eff668545956fd18022155c47e93e2684' .github/workflows/build-pdf-api.yml
 
-          contents_writers="$(grep -l 'contents: write' "${workflows[@]}" | sort)"
+          contents_writers="$(grep -lE '^[[:space:]]+contents:[[:space:]]+write([[:space:]]|$)' "${workflows[@]}" | sort)"
           expected_writers="$(printf '%s\n' \
             .github/workflows/build-pdf.yml \
             .github/workflows/cleanup-branches.yml | sort)"
