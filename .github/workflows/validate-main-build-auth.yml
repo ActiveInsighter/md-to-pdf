@@ -1,0 +1,87 @@
+name: Validate main build authentication
+
+on:
+  push:
+    branches:
+      - 'agent/repository-hygiene-smoke-command'
+    paths:
+      - '.github/workflows/validate-main-build-auth.yml'
+
+permissions:
+  contents: write
+  statuses: write
+
+concurrency:
+  group: validate-main-build-auth
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Mark authentication probe pending
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'pending',
+              context: 'main-build-auth-probe',
+              target_url: runUrl,
+              description: 'Scoped Git authentication probe is running',
+            })
+
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Probe scoped Git authentication and remove workflow
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0='http.https://github.com/.extraheader'
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
+
+          probe_branch="ci-auth-probe-${GITHUB_RUN_ID}"
+          cleanup_probe() {
+            git push origin --delete "$probe_branch" >/dev/null 2>&1 || true
+          }
+          trap cleanup_probe EXIT
+
+          git push origin "HEAD:refs/heads/$probe_branch"
+          git ls-remote --exit-code --heads origin "refs/heads/$probe_branch"
+          git push origin --delete "$probe_branch"
+          trap - EXIT
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/validate-main-build-auth.yml
+          git commit -m 'chore: remove one-time main build auth probe'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Publish authentication probe result
+        if: always()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const state = '${{ job.status }}' === 'success' ? 'success' : 'failure'
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state,
+              context: 'main-build-auth-probe',
+              target_url: runUrl,
+              description: state === 'success'
+                ? 'Scoped Git authentication probe passed'
+                : 'Scoped Git authentication probe failed',
+            })
