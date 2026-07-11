@@ -5,6 +5,15 @@ export type UploadPhase =
   | 'uploading-assets'
   | 'starting'
   | 'submitted'
+  | 'failed'
+
+export type SubmissionRecovery = {
+  jobId: string
+  status: 'created' | 'uploaded'
+  inputPath: string
+  assetsPath: string | null
+  hasAssets: boolean
+}
 
 export const uploadPhaseLabels: Record<UploadPhase, string> = {
   idle: '准备就绪',
@@ -13,4 +22,5 @@ export const uploadPhaseLabels: Record<UploadPhase, string> = {
   'uploading-assets': '正在上传资源包',
   starting: '正在启动构建',
   submitted: '任务已提交',
+  failed: '提交中断',
 }
