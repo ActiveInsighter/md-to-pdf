@@ -6,6 +6,7 @@ export type UploadPhase =
   | 'starting'
   | 'submitted'
   | 'failed'
+  | 'cancelling'
 
 export type SubmissionRecovery = {
   jobId: string
@@ -23,4 +24,5 @@ export const uploadPhaseLabels: Record<UploadPhase, string> = {
   starting: '正在启动构建',
   submitted: '任务已提交',
   failed: '提交中断',
+  cancelling: '正在取消任务',
 }
