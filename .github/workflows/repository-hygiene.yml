@@ -75,7 +75,7 @@ jobs:
           fi
 
           if grep -nF 'npm install --no-audit --no-fund' README.md docs/supabase-pdf-service.md; then
-            echo 'Documentation must use the committed lockfile through npm ci.'
+            echo 'Frontend documentation must use the prefer-offline install strategy.'
             exit 1
           fi
 
@@ -85,6 +85,8 @@ jobs:
           grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
           grep -q 'Direct Upload' README.md
           grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
+          grep -q 'npm install --prefer-offline --no-audit --no-fund' README.md
+          grep -q 'npm install --prefer-offline --no-audit --no-fund' docs/supabase-pdf-service.md
 
       - name: Validate frontend workflow dependency strategy
         shell: bash
