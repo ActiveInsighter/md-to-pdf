@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import ts from 'typescript'
 
-async function importTypeScriptModule(relativePath) {
+async function transpileTypeScript(relativePath) {
   const sourceUrl = new URL(relativePath, import.meta.url)
   const source = await readFile(sourceUrl, 'utf8')
   const result = ts.transpileModule(source, {
@@ -19,8 +19,12 @@ async function importTypeScriptModule(relativePath) {
   )
 
   assert.deepEqual(errors, [], `Failed to transpile ${relativePath}`)
+  return { source, outputText: result.outputText }
+}
 
-  const encoded = Buffer.from(result.outputText).toString('base64')
+async function importTypeScriptModule(relativePath) {
+  const { outputText } = await transpileTypeScript(relativePath)
+  const encoded = Buffer.from(outputText).toString('base64')
   return import(`data:text/javascript;base64,${encoded}`)
 }
 
@@ -28,6 +32,7 @@ const uploadFiles = await importTypeScriptModule('../src/utils/uploadFiles.ts')
 const pdfJobStatus = await importTypeScriptModule('../src/utils/pdfJobStatus.ts')
 const realtimePolling = await importTypeScriptModule('../src/utils/realtimePolling.ts')
 const submissionRecovery = await importTypeScriptModule('../src/utils/submissionRecovery.ts')
+const uploadTypes = await importTypeScriptModule('../src/types/upload.ts')
 
 function file(name, size) {
   return { name, size }
@@ -188,4 +193,17 @@ test('Realtime health selects low-frequency reconciliation or fast fallback poll
     )
   }
   assert.equal(realtimePolling.FALLBACK_POLL_INTERVAL_MS, 10_000)
+})
+
+test('Pending job cancellation has UI feedback, ownership checks and race-safe cleanup', async () => {
+  assert.equal(uploadTypes.uploadPhaseLabels.cancelling, '正在取消任务')
+
+  const { source } = await transpileTypeScript('../../supabase/functions/cancel-pdf-job/index.ts')
+  assert.match(source, /new Set\(\['created', 'uploaded'\]\)/)
+  assert.match(source, /\.eq\('user_id', user\.id\)/)
+  assert.match(source, /\.in\('status', \['created', 'uploaded'\]\)/)
+  assert.match(source, /storage\.from\(storageBucket\(\)\)\.remove\(paths\)/)
+
+  const config = await readFile(new URL('../../supabase/config.toml', import.meta.url), 'utf8')
+  assert.match(config, /\[functions\.cancel-pdf-job\]\s+verify_jwt = true/)
 })
