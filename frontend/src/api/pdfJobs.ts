@@ -1,6 +1,14 @@
 import { STORAGE_BUCKET, supabase } from '../lib/supabase'
 import type { CreatePdfJobResponse, PdfJob } from '../types/pdfJob'
 
+type CancelPdfJobResponse = {
+  jobId: string
+  status: 'failed'
+  cancelled: true
+  idempotent: boolean
+  cleanupPending: boolean
+}
+
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
@@ -33,6 +41,15 @@ export async function uploadAssets(path: string, file: File): Promise<void> {
 export async function startPdfJob(jobId: string): Promise<void> {
   const { error } = await supabase.functions.invoke('start-pdf-job', { body: { jobId } })
   if (error) throw new Error(error.message)
+}
+
+export async function cancelPdfJob(jobId: string): Promise<CancelPdfJobResponse> {
+  const { data, error } = await supabase.functions.invoke<CancelPdfJobResponse>('cancel-pdf-job', {
+    body: { jobId },
+  })
+  if (error) throw new Error(error.message)
+  if (!data?.cancelled || data.jobId !== jobId) throw new Error('取消任务返回的数据不完整。')
+  return data
 }
 
 export async function getPdfJob(jobId: string): Promise<PdfJob> {
