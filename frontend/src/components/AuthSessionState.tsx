@@ -1,4 +1,4 @@
-export type AuthSessionStatus = 'loading' | 'ready' | 'error'
+import type { AuthSessionStatus } from '../types/authSession'
 
 type Props = {
   status: Exclude<AuthSessionStatus, 'ready'>
