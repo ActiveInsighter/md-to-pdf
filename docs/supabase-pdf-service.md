@@ -24,6 +24,7 @@ supabase/migrations/20260711123000_create_pdf_jobs.sql
 supabase/functions/_shared/
 supabase/functions/create-pdf-job/
 supabase/functions/start-pdf-job/
+supabase/functions/cancel-pdf-job/
 supabase/functions/get-pdf-download/
 frontend/
 .github/workflows/build-pdf-api.yml
@@ -58,6 +59,8 @@ expired
 
 Storage 策略仅允许用户在自己的任务仍处于 `created` 状态时上传或覆盖 `input.md` 与 `assets.zip`。用户不能直接读取 `output.pdf`，下载必须通过 Edge Function 生成的短期签名 URL。
 
+尚未进入队列的 `created/uploaded` 任务可以通过 `cancel-pdf-job` 取消。接口会先使用带状态条件的更新把任务标记为失败，再删除该任务的输入对象，避免与并发启动操作发生破坏性竞态。已经排队或开始构建的任务不会被该接口取消。
+
 ## Supabase 初始化
 
 安装 Supabase CLI 后，在仓库根目录执行：
@@ -68,6 +71,7 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 supabase functions deploy create-pdf-job
 supabase functions deploy start-pdf-job
+supabase functions deploy cancel-pdf-job
 supabase functions deploy get-pdf-download
 ```
 
@@ -167,10 +171,14 @@ VITE_SUPABASE_ANON_KEY
 
 Markdown 最大 10 MiB。用户文件不会提交到 Git 仓库，也不会进入成功任务的长期调试 Artifact。
 
+取消接口要求有效 JWT，并在服务端再次验证任务所有权。状态更新只匹配 `created/uploaded`，因此即使取消与启动请求并发，也不会删除已经进入队列的任务输入。
+
 ## 清理与保留
 
 - 任务默认在创建 7 天后过期；
 - 构建成功后 Actions 尝试删除 `input.md` 和 `assets.zip`；
+- 用户取消未启动任务时，取消接口立即尝试删除对应输入文件；
+- 如果即时删除失败，记录仍会保留路径，后续每日过期清理可再次回收对象；
 - 每日清理工作流删除过期任务对象并把状态更新为 `expired`；
 - 单个任务清理失败不应阻塞后续任务；
 - 清理日志不得输出密钥或签名 URL。
@@ -192,6 +200,7 @@ Edge Functions：
 npx deno check \
   supabase/functions/create-pdf-job/index.ts \
   supabase/functions/start-pdf-job/index.ts \
+  supabase/functions/cancel-pdf-job/index.ts \
   supabase/functions/get-pdf-download/index.ts
 ```
 
@@ -216,6 +225,7 @@ npm run smoke:supabase
 
 - `401`：前端会话失效，重新登录；
 - 上传被 RLS 拒绝：检查迁移、Bucket 和对象路径；
+- 取消返回 `409`：任务已经进入队列或状态发生变化，不能再按未启动任务处理；
 - workflow dispatch 返回 `404`：确认工作流已存在于默认分支，并检查 Token 仓库范围；
 - workflow dispatch 返回权限错误：检查 Token 的 Actions 写权限；
 - Actions 下载对象失败：确认 `input.md` 已上传且 Bucket 配置一致；
