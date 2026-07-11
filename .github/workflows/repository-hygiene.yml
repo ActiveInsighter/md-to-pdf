@@ -112,12 +112,12 @@ jobs:
             grep -q 'persist-credentials: false' "$workflow"
           done
 
-      - name: Validate frontend lockfile and workflows
+      - name: Validate frontend manifests and workflows
         shell: bash
         run: |
           set -euo pipefail
           test -s frontend/package-lock.json
-          test -s frontend/tests/utils.test.mjs
+          test -s frontend/tests/frontend-utils.test.mjs
           node - <<'NODE'
           const pkg = require('./frontend/package.json')
           const lock = require('./frontend/package-lock.json')
@@ -154,11 +154,20 @@ jobs:
           grep -q 'WRANGLER=./node_modules/.bin/wrangler' .github/workflows/deploy-pages.yml
           grep -q './node_modules/.bin/wrangler pages deploy dist' .github/workflows/deploy-pages.yml
 
-          npm ci --prefix frontend --prefer-offline --no-audit --no-fund
-          frontend/node_modules/.bin/wrangler --version | grep -q '4.110.0'
-          npm run --prefix frontend typecheck
-          npm test --prefix frontend
-          npm run --prefix frontend build
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend --prefer-offline --no-audit --no-fund
+
+      - name: Validate locked Wrangler CLI
+        run: frontend/node_modules/.bin/wrangler --version | grep -q '4.110.0'
+
+      - name: Typecheck frontend
+        run: npm run --prefix frontend typecheck
+
+      - name: Test frontend
+        run: npm test --prefix frontend
+
+      - name: Build frontend
+        run: npm run --prefix frontend build
 
       - name: Validate callable smoke test
         shell: bash
