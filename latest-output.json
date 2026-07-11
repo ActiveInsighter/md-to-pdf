@@ -1,8 +1,8 @@
 {
   "version": 1,
   "status": "success",
-  "generated_at": "2026-07-10T15:14:03.169Z",
-  "run_id": "29102822789",
+  "generated_at": "2026-07-11T08:36:36.407Z",
+  "run_id": "29146353727",
   "artifact_name": "obsidian-style-pdf",
   "scan_root": "dist",
   "output_count": 1,
@@ -10,18 +10,18 @@
   "warning_count": 0,
   "outputs": [
     {
-      "pdf": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.pdf",
-      "html": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.html",
-      "preview": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.preview.png",
-      "quality": "dist/queue/2026/07/2026-07-10/参数估计与假设检验详解.quality.json",
-      "bytes": 1461849,
-      "pages": 32,
+      "pdf": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.pdf",
+      "html": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.html",
+      "preview": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.preview.png",
+      "quality": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.quality.json",
+      "bytes": 25735063,
+      "pages": 315,
       "quality_status": "success",
       "selected_preview_pages": [
-        11,
-        17,
-        19,
-        23
+        39,
+        175,
+        293,
+        297
       ],
       "warnings": []
     }
