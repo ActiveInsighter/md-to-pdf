@@ -40,6 +40,11 @@
   box-sizing: border-box;
 }
 
+::selection {
+  background: rgba(99, 102, 241, 0.22);
+  color: var(--text);
+}
+
 html {
   min-width: 320px;
   min-height: 100%;
