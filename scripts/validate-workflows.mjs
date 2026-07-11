@@ -3,7 +3,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { load } from 'js-yaml';
 
-const workflowDirectory = path.resolve(process.cwd(), '.github', 'workflows');
+const defaultWorkflowDirectory = path.join(process.cwd(), '.github', 'workflows');
+const workflowDirectory = path.resolve(process.env.WORKFLOW_DIRECTORY || defaultWorkflowDirectory);
 const pinnedCommitPattern = /@[0-9a-f]{40}$/i;
 const pinnedContainerPattern = /@sha256:[0-9a-f]{64}$/i;
 const secretExpressionPattern = /\$\{\{\s*secrets\./i;
