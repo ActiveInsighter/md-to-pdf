@@ -4,11 +4,41 @@ import { createAdminClient, requireUser, safeErrorMessage, storageBucket } from 
 type StartBody = { jobId?: string }
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const IDEMPOTENT_STATUSES = new Set(['queued', 'building', 'uploading', 'completed'])
+const GITHUB_OWNER = 'ActiveInsighter'
+const GITHUB_REPO = 'md-to-pdf'
+const GITHUB_WORKFLOW = 'build-pdf-api.yml'
+const GITHUB_REF = 'main'
 
-function env(name: string, fallback?: string): string {
-  const value = Deno.env.get(name)?.trim() || fallback
+function requiredEnv(name: string): string {
+  const value = Deno.env.get(name)?.trim()
   if (!value) throw new Error(`Missing environment variable: ${name}`)
   return value
+}
+
+function githubHeaders(token: string, jsonBody = false): HeadersInit {
+  return {
+    Accept: 'application/vnd.github+json',
+    Authorization: `Bearer ${token}`,
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'md-to-pdf-supabase-edge-function',
+    ...(jsonBody ? { 'Content-Type': 'application/json' } : {}),
+  }
+}
+
+async function githubFailure(response: Response, stage: 'repository' | 'workflow' | 'dispatch') {
+  const requestId = response.headers.get('x-github-request-id') || null
+  const body = (await response.text()).replace(/\s+/g, ' ').slice(0, 300)
+  console.error('GitHub request failed', JSON.stringify({
+    stage,
+    status: response.status,
+    requestId,
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    workflow: GITHUB_WORKFLOW,
+    ref: GITHUB_REF,
+    body,
+  }))
+  return { stage, status: response.status, requestId, body }
 }
 
 async function ensureUploaded(admin: ReturnType<typeof createAdminClient>, job: Record<string, unknown>) {
@@ -73,46 +103,64 @@ Deno.serve(async (req) => {
       return json({ jobId, status: latest?.status || 'queued', idempotent: true })
     }
 
-    const owner = env('GITHUB_OWNER')
-    const repo = env('GITHUB_REPO')
-    const workflow = env('GITHUB_WORKFLOW_FILE', 'build-pdf-api.yml')
-    const ref = env('GITHUB_WORKFLOW_REF', 'main')
-    const token = env('GITHUB_TOKEN')
-    const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/workflows/${encodeURIComponent(workflow)}/dispatches`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'X-GitHub-Api-Version': '2022-11-28',
-        'Content-Type': 'application/json',
-        'User-Agent': 'md-to-pdf-supabase-edge-function',
-      },
-      body: JSON.stringify({ ref, inputs: { job_id: jobId } }),
-    })
-    if (!response.ok) {
-      const githubRequestId = response.headers.get('x-github-request-id') || null
-      const githubBody = (await response.text()).replace(/\s+/g, ' ').slice(0, 300)
-      console.error('GitHub workflow dispatch failed', JSON.stringify({
-        status: response.status,
-        requestId: githubRequestId,
-        owner,
-        repo,
-        workflow,
-        ref,
-        body: githubBody,
-      }))
+    const token = requiredEnv('GITHUB_TOKEN')
+    const repoBase = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`
 
-      const errorMessage = `GitHub Actions 排队失败（HTTP ${response.status}${githubRequestId ? `，请求 ${githubRequestId}` : ''}）。`
+    const repositoryResponse = await fetch(repoBase, { headers: githubHeaders(token) })
+    if (!repositoryResponse.ok) {
+      const failure = await githubFailure(repositoryResponse, 'repository')
+      const errorMessage = `GitHub Token 无法访问仓库（HTTP ${failure.status}${failure.requestId ? `，请求 ${failure.requestId}` : ''}）。`
       await admin.from('pdf_jobs').update({
-        status: 'failed',
-        error_message: errorMessage,
-        completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        status: 'failed', error_message: errorMessage,
+        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       }).eq('id', jobId)
       return json({
-        error: 'GitHub Actions 排队失败。',
-        githubStatus: response.status,
-        githubRequestId,
+        error: 'GitHub Token 无法访问目标仓库，请检查 Fine-grained Token 的仓库范围。',
+        githubStage: failure.stage,
+        githubStatus: failure.status,
+        githubRequestId: failure.requestId,
+      }, 502)
+    }
+
+    const workflowResponse = await fetch(
+      `${repoBase}/actions/workflows/${encodeURIComponent(GITHUB_WORKFLOW)}`,
+      { headers: githubHeaders(token) },
+    )
+    if (!workflowResponse.ok) {
+      const failure = await githubFailure(workflowResponse, 'workflow')
+      const errorMessage = `GitHub Token 无法访问工作流（HTTP ${failure.status}${failure.requestId ? `，请求 ${failure.requestId}` : ''}）。`
+      await admin.from('pdf_jobs').update({
+        status: 'failed', error_message: errorMessage,
+        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      }).eq('id', jobId)
+      return json({
+        error: 'GitHub Token 可以访问仓库，但无法访问 PDF 工作流，请检查 Actions 权限。',
+        githubStage: failure.stage,
+        githubStatus: failure.status,
+        githubRequestId: failure.requestId,
+      }, 502)
+    }
+
+    const dispatchResponse = await fetch(
+      `${repoBase}/actions/workflows/${encodeURIComponent(GITHUB_WORKFLOW)}/dispatches`,
+      {
+        method: 'POST',
+        headers: githubHeaders(token, true),
+        body: JSON.stringify({ ref: GITHUB_REF, inputs: { job_id: jobId } }),
+      },
+    )
+    if (!dispatchResponse.ok) {
+      const failure = await githubFailure(dispatchResponse, 'dispatch')
+      const errorMessage = `GitHub Actions 排队失败（HTTP ${failure.status}${failure.requestId ? `，请求 ${failure.requestId}` : ''}）。`
+      await admin.from('pdf_jobs').update({
+        status: 'failed', error_message: errorMessage,
+        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      }).eq('id', jobId)
+      return json({
+        error: 'GitHub Actions 排队失败，请检查 Token 的 Actions: Read and write 权限。',
+        githubStage: failure.stage,
+        githubStatus: failure.status,
+        githubRequestId: failure.requestId,
       }, 502)
     }
 
@@ -127,10 +175,8 @@ Deno.serve(async (req) => {
     console.error('start-pdf-job failed', message)
     if (jobId && UUID_RE.test(jobId)) {
       await admin.from('pdf_jobs').update({
-        status: 'failed',
-        error_message: '启动 PDF 任务失败。',
-        completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        status: 'failed', error_message: '启动 PDF 任务失败。',
+        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       }).eq('id', jobId).in('status', ['uploaded', 'queued'])
     }
     return json({ error: '启动 PDF 任务失败。' }, 500)
