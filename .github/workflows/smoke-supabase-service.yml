@@ -1,0 +1,60 @@
+name: Smoke test Supabase PDF service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/smoke-supabase-service.yml'
+      - 'frontend/scripts/smoke-supabase-service.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-pdf-service-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in SUPABASE_URL SUPABASE_STORAGE_BUCKET VITE_SUPABASE_ANON_KEY; do
+            [[ -n "${!name:-}" ]] || {
+              echo "Missing required repository secret: $name"
+              exit 1
+            }
+          done
+          [[ -n "${SUPABASE_SECRET_KEY:-}" || -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]] || {
+            echo "Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY"
+            exit 1
+          }
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+
+      - name: Run end-to-end smoke test
+        working-directory: frontend
+        run: node scripts/smoke-supabase-service.mjs
