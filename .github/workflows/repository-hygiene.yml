@@ -123,7 +123,7 @@ jobs:
           set -euo pipefail
           test -s frontend/package-lock.json
           test -s frontend/tests/frontend-utils.test.mjs
-          test -s frontend/tests/cancel-pdf-job.test.mjs
+          test -s frontend/tests/cancel-pdf-job-logic.test.mjs
           test -s frontend/tests/pdf-job-updates.test.mjs
           test -s frontend/src/utils/pdfJobUpdates.ts
           test -s supabase/functions/cancel-pdf-job/index.ts
