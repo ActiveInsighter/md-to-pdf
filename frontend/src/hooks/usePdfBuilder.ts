@@ -19,6 +19,7 @@ import {
   getTerminalPdfJobRefreshKey,
   isTerminalPdfJobStatus,
 } from '../utils/pdfJobStatus'
+import { shouldApplyPdfJobUpdate } from '../utils/pdfJobUpdates'
 import {
   FALLBACK_POLL_INTERVAL_MS,
   getPdfJobPollInterval,
@@ -49,6 +50,8 @@ export function usePdfBuilder() {
   const [error, setError] = useState('')
   const authAttempt = useRef(0)
   const historyAttempt = useRef(0)
+  const jobContextVersion = useRef(0)
+  const jobRef = useRef<PdfJob | null>(null)
   const terminalHistoryRefreshKey = useRef<string | null>(null)
 
   const userId = session?.user.id ?? null
@@ -92,7 +95,10 @@ export function usePdfBuilder() {
     }
   }, [userId])
 
-  const applyJobUpdate = useCallback((next: PdfJob) => {
+  const applyJobUpdate = useCallback((next: PdfJob): boolean => {
+    if (!shouldApplyPdfJobUpdate(jobRef.current, next)) return false
+
+    jobRef.current = next
     setJob(next)
 
     const nextRecovery = getSubmissionRecovery(next)
@@ -107,19 +113,26 @@ export function usePdfBuilder() {
       if (terminalHistoryRefreshKey.current?.startsWith(`${next.id}:`)) {
         terminalHistoryRefreshKey.current = null
       }
-      return
+      return true
     }
 
-    if (terminalHistoryRefreshKey.current === refreshKey) return
-    terminalHistoryRefreshKey.current = refreshKey
-    void refreshHistory()
+    if (terminalHistoryRefreshKey.current !== refreshKey) {
+      terminalHistoryRefreshKey.current = refreshKey
+      void refreshHistory()
+    }
+    return true
   }, [refreshHistory])
 
-  const loadJob = useCallback(async (jobId: string) => {
+  const loadJob = useCallback(async (jobId: string): Promise<boolean> => {
+    const contextVersion = jobContextVersion.current
+
     try {
-      applyJobUpdate(await getPdfJob(jobId))
+      const next = await getPdfJob(jobId)
+      if (contextVersion !== jobContextVersion.current) return false
+      return applyJobUpdate(next)
     } catch (cause) {
-      setError(readableError(cause))
+      if (contextVersion === jobContextVersion.current) setError(readableError(cause))
+      return false
     }
   }, [applyJobUpdate])
 
@@ -146,17 +159,19 @@ export function usePdfBuilder() {
 
   useEffect(() => {
     historyAttempt.current += 1
+    jobContextVersion.current += 1
     terminalHistoryRefreshKey.current = null
+    jobRef.current = null
+    setJob(null)
     setSubmissionRecovery(null)
+    setMarkdown(null)
+    setAssets(null)
+    setProgress(0)
+    setUploadPhase('idle')
 
     if (!userId) {
       setHistory([])
       setHistoryLoading(false)
-      setJob(null)
-      setMarkdown(null)
-      setAssets(null)
-      setProgress(0)
-      setUploadPhase('idle')
       return
     }
 
@@ -317,13 +332,19 @@ export function usePdfBuilder() {
 
         try {
           const latest = await getPdfJob(target.jobId)
-          applyJobUpdate(latest)
+          const applied = applyJobUpdate(latest)
+          const reconciled = applied
+            ? latest
+            : jobRef.current?.id === target.jobId
+              ? jobRef.current
+              : null
+          if (!reconciled) return
 
-          const latestRecovery = getSubmissionRecovery(latest)
+          const latestRecovery = getSubmissionRecovery(reconciled)
           if (latestRecovery) {
             setProgress(0)
             setUploadPhase('failed')
-          } else if (isTerminalPdfJobStatus(latest.status)) {
+          } else if (isTerminalPdfJobStatus(reconciled.status)) {
             setProgress(0)
             setUploadPhase('idle')
           } else {
@@ -364,6 +385,8 @@ export function usePdfBuilder() {
 
   const clearWorkspace = useCallback(() => {
     if (userId) localStorage.removeItem(activeJobKey(userId))
+    jobContextVersion.current += 1
+    jobRef.current = null
     setJob(null)
     setSubmissionRecovery(null)
     setMarkdown(null)
@@ -396,14 +419,21 @@ export function usePdfBuilder() {
 
       try {
         const latest = await getPdfJob(recovery.jobId)
-        const latestRecovery = getSubmissionRecovery(latest)
+        const applied = applyJobUpdate(latest)
+        const reconciled = applied
+          ? latest
+          : jobRef.current?.id === recovery.jobId
+            ? jobRef.current
+            : null
+        if (!reconciled) return
+
+        const latestRecovery = getSubmissionRecovery(reconciled)
         if (!latestRecovery) {
           clearWorkspace()
           await refreshHistory()
           return
         }
 
-        applyJobUpdate(latest)
         setSubmissionRecovery(latestRecovery)
       } catch {
         // Preserve the original recovery context when status reconciliation also fails.
@@ -418,8 +448,12 @@ export function usePdfBuilder() {
   }, [applyJobUpdate, busy, clearWorkspace, refreshHistory, submissionRecovery])
 
   const selectJob = useCallback((selected: PdfJob) => {
-    const nextRecovery = getSubmissionRecovery(selected)
+    if (jobRef.current?.id === selected.id && !shouldApplyPdfJobUpdate(jobRef.current, selected)) return
+
+    jobContextVersion.current += 1
+    jobRef.current = selected
     setJob(selected)
+    const nextRecovery = getSubmissionRecovery(selected)
     setSubmissionRecovery(nextRecovery)
     setError('')
 
