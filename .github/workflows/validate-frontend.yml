@@ -5,12 +5,14 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/validate-frontend.yml'
       - 'frontend/**'
   pull_request:
     branches:
       - main
     paths:
+      - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/validate-frontend.yml'
       - 'frontend/**'
   workflow_dispatch:
