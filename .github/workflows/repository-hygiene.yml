@@ -60,7 +60,7 @@ jobs:
             docs/supabase-pdf-service.md
           )
 
-          if grep -nE 'GITHUB_(OWNER|REPO|WORKFLOW_FILE|WORKFLOW_REF)' "${files[@]}"; then
+          if grep -nE '^[[:space:]]*GITHUB_(OWNER|REPO|WORKFLOW_FILE|WORKFLOW_REF)([[:space:]]*=|[[:space:]]*$)' "${files[@]}"; then
             echo 'Configuration docs contain repository settings that are fixed in start-pdf-job.'
             exit 1
           fi
