@@ -123,7 +123,9 @@ jobs:
           set -euo pipefail
           test -s frontend/package-lock.json
           test -s frontend/tests/frontend-utils.test.mjs
+          test -s frontend/tests/cancel-pdf-job-logic.test.mjs
           test -s supabase/functions/cancel-pdf-job/index.ts
+          test -s supabase/functions/cancel-pdf-job/logic.ts
           grep -q '^\[functions.cancel-pdf-job\]$' supabase/config.toml
           node - <<'NODE'
           const pkg = require('./frontend/package.json')
