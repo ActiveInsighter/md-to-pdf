@@ -22,7 +22,8 @@
 .upload-state-badge.phase-creating,
 .upload-state-badge.phase-uploading-markdown,
 .upload-state-badge.phase-uploading-assets,
-.upload-state-badge.phase-starting {
+.upload-state-badge.phase-starting,
+.upload-state-badge.phase-cancelling {
   border-color: rgba(49, 87, 213, .18);
   background: var(--primary-soft);
   color: var(--primary-strong);
@@ -32,6 +33,12 @@
   border-color: rgba(8, 127, 91, .18);
   background: rgba(236, 253, 245, .74);
   color: var(--success);
+}
+
+.upload-state-badge.phase-failed {
+  border-color: rgba(180, 35, 24, .18);
+  background: rgba(254, 243, 242, .78);
+  color: var(--danger);
 }
 
 .file-drop-field {
