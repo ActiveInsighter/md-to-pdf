@@ -13,7 +13,7 @@ import {
 import { supabase } from '../lib/supabase'
 import type { AuthSessionStatus } from '../types/authSession'
 import type { PdfJob } from '../types/pdfJob'
-import type { UploadPhase } from '../types/upload'
+import type { SubmissionRecovery, UploadPhase } from '../types/upload'
 import {
   getTerminalPdfJobRefreshKey,
   isTerminalPdfJobStatus,
@@ -22,6 +22,10 @@ import {
   FALLBACK_POLL_INTERVAL_MS,
   getPdfJobPollInterval,
 } from '../utils/realtimePolling'
+import {
+  createSubmissionRecovery,
+  getSubmissionRecovery,
+} from '../utils/submissionRecovery'
 import { validateAssetsFile, validateMarkdownFile } from '../utils/uploadFiles'
 
 function activeJobKey(userId: string): string {
@@ -37,6 +41,7 @@ export function usePdfBuilder() {
   const [job, setJob] = useState<PdfJob | null>(null)
   const [history, setHistory] = useState<PdfJob[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [submissionRecovery, setSubmissionRecovery] = useState<SubmissionRecovery | null>(null)
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle')
@@ -89,6 +94,13 @@ export function usePdfBuilder() {
   const applyJobUpdate = useCallback((next: PdfJob) => {
     setJob(next)
 
+    const nextRecovery = getSubmissionRecovery(next)
+    setSubmissionRecovery(nextRecovery)
+    if (nextRecovery) {
+      setProgress(0)
+      setUploadPhase('failed')
+    }
+
     const refreshKey = getTerminalPdfJobRefreshKey(next)
     if (!refreshKey) {
       if (terminalHistoryRefreshKey.current?.startsWith(`${next.id}:`)) {
@@ -134,6 +146,7 @@ export function usePdfBuilder() {
   useEffect(() => {
     historyAttempt.current += 1
     terminalHistoryRefreshKey.current = null
+    setSubmissionRecovery(null)
 
     if (!userId) {
       setHistory([])
@@ -215,15 +228,25 @@ export function usePdfBuilder() {
   }, [applyJobUpdate, job?.id, job?.status, loadJob, userId])
 
   const start = useCallback(async () => {
-    if (!markdown || !userId || uploadPhase === 'submitted') return
+    if (!userId || busy || uploadPhase === 'submitted') return
 
-    const markdownError = validateMarkdownFile(markdown)
-    if (markdownError) {
-      setError(markdownError)
+    const recovery = submissionRecovery
+    const needsUploads = !recovery || recovery.status === 'created'
+
+    if (needsUploads && !markdown) {
+      setError('请选择 Markdown 文件。')
       return
     }
 
-    if (assets) {
+    if (needsUploads && markdown) {
+      const markdownError = validateMarkdownFile(markdown)
+      if (markdownError) {
+        setError(markdownError)
+        return
+      }
+    }
+
+    if (needsUploads && assets) {
       const assetsError = validateAssetsFile(assets)
       if (assetsError) {
         setError(assetsError)
@@ -231,41 +254,102 @@ export function usePdfBuilder() {
       }
     }
 
+    if (recovery?.status === 'created' && recovery.hasAssets && !assets) {
+      setError('该任务需要原资源压缩包，请重新选择 ZIP 文件后重试。')
+      return
+    }
+
+    if (recovery?.status === 'created' && !recovery.hasAssets && assets) {
+      setError('该恢复任务创建时未包含资源包，请移除 ZIP，或放弃该任务后重新创建。')
+      return
+    }
+
     setBusy(true)
     setError('')
-    setProgress(5)
-    setUploadPhase('creating')
+    setProgress(recovery?.status === 'uploaded' ? 85 : 5)
+    setUploadPhase(recovery?.status === 'uploaded' ? 'starting' : recovery ? 'uploading-markdown' : 'creating')
+
+    let target = recovery
 
     try {
-      const created = await createPdfJob(Boolean(assets))
-      localStorage.setItem(activeJobKey(userId), created.jobId)
+      if (!target) {
+        const created = await createPdfJob(Boolean(assets))
+        target = createSubmissionRecovery(created, Boolean(assets))
+        setSubmissionRecovery(target)
+        localStorage.setItem(activeJobKey(userId), target.jobId)
+      } else {
+        localStorage.setItem(activeJobKey(userId), target.jobId)
+      }
 
-      setProgress(20)
-      setUploadPhase('uploading-markdown')
-      await uploadInput(created.inputPath, markdown)
+      if (target.status === 'created') {
+        setProgress(20)
+        setUploadPhase('uploading-markdown')
+        await uploadInput(target.inputPath, markdown!)
 
-      if (assets && created.assetsPath) {
-        setProgress(55)
-        setUploadPhase('uploading-assets')
-        await uploadAssets(created.assetsPath, assets)
+        if (target.hasAssets && target.assetsPath && assets) {
+          setProgress(55)
+          setUploadPhase('uploading-assets')
+          await uploadAssets(target.assetsPath, assets)
+        }
       }
 
       setProgress(85)
       setUploadPhase('starting')
-      await startPdfJob(created.jobId)
+      await startPdfJob(target.jobId)
 
       setProgress(100)
       setUploadPhase('submitted')
-      await loadJob(created.jobId)
+      setSubmissionRecovery(null)
+      await loadJob(target.jobId)
       await refreshHistory()
     } catch (cause) {
-      setError(readableError(cause))
-      setProgress(0)
-      setUploadPhase('idle')
+      const message = readableError(cause)
+      setError(target ? `${message} 任务已保留，可修复后重试。` : message)
+
+      if (!target) {
+        setProgress(0)
+        setUploadPhase('idle')
+      } else {
+        setSubmissionRecovery(target)
+        setProgress(0)
+        setUploadPhase('failed')
+
+        try {
+          const latest = await getPdfJob(target.jobId)
+          applyJobUpdate(latest)
+
+          const latestRecovery = getSubmissionRecovery(latest)
+          if (latestRecovery) {
+            setProgress(0)
+            setUploadPhase('failed')
+          } else if (isTerminalPdfJobStatus(latest.status)) {
+            setProgress(0)
+            setUploadPhase('idle')
+          } else {
+            setError('')
+            setProgress(100)
+            setUploadPhase('submitted')
+          }
+
+          await refreshHistory()
+        } catch {
+          // Keep the original failure and recovery context when reconciliation also fails.
+        }
+      }
     } finally {
       setBusy(false)
     }
-  }, [assets, loadJob, markdown, refreshHistory, uploadPhase, userId])
+  }, [
+    applyJobUpdate,
+    assets,
+    busy,
+    loadJob,
+    markdown,
+    refreshHistory,
+    submissionRecovery,
+    uploadPhase,
+    userId,
+  ])
 
   const download = useCallback(async () => {
     if (!job) return
@@ -280,6 +364,7 @@ export function usePdfBuilder() {
   const reset = useCallback(() => {
     if (userId) localStorage.removeItem(activeJobKey(userId))
     setJob(null)
+    setSubmissionRecovery(null)
     setMarkdown(null)
     setAssets(null)
     setProgress(0)
@@ -288,8 +373,22 @@ export function usePdfBuilder() {
   }, [userId])
 
   const selectJob = useCallback((selected: PdfJob) => {
+    const nextRecovery = getSubmissionRecovery(selected)
     setJob(selected)
+    setSubmissionRecovery(nextRecovery)
     setError('')
+
+    if (nextRecovery) {
+      setProgress(0)
+      setUploadPhase('failed')
+    } else if (isTerminalPdfJobStatus(selected.status)) {
+      setProgress(0)
+      setUploadPhase('idle')
+    } else {
+      setProgress(100)
+      setUploadPhase('submitted')
+    }
+
     if (userId) localStorage.setItem(activeJobKey(userId), selected.id)
   }, [userId])
 
@@ -307,6 +406,7 @@ export function usePdfBuilder() {
     job,
     history,
     historyLoading,
+    submissionRecovery,
     busy,
     progress,
     uploadPhase,
