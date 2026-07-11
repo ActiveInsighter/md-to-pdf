@@ -119,10 +119,13 @@ jobs:
             fc-cache "$HOME/.local/share/fonts/noto-cjk"
           fi
 
-          fc-list | grep -qi 'Noto .* CJK' || {
+          FONT_MATCH="$(fc-match -f '%{family}\n' 'Noto Sans CJK SC')"
+          [[ "$FONT_MATCH" == *"Noto Sans CJK"* ]] || {
             echo "Noto CJK fonts are not available after restore/install"
+            echo "Resolved font: $FONT_MATCH"
             exit 1
           }
+          echo "Resolved CJK font: $FONT_MATCH"
 
       - name: Resolve Chrome executable
         shell: bash
