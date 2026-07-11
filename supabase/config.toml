@@ -37,5 +37,8 @@ verify_jwt = true
 [functions.start-pdf-job]
 verify_jwt = true
 
+[functions.cancel-pdf-job]
+verify_jwt = true
+
 [functions.get-pdf-download]
 verify_jwt = true
