@@ -4,26 +4,65 @@ import { PDF_JOB_STATUS_LABELS } from '../utils/pdfJobStatus'
 type Props = {
   jobs: PdfJob[]
   loading: boolean
+  lastSyncedAt: number | null
+  error: string
   selectedJobId: string | null
+  onRefresh: () => void
   onSelect: (job: PdfJob) => void
 }
 
-export function PdfJobHistory({ jobs, loading, selectedJobId, onSelect }: Props) {
+export function PdfJobHistory({
+  jobs,
+  loading,
+  lastSyncedAt,
+  error,
+  selectedJobId,
+  onRefresh,
+  onSelect,
+}: Props) {
   const showInitialLoading = loading && jobs.length === 0
+  const syncedTime = lastSyncedAt
+    ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null
+  const syncLabel = loading
+    ? '正在同步任务状态'
+    : error
+      ? '同步失败，可重试'
+      : syncedTime
+        ? `已于 ${syncedTime} 同步`
+        : '尚未同步'
 
   return (
     <section className="card history-card" aria-busy={loading}>
       <div className="history-heading">
-        <h2>最近任务</h2>
-        {loading ? (
-          <span className="history-sync" role="status">
-            <span aria-hidden="true" />
-            同步中
+        <div className="history-heading-copy">
+          <h2>最近任务</h2>
+          <span
+            className={`history-sync-summary${error ? ' is-error' : ''}`}
+            role="status"
+            aria-live="polite"
+          >
+            {loading && <span className="history-inline-spinner" aria-hidden="true" />}
+            {syncLabel}
           </span>
-        ) : jobs.length > 0 ? (
-          <span className="history-count" aria-label={`共 ${jobs.length} 个任务`}>{jobs.length}</span>
-        ) : null}
+        </div>
+        <div className="history-heading-actions">
+          {jobs.length > 0 && (
+            <span className="history-count" aria-label={`共 ${jobs.length} 个任务`}>{jobs.length}</span>
+          )}
+          <button
+            type="button"
+            className="history-refresh"
+            onClick={onRefresh}
+            disabled={loading}
+            aria-label={loading ? '正在同步最近任务' : '刷新最近任务'}
+          >
+            {loading ? '同步中' : '刷新'}
+          </button>
+        </div>
       </div>
+
+      {error && jobs.length > 0 && <p className="history-error" role="alert">{error}</p>}
 
       {showInitialLoading ? (
         <div className="history-state" role="status" aria-live="polite">
@@ -33,8 +72,8 @@ export function PdfJobHistory({ jobs, loading, selectedJobId, onSelect }: Props)
         </div>
       ) : jobs.length === 0 ? (
         <div className="history-state history-empty">
-          <strong>暂无构建记录</strong>
-          <p>提交第一个 Markdown 文件后，任务会显示在这里。</p>
+          <strong>{error ? '任务记录暂时不可用' : '暂无构建记录'}</strong>
+          <p>{error || '提交第一个 Markdown 文件后，任务会显示在这里。'}</p>
         </div>
       ) : (
         <div className="history-list">
