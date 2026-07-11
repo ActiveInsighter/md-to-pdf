@@ -75,6 +75,15 @@ jobs:
         working-directory: frontend
         run: node scripts/smoke-supabase-service.mjs
 
+      - name: Upload smoke diagnostic
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: supabase-service-smoke-${{ github.run_id }}
+          path: frontend/smoke-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 1
+
       - name: Publish smoke test result
         if: always()
         uses: actions/github-script@v7
