@@ -16,6 +16,7 @@ on:
       - 'frontend/package-lock.json'
       - 'frontend/src/**'
       - 'frontend/scripts/**'
+      - 'frontend/tests/**'
       - 'scripts/**'
       - 'supabase/functions/.env.example'
   workflow_dispatch:
@@ -116,6 +117,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s frontend/package-lock.json
+          test -s frontend/tests/utils.test.mjs
           node - <<'NODE'
           const pkg = require('./frontend/package.json')
           const lock = require('./frontend/package-lock.json')
@@ -125,6 +127,7 @@ jobs:
           if (pkg.devDependencies?.wrangler !== expected) throw new Error('package.json must pin Wrangler exactly')
           if (lock.packages?.['']?.devDependencies?.wrangler !== expected) throw new Error('lockfile root must pin Wrangler exactly')
           if (lock.packages?.['node_modules/wrangler']?.version !== expected) throw new Error('lockfile Wrangler package version mismatch')
+          if (pkg.scripts?.test !== 'node --test tests/*.test.mjs') throw new Error('frontend test command must remain deterministic')
           NODE
 
           workflows=(
@@ -154,6 +157,7 @@ jobs:
           npm ci --prefix frontend --prefer-offline --no-audit --no-fund
           frontend/node_modules/.bin/wrangler --version | grep -q '4.110.0'
           npm run --prefix frontend typecheck
+          npm test --prefix frontend
           npm run --prefix frontend build
 
       - name: Validate callable smoke test
