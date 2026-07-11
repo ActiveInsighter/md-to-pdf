@@ -20,6 +20,8 @@ export function PdfBuilderPage() {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState('')
+  const activeJobId = job?.id
+  const activeJobStatus = job?.status
 
   const refreshHistory = useCallback(async () => {
     if (!session) return
@@ -50,16 +52,16 @@ export function PdfBuilderPage() {
   }, [session, loadJob, refreshHistory])
 
   useEffect(() => {
-    if (!session || !job || TERMINAL.has(job.status)) return
+    if (!session || !activeJobId || !activeJobStatus || TERMINAL.has(activeJobStatus)) return
     const channel = supabase
-      .channel(`pdf-job-${job.id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pdf_jobs', filter: `id=eq.${job.id}` }, (payload) => {
+      .channel(`pdf-job-${activeJobId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pdf_jobs', filter: `id=eq.${activeJobId}` }, (payload) => {
         setJob(payload.new as PdfJob)
       })
       .subscribe()
-    const timer = window.setInterval(() => void loadJob(job.id), 10_000)
+    const timer = window.setInterval(() => void loadJob(activeJobId), 10_000)
     return () => { window.clearInterval(timer); void supabase.removeChannel(channel) }
-  }, [session, job?.id, job?.status, loadJob])
+  }, [session, activeJobId, activeJobStatus, loadJob])
 
   async function start() {
     if (!markdown) return
