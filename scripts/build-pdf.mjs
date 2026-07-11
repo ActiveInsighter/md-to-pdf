@@ -284,7 +284,7 @@ function createMarkdownRenderer(highlighter) {
     html: true,
     linkify: true,
     typographer: true,
-    breaks: false,
+    breaks: true,
     highlight(code, lang) {
       return renderCodeBlock(highlighter, code, lang);
     }
