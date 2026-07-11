@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '.github/workflows/smoke-supabase-service.yml'
+      - 'frontend/package.json'
       - 'frontend/scripts/smoke-supabase-service.mjs'
   workflow_dispatch:
 
@@ -51,6 +52,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package.json
 
       - name: Validate secrets
         shell: bash
@@ -69,11 +72,11 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm install --no-audit --no-fund
+        run: npm install --prefer-offline --no-audit --no-fund
 
       - name: Run end-to-end smoke test
         working-directory: frontend
-        run: node scripts/smoke-supabase-service.mjs
+        run: npm run smoke:supabase
 
       - name: Upload smoke diagnostic
         if: always()
