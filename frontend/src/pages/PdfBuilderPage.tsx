@@ -87,9 +87,9 @@ export function PdfBuilderPage() {
             onMarkdown={setMarkdown}
             onAssets={setAssets}
             onStart={() => void start()}
-            onReset={reset}
+            onReset={() => void reset()}
           />
-          <PdfJobStatus job={job} onDownload={() => void download()} onNew={reset} />
+          <PdfJobStatus job={job} onDownload={() => void download()} onNew={() => void reset()} />
         </div>
         <aside className="workspace-sidebar" aria-label="任务历史">
           <PdfJobHistory
