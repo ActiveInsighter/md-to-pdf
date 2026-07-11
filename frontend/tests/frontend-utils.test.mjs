@@ -195,14 +195,15 @@ test('Realtime health selects low-frequency reconciliation or fast fallback poll
   assert.equal(realtimePolling.FALLBACK_POLL_INTERVAL_MS, 10_000)
 })
 
-test('Pending job cancellation has UI feedback, ownership checks and race-safe cleanup', async () => {
+test('Pending job cancellation has UI feedback, tested helper wiring and JWT protection', async () => {
   assert.equal(uploadTypes.uploadPhaseLabels.cancelling, '正在取消任务')
 
   const { source } = await transpileTypeScript('../../supabase/functions/cancel-pdf-job/index.ts')
-  assert.match(source, /new Set\(\['created', 'uploaded'\]\)/)
+  assert.match(source, /decideCancellation\(user\.id/)
+  assert.match(source, /resolveCancellationRace\(user\.id/)
+  assert.match(source, /cleanupCancelledJob\(job/)
   assert.match(source, /\.eq\('user_id', user\.id\)/)
   assert.match(source, /\.in\('status', \['created', 'uploaded'\]\)/)
-  assert.match(source, /storage\.from\(storageBucket\(\)\)\.remove\(paths\)/)
 
   const config = await readFile(new URL('../../supabase/config.toml', import.meta.url), 'utf8')
   assert.match(config, /\[functions\.cancel-pdf-job\]\s+verify_jwt = true/)
