@@ -128,3 +128,36 @@ test('Valid timestamps take precedence over malformed timestamps', () => {
     false,
   )
 })
+
+test('History merging preserves a fresher local snapshot over an older list response', () => {
+  const current = job({ status: 'building', updated_at: '2026-07-11T10:04:00.000Z' })
+  const incoming = job({ status: 'queued', updated_at: '2026-07-11T10:03:00.000Z' })
+  assert.deepEqual(updates.mergePdfJobHistory([current], [incoming]), [current])
+})
+
+test('History merging keeps tasks created after an older list request started', () => {
+  const newest = job({
+    id: 'job-new',
+    created_at: '2026-07-11T10:05:00.000Z',
+    updated_at: '2026-07-11T10:05:00.000Z',
+  })
+  const older = job({
+    id: 'job-old',
+    created_at: '2026-07-11T10:00:00.000Z',
+    updated_at: '2026-07-11T10:02:00.000Z',
+  })
+  assert.deepEqual(updates.mergePdfJobHistory([newest], [older]), [newest, older])
+})
+
+test('History merging applies newer rows, sorts deterministically and enforces the limit', () => {
+  const current = job({ status: 'queued' })
+  const updated = job({ status: 'building', updated_at: '2026-07-11T10:03:00.000Z' })
+  const newest = job({
+    id: 'job-2',
+    created_at: '2026-07-11T11:00:00.000Z',
+    updated_at: '2026-07-11T11:00:00.000Z',
+  })
+  assert.deepEqual(updates.mergePdfJobHistory([current], [updated, newest], 1), [newest])
+  assert.equal(updates.mergePdfJobHistory([current], [updated])[0].status, 'building')
+  assert.deepEqual(updates.mergePdfJobHistory([current], [updated], 0), [])
+})
