@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/build-pdf-api.yml'
       - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/repository-hygiene.yml'
       - '.github/workflows/smoke-supabase-service.yml'
@@ -20,6 +21,7 @@ on:
       - 'scripts/**'
       - 'supabase/config.toml'
       - 'supabase/functions/**'
+      - 'supabase/migrations/**'
   workflow_dispatch:
 
 permissions:
@@ -178,9 +180,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f frontend/scripts/smoke-supabase-service.mjs
+          smoke=frontend/scripts/smoke-supabase-service.mjs
+          workflow=.github/workflows/smoke-supabase-service.yml
+          test -f "$smoke"
           node -e "const pkg = require('./frontend/package.json'); if (pkg.scripts?.['smoke:supabase'] !== 'node scripts/smoke-supabase-service.mjs') process.exit(1)"
-          node --check frontend/scripts/smoke-supabase-service.mjs
+          node --check "$smoke"
+          grep -Fq "functions.invoke('cancel-pdf-job'" "$smoke"
+          grep -Fq 'cleanupPending === false' "$smoke"
+          grep -Fq 'repeated cancellation was not idempotent' "$smoke"
+          grep -Fq 'start-pdf-job accepted a cancelled task' "$smoke"
+          grep -Fq "'supabase/functions/**'" "$workflow"
+          grep -Fq "'supabase/migrations/**'" "$workflow"
+          grep -Fq "'scripts/supabase-pdf-job.mjs'" "$workflow"
 
       - name: Validate service scripts
         shell: bash
