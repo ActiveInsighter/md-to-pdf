@@ -6,6 +6,7 @@ coverage/
 playwright-report/
 test-results/
 frontend/smoke-diagnostic.json
+frontend/lint-output.txt
 *.tsbuildinfo
 .wrangler/
 supabase/.temp/
