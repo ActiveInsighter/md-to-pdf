@@ -14,7 +14,10 @@ import { supabase } from '../lib/supabase'
 import type { AuthSessionStatus } from '../types/authSession'
 import type { PdfJob } from '../types/pdfJob'
 import type { UploadPhase } from '../types/upload'
-import { isTerminalPdfJobStatus } from '../utils/pdfJobStatus'
+import {
+  getTerminalPdfJobRefreshKey,
+  isTerminalPdfJobStatus,
+} from '../utils/pdfJobStatus'
 import {
   FALLBACK_POLL_INTERVAL_MS,
   getPdfJobPollInterval,
@@ -33,11 +36,14 @@ export function usePdfBuilder() {
   const [assets, setAssets] = useState<File | null>(null)
   const [job, setJob] = useState<PdfJob | null>(null)
   const [history, setHistory] = useState<PdfJob[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle')
   const [error, setError] = useState('')
   const authAttempt = useRef(0)
+  const historyAttempt = useRef(0)
+  const terminalHistoryRefreshKey = useRef<string | null>(null)
 
   const userId = session?.user.id ?? null
 
@@ -65,18 +71,35 @@ export function usePdfBuilder() {
   const refreshHistory = useCallback(async () => {
     if (!userId) return
 
+    const attempt = ++historyAttempt.current
+    setHistoryLoading(true)
+
     try {
-      setHistory(await listPdfJobs())
+      const nextHistory = await listPdfJobs()
+      if (attempt !== historyAttempt.current) return
+      setHistory(nextHistory)
     } catch (cause) {
+      if (attempt !== historyAttempt.current) return
       setError(readableError(cause))
+    } finally {
+      if (attempt === historyAttempt.current) setHistoryLoading(false)
     }
   }, [userId])
 
   const applyJobUpdate = useCallback((next: PdfJob) => {
     setJob(next)
-    if (isTerminalPdfJobStatus(next.status)) {
-      void refreshHistory()
+
+    const refreshKey = getTerminalPdfJobRefreshKey(next)
+    if (!refreshKey) {
+      if (terminalHistoryRefreshKey.current?.startsWith(`${next.id}:`)) {
+        terminalHistoryRefreshKey.current = null
+      }
+      return
     }
+
+    if (terminalHistoryRefreshKey.current === refreshKey) return
+    terminalHistoryRefreshKey.current = refreshKey
+    void refreshHistory()
   }, [refreshHistory])
 
   const loadJob = useCallback(async (jobId: string) => {
@@ -109,8 +132,12 @@ export function usePdfBuilder() {
   }, [initializeAuth])
 
   useEffect(() => {
+    historyAttempt.current += 1
+    terminalHistoryRefreshKey.current = null
+
     if (!userId) {
       setHistory([])
+      setHistoryLoading(false)
       setJob(null)
       setMarkdown(null)
       setAssets(null)
@@ -119,6 +146,7 @@ export function usePdfBuilder() {
       return
     }
 
+    setHistory([])
     void refreshHistory()
     const savedJobId = localStorage.getItem(activeJobKey(userId))
     if (savedJobId) void loadJob(savedJobId)
@@ -278,6 +306,7 @@ export function usePdfBuilder() {
     assets,
     job,
     history,
+    historyLoading,
     busy,
     progress,
     uploadPhase,
