@@ -10,6 +10,8 @@ on:
     paths:
       - '.github/workflows/cleanup-supabase-pdf-jobs.yml'
       - 'scripts/cleanup-supabase-pdf-jobs.mjs'
+      - 'scripts/test-cleanup-supabase-pdf-jobs.mjs'
+      - 'package.json'
 
 permissions:
   contents: read
@@ -35,7 +37,12 @@ jobs:
           node-version: 24
 
       - name: Validate cleanup script syntax
-        run: node --check scripts/cleanup-supabase-pdf-jobs.mjs
+        run: |
+          node --check scripts/cleanup-supabase-pdf-jobs.mjs
+          node --check scripts/test-cleanup-supabase-pdf-jobs.mjs
+
+      - name: Run Supabase cleanup HTTP partial-failure test
+        run: npm run test:cleanup-supabase
 
   cleanup:
     if: github.event_name != 'pull_request'
