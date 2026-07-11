@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import {
   createPdfJob,
@@ -11,6 +11,7 @@ import {
   uploadInput,
 } from '../api/pdfJobs'
 import { supabase } from '../lib/supabase'
+import type { AuthSessionStatus } from '../types/authSession'
 import type { PdfJob } from '../types/pdfJob'
 import { isTerminalPdfJobStatus } from '../utils/pdfJobStatus'
 
@@ -23,6 +24,8 @@ function activeJobKey(userId: string): string {
 
 export function usePdfBuilder() {
   const [session, setSession] = useState<Session | null>(null)
+  const [authStatus, setAuthStatus] = useState<AuthSessionStatus>('loading')
+  const [authError, setAuthError] = useState('')
   const [markdown, setMarkdown] = useState<File | null>(null)
   const [assets, setAssets] = useState<File | null>(null)
   const [job, setJob] = useState<PdfJob | null>(null)
@@ -30,8 +33,30 @@ export function usePdfBuilder() {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState('')
+  const authAttempt = useRef(0)
 
   const userId = session?.user.id ?? null
+
+  const initializeAuth = useCallback(async () => {
+    const attempt = ++authAttempt.current
+    setAuthStatus('loading')
+    setAuthError('')
+
+    try {
+      const { data, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) throw sessionError
+      if (attempt !== authAttempt.current) return
+
+      setSession(data.session)
+      setAuthStatus('ready')
+    } catch (cause) {
+      if (attempt !== authAttempt.current) return
+
+      setSession(null)
+      setAuthError(readableError(cause))
+      setAuthStatus('error')
+    }
+  }, [])
 
   const refreshHistory = useCallback(async () => {
     if (!userId) return
@@ -61,21 +86,23 @@ export function usePdfBuilder() {
   useEffect(() => {
     let active = true
 
-    void supabase.auth.getSession().then(({ data, error: sessionError }) => {
-      if (!active) return
-      if (sessionError) setError(readableError(sessionError))
-      setSession(data.session)
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
+      if (!active || event === 'INITIAL_SESSION') return
+
+      authAttempt.current += 1
+      setSession(next)
+      setAuthError('')
+      setAuthStatus('ready')
     })
 
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
-      setSession(next)
-    })
+    void initializeAuth()
 
     return () => {
       active = false
+      authAttempt.current += 1
       data.subscription.unsubscribe()
     }
-  }, [])
+  }, [initializeAuth])
 
   useEffect(() => {
     if (!userId) {
@@ -185,6 +212,8 @@ export function usePdfBuilder() {
 
   return {
     session,
+    authStatus,
+    authError,
     markdown,
     assets,
     job,
@@ -194,6 +223,7 @@ export function usePdfBuilder() {
     error,
     setMarkdown,
     setAssets,
+    retryAuth: initializeAuth,
     start,
     download,
     reset,
