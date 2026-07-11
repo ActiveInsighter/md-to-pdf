@@ -3,6 +3,9 @@ name: Cleanup Merged Branches
 on:
   pull_request:
     types:
+      - opened
+      - synchronize
+      - reopened
       - closed
   workflow_dispatch:
     inputs:
@@ -11,35 +14,80 @@ on:
         required: true
         default: 'false'
       max_pulls:
-        description: 'Recent closed PRs to scan in manual mode'
+        description: 'Recent closed PRs to scan in manual mode (1-500)'
         required: true
         default: '100'
 
-permissions:
-  contents: write
-  pull-requests: read
+permissions: {}
 
 concurrency:
-  group: branch-cleanup-${{ github.repository }}
-  cancel-in-progress: false
+  group: branch-cleanup-${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.ref || github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true' && github.run_id || 'production' }}
+  cancel-in-progress: ${{ (github.event_name == 'pull_request' && github.event.action != 'closed') || (github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true') }}
 
 jobs:
-  cleanup:
+  validate:
+    if: (github.event_name == 'pull_request' && github.event.action != 'closed') || (github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true')
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: ubuntu-24.04
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
 
+      - name: Validate cleanup script syntax
+        run: node --check scripts/cleanup-merged-branches.mjs
+
+      - name: Exercise cleanup policy in dry-run mode
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: 'true'
+          MAX_PULLS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_pulls || '10' }}
+        run: npm run cleanup:branches
+
+  cleanup:
+    if: (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true) || (github.event_name == 'workflow_dispatch' && inputs.dry_run != 'true')
+    permissions:
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Validate cleanup inputs and script
+        shell: bash
+        env:
+          MAX_PULLS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_pulls || '1' }}
+        run: |
+          set -euo pipefail
+          [[ "$MAX_PULLS" =~ ^[0-9]+$ ]] && (( MAX_PULLS >= 1 && MAX_PULLS <= 500 )) || {
+            echo 'max_pulls must be an integer between 1 and 500.'
+            exit 1
+          }
+          node --check scripts/cleanup-merged-branches.mjs
+
       - name: Cleanup merged temporary branches
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
-          MAX_PULLS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_pulls || '100' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: 'false'
+          MAX_PULLS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_pulls || '1' }}
         run: npm run cleanup:branches
