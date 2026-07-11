@@ -87,17 +87,15 @@ async function patchJob(body) {
   return rows[0];
 }
 
-async function downloadObject(filename, destination, optional = false) {
+async function downloadObject(filename, destination) {
   const response = await fetch(
     `${SUPABASE_URL}/storage/v1/object/authenticated/${encodeURIComponent(BUCKET)}/${encodedObjectPath(filename)}`,
     { headers: headers() },
   );
-  if (optional && response.status === 404) return false;
   if (!response.ok) await parseResponse(response);
   const bytes = Buffer.from(await response.arrayBuffer());
   await fs.mkdir(path.dirname(destination), { recursive: true });
   await fs.writeFile(destination, bytes);
-  return true;
 }
 
 async function uploadObject(filename, source, contentType) {
@@ -163,16 +161,18 @@ async function main() {
     case 'download-input': {
       const output = option('--output');
       if (!output) throw new Error('--output is required');
-      await downloadObject('input.md', output, false);
+      await downloadObject('input.md', output);
       break;
     }
     case 'download-assets': {
       const output = option('--output');
       const githubOutput = option('--github-output');
       if (!output) throw new Error('--output is required');
-      const found = await downloadObject('assets.zip', output, true);
-      if (githubOutput) await fs.appendFile(githubOutput, `has_assets=${found ? 'true' : 'false'}\n`, 'utf8');
-      console.log(found ? 'Assets downloaded.' : 'No assets.zip was uploaded.');
+      const job = await getJob();
+      const shouldDownload = job.has_assets === true && typeof job.assets_path === 'string' && job.assets_path.length > 0;
+      if (shouldDownload) await downloadObject('assets.zip', output);
+      if (githubOutput) await fs.appendFile(githubOutput, `has_assets=${shouldDownload ? 'true' : 'false'}\n`, 'utf8');
+      console.log(shouldDownload ? 'Assets downloaded.' : 'Job has no assets.zip; download skipped.');
       break;
     }
     case 'upload-output': {
