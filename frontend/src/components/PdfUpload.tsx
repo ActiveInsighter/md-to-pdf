@@ -29,6 +29,7 @@ export function PdfUpload({
   onReset,
 }: Props) {
   const submitted = phase === 'submitted'
+  const cancelling = phase === 'cancelling'
   const locked = busy || submitted
   const filesLocked = locked || recovery?.status === 'uploaded'
   const phaseLabel = uploadPhaseLabels[phase]
@@ -121,17 +122,19 @@ export function PdfUpload({
         </button>
         {recovery && (
           <button className="secondary recovery-reset-button" disabled={busy} onClick={onReset}>
-            放弃并新建
+            {cancelling ? '正在取消…' : '放弃并新建'}
           </button>
         )}
         <p className="muted upload-help" role="status" aria-live="polite">
           {submitted
             ? '任务已提交，可在下方查看实时构建状态。'
-            : busy
-              ? `${phaseLabel}，请勿关闭页面。`
-              : recovery
-                ? '将复用原任务，不会创建重复记录。'
-                : '文件仅上传到私有存储，不会写入 Git 仓库。'}
+            : cancelling
+              ? '正在停止未启动任务并清理已上传文件。'
+              : busy
+                ? `${phaseLabel}，请勿关闭页面。`
+                : recovery
+                  ? '将复用原任务，不会创建重复记录。'
+                  : '文件仅上传到私有存储，不会写入 Git 仓库。'}
         </p>
       </div>
     </section>
