@@ -97,10 +97,12 @@ npm test
 
 ## 前端本地开发
 
+前端暂未提交独立锁文件，安装命令与 CI 保持一致并优先复用 npm 下载缓存：
+
 ```bash
 cd frontend
 cp .env.example .env.local
-npm ci
+npm install --prefer-offline --no-audit --no-fund
 npm run dev
 ```
 
