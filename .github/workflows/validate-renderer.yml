@@ -44,20 +44,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies, fonts, Chrome, and PDF tools
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y fonts-noto-cjk poppler-utils
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk poppler-utils
           fc-cache -f
-          npm ci
+          npm ci --prefer-offline --no-audit --no-fund
           CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
           if [ -z "$CHROME_PATH" ]; then
             echo "Chrome executable was not found on the runner."
@@ -70,7 +73,7 @@ jobs:
 
       - name: Upload regression outputs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: renderer-regression
           path: .tmp/render-test/**
