@@ -34,12 +34,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node with frontend npm cache
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -89,6 +90,26 @@ jobs:
           grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
           grep -q 'npm ci --prefer-offline --no-audit --no-fund' README.md
           grep -q 'npm ci --prefer-offline --no-audit --no-fund' docs/supabase-pdf-service.md
+
+      - name: Validate workflow action security
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflows=(
+            .github/workflows/repository-hygiene.yml
+            .github/workflows/deploy-pages.yml
+            .github/workflows/smoke-supabase-service.yml
+          )
+
+          if grep -nE 'uses:[[:space:]]+[^[:space:]#]+@v[0-9]+' "${workflows[@]}"; then
+            echo 'Frontend workflows must pin actions to immutable commit SHAs.'
+            exit 1
+          fi
+
+          for workflow in "${workflows[@]}"; do
+            grep -q 'uses: actions/checkout@[0-9a-f]\{40\}' "$workflow"
+            grep -q 'persist-credentials: false' "$workflow"
+          done
 
       - name: Validate frontend lockfile and workflows
         shell: bash
