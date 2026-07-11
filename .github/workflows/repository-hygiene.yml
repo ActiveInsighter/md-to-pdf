@@ -123,10 +123,14 @@ jobs:
           set -euo pipefail
           test -s frontend/package-lock.json
           test -s frontend/tests/frontend-utils.test.mjs
-          test -s frontend/tests/cancel-pdf-job-logic.test.mjs
+          test -s frontend/tests/cancel-pdf-job.test.mjs
+          test -s frontend/tests/pdf-job-updates.test.mjs
+          test -s frontend/src/utils/pdfJobUpdates.ts
           test -s supabase/functions/cancel-pdf-job/index.ts
           test -s supabase/functions/cancel-pdf-job/logic.ts
           grep -q '^\[functions.cancel-pdf-job\]$' supabase/config.toml
+          grep -q 'updated_at: string' frontend/src/types/pdfJob.ts
+          grep -q 'shouldApplyPdfJobUpdate' frontend/src/hooks/usePdfBuilder.ts
           node - <<'NODE'
           const pkg = require('./frontend/package.json')
           const lock = require('./frontend/package-lock.json')
