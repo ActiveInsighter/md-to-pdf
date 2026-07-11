@@ -88,10 +88,11 @@ Supabase 托管 Edge Functions 通常会自动提供：
 ```text
 SUPABASE_URL
 SUPABASE_ANON_KEY
+SUPABASE_SECRET_KEYS
 SUPABASE_SERVICE_ROLE_KEY
 ```
 
-部署后仍应在 Functions Secrets 页面确认这些值存在。`SUPABASE_SERVICE_ROLE_KEY` 和 `GITHUB_TOKEN` 绝对不能进入前端。
+部署后仍应在 Functions Secrets 页面确认这些值存在。`SUPABASE_SECRET_KEYS`、旧版 `SUPABASE_SERVICE_ROLE_KEY` 和 `GITHUB_TOKEN` 绝对不能进入前端。
 
 ## GitHub Fine-grained Token
 
@@ -113,7 +114,8 @@ Repository permissions:
 
 ```text
 SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SECRET_KEY（推荐）
+SUPABASE_SERVICE_ROLE_KEY（旧版兼容，二选一）
 SUPABASE_STORAGE_BUCKET
 ```
 
@@ -122,6 +124,8 @@ SUPABASE_STORAGE_BUCKET
 ```text
 pdf-jobs
 ```
+
+优先在 Supabase `Settings → API Keys → Secret keys` 创建 `sb_secret_...`，并填入 `SUPABASE_SECRET_KEY`。只有需要兼容旧项目时才改用 Legacy API Keys 中的 `service_role`，填入 `SUPABASE_SERVICE_ROLE_KEY`。两者不需要同时设置。
 
 ## Cloudflare Pages
 
@@ -193,9 +197,9 @@ Markdown 固定复制为 `work/source/input.md`，因此压缩包中的相对图
 - 上传被 RLS 拒绝：检查迁移、Bucket 名称和对象路径是否完全一致。
 - workflow dispatch 返回 `404`：确认 `build-pdf-api.yml` 已合并到默认分支，并检查 Token 的 Actions 权限。
 - Actions 下载 `404`：检查是否上传了 `input.md`，以及 Bucket 是否为 `pdf-jobs`。
-- 状态不变化：检查 Actions 中的三个 Supabase Secrets，尤其是 service role key。
+- 状态不变化：检查 Actions 中的三个 Supabase Secrets，尤其是 `SUPABASE_SECRET_KEY` 或旧版 `SUPABASE_SERVICE_ROLE_KEY`。
 - Realtime 无事件：确认迁移已将 `pdf_jobs` 加入 `supabase_realtime` publication；轮询仍会兜底。
 
-> `SUPABASE_SERVICE_ROLE_KEY` 绝对不能暴露在浏览器端。
+> `SUPABASE_SECRET_KEY` 和旧版 `SUPABASE_SERVICE_ROLE_KEY` 绝对不能暴露在浏览器端。
 >
 > `GITHUB_TOKEN` 绝对不能放在任何 `VITE_*` 前端环境变量中。

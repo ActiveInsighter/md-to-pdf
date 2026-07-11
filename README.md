@@ -39,7 +39,7 @@ Cloudflare Pages 前端
 
 详细部署文档：[`docs/supabase-pdf-service.md`](docs/supabase-pdf-service.md)。
 
-> `SUPABASE_SERVICE_ROLE_KEY` 绝对不能暴露在浏览器端。
+> `SUPABASE_SECRET_KEY` 和旧版 `SUPABASE_SERVICE_ROLE_KEY` 绝对不能暴露在浏览器端。
 >
 > `GITHUB_TOKEN` 绝对不能放在任何 `VITE_*` 前端环境变量中。
 
@@ -213,6 +213,7 @@ SUPABASE_STORAGE_BUCKET=pdf-jobs
 ```text
 SUPABASE_URL
 SUPABASE_ANON_KEY
+SUPABASE_SECRET_KEYS
 SUPABASE_SERVICE_ROLE_KEY
 ```
 
@@ -224,7 +225,8 @@ SUPABASE_SERVICE_ROLE_KEY
 
 ```text
 SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SECRET_KEY（推荐）
+SUPABASE_SERVICE_ROLE_KEY（旧版兼容，二选一）
 SUPABASE_STORAGE_BUCKET
 ```
 

@@ -4,7 +4,9 @@ import path from 'node:path';
 const args = process.argv.slice(2);
 const command = args.shift();
 const SUPABASE_URL = requiredEnv('SUPABASE_URL').replace(/\/$/, '');
-const SERVICE_KEY = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+const SERVICE_KEY = String(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+if (!SERVICE_KEY) throw new Error('Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY');
+const USE_LEGACY_BEARER = !SERVICE_KEY.startsWith('sb_secret_');
 const BUCKET = requiredEnv('SUPABASE_STORAGE_BUCKET');
 const JOB_ID = requiredEnv('JOB_ID');
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -39,7 +41,7 @@ function encodedObjectPath(filename) {
 function headers(extra = {}) {
   return {
     apikey: SERVICE_KEY,
-    Authorization: `Bearer ${SERVICE_KEY}`,
+    ...(USE_LEGACY_BEARER ? { Authorization: `Bearer ${SERVICE_KEY}` } : {}),
     ...extra,
   };
 }

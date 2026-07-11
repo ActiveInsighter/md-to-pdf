@@ -1,5 +1,7 @@
 const SUPABASE_URL = requiredEnv('SUPABASE_URL').replace(/\/$/, '');
-const SERVICE_KEY = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+const SERVICE_KEY = String(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+if (!SERVICE_KEY) throw new Error('Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY');
+const USE_LEGACY_BEARER = !SERVICE_KEY.startsWith('sb_secret_');
 const BUCKET = requiredEnv('SUPABASE_STORAGE_BUCKET');
 
 function requiredEnv(name) {
@@ -11,7 +13,7 @@ function requiredEnv(name) {
 function headers(extra = {}) {
   return {
     apikey: SERVICE_KEY,
-    Authorization: `Bearer ${SERVICE_KEY}`,
+    ...(USE_LEGACY_BEARER ? { Authorization: `Bearer ${SERVICE_KEY}` } : {}),
     ...extra,
   };
 }

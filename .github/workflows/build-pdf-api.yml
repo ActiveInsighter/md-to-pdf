@@ -23,6 +23,7 @@ jobs:
     env:
       JOB_ID: ${{ inputs.job_id }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
       PUPPETEER_SKIP_DOWNLOAD: 'true'
@@ -45,12 +46,16 @@ jobs:
             echo "Invalid job_id format"
             exit 1
           }
-          for name in SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SUPABASE_STORAGE_BUCKET; do
+          for name in SUPABASE_URL SUPABASE_STORAGE_BUCKET; do
             [[ -n "${!name:-}" ]] || {
               echo "Missing required secret: $name"
               exit 1
             }
           done
+          [[ -n "${SUPABASE_SECRET_KEY:-}" || -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]] || {
+            echo "Missing SUPABASE_SECRET_KEY (preferred) or SUPABASE_SERVICE_ROLE_KEY (legacy)"
+            exit 1
+          }
 
       - name: Setup Node
         uses: actions/setup-node@v4
