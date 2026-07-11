@@ -59,8 +59,21 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Lint frontend
+        id: lint
         working-directory: frontend
-        run: npm run lint
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee lint-output.txt
+
+      - name: Upload lint diagnostic
+        if: failure() && steps.lint.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-lint-${{ github.run_id }}
+          path: frontend/lint-output.txt
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Typecheck frontend
         working-directory: frontend
