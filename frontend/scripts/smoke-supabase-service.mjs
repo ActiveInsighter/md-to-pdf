@@ -15,6 +15,20 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+async function functionErrorMessage(name, error) {
+  const pieces = [`${name} failed`, error instanceof Error ? error.message : String(error)]
+  const response = error && typeof error === 'object' ? error.context : null
+  if (response && typeof response.clone === 'function') {
+    try {
+      const text = await response.clone().text()
+      if (text) pieces.push(text.slice(0, 500))
+    } catch {
+      // The response body may already be consumed.
+    }
+  }
+  return pieces.filter(Boolean).join(': ')
+}
+
 const supabaseUrl = requiredEnv('SUPABASE_URL').replace(/\/$/, '')
 const publicKey = requiredEnv('VITE_SUPABASE_ANON_KEY')
 const serviceKey = String(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
@@ -96,7 +110,7 @@ async function main() {
       hasAssets: false,
     },
   })
-  if (createJobError) throw createJobError
+  if (createJobError) throw new Error(await functionErrorMessage('create-pdf-job', createJobError))
   jobId = String(createdJob?.jobId || '')
   assert(/^[0-9a-f-]{36}$/i.test(jobId), 'create-pdf-job returned an invalid job ID')
   assert(createdJob?.inputPath === `jobs/${jobId}/input.md`, 'create-pdf-job returned an unexpected input path')
@@ -126,7 +140,15 @@ async function main() {
   const { data: startedJob, error: startJobError } = await client.functions.invoke('start-pdf-job', {
     body: { jobId },
   })
-  if (startJobError) throw startJobError
+  if (startJobError) {
+    const { data: failedJob } = await admin
+      .from('pdf_jobs')
+      .select('status,error_message')
+      .eq('id', jobId)
+      .maybeSingle()
+    const details = await functionErrorMessage('start-pdf-job', startJobError)
+    throw new Error(`${details}; job=${JSON.stringify(failedJob)}`)
+  }
   assert(['queued', 'building', 'uploading', 'completed'].includes(String(startedJob?.status || '')), 'start-pdf-job returned an unexpected status')
   console.log('5/7 GitHub Actions build dispatched')
 
@@ -149,7 +171,7 @@ async function main() {
   const { data: download, error: downloadError } = await client.functions.invoke('get-pdf-download', {
     body: { jobId },
   })
-  if (downloadError) throw downloadError
+  if (downloadError) throw new Error(await functionErrorMessage('get-pdf-download', downloadError))
   assert(download?.downloadUrl, 'get-pdf-download returned no signed URL')
 
   const response = await fetch(download.downloadUrl)
