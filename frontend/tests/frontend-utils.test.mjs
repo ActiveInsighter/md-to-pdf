@@ -27,6 +27,7 @@ async function importTypeScriptModule(relativePath) {
 const uploadFiles = await importTypeScriptModule('../src/utils/uploadFiles.ts')
 const pdfJobStatus = await importTypeScriptModule('../src/utils/pdfJobStatus.ts')
 const realtimePolling = await importTypeScriptModule('../src/utils/realtimePolling.ts')
+const submissionRecovery = await importTypeScriptModule('../src/utils/submissionRecovery.ts')
 
 function file(name, size) {
   return { name, size }
@@ -113,6 +114,63 @@ test('Terminal refresh keys are stable for duplicate final updates', () => {
   assert.equal(
     pdfJobStatus.getTerminalPdfJobRefreshKey({ id: 'job-1', status: 'failed' }),
     'job-1:failed',
+  )
+})
+
+test('Submission recovery only accepts reusable jobs with valid storage paths', () => {
+  assert.deepEqual(
+    submissionRecovery.getSubmissionRecovery({
+      id: 'job-created',
+      status: 'created',
+      input_path: 'jobs/job-created/input.md',
+      assets_path: 'jobs/job-created/assets.zip',
+      has_assets: true,
+    }),
+    {
+      jobId: 'job-created',
+      status: 'created',
+      inputPath: 'jobs/job-created/input.md',
+      assetsPath: 'jobs/job-created/assets.zip',
+      hasAssets: true,
+    },
+  )
+
+  assert.deepEqual(
+    submissionRecovery.getSubmissionRecovery({
+      id: 'job-uploaded',
+      status: 'uploaded',
+      input_path: 'jobs/job-uploaded/input.md',
+      assets_path: null,
+      has_assets: false,
+    }),
+    {
+      jobId: 'job-uploaded',
+      status: 'uploaded',
+      inputPath: 'jobs/job-uploaded/input.md',
+      assetsPath: null,
+      hasAssets: false,
+    },
+  )
+
+  assert.equal(
+    submissionRecovery.getSubmissionRecovery({
+      id: 'job-invalid',
+      status: 'created',
+      input_path: 'jobs/job-invalid/input.md',
+      assets_path: null,
+      has_assets: true,
+    }),
+    null,
+  )
+  assert.equal(
+    submissionRecovery.getSubmissionRecovery({
+      id: 'job-failed',
+      status: 'failed',
+      input_path: 'jobs/job-failed/input.md',
+      assets_path: null,
+      has_assets: false,
+    }),
+    null,
   )
 })
 
