@@ -30,6 +30,7 @@ export function PdfBuilderPage() {
     assets,
     job,
     history,
+    historyLoading,
     busy,
     progress,
     uploadPhase,
@@ -88,7 +89,12 @@ export function PdfBuilderPage() {
           <PdfJobStatus job={job} onDownload={() => void download()} onNew={reset} />
         </div>
         <aside className="workspace-sidebar" aria-label="任务历史">
-          <PdfJobHistory jobs={history} onSelect={selectJob} />
+          <PdfJobHistory
+            jobs={history}
+            loading={historyLoading}
+            selectedJobId={job?.id ?? null}
+            onSelect={selectJob}
+          />
         </aside>
       </div>
     </AppShell>
