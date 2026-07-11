@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto'
+import { writeFile } from 'node:fs/promises'
 import { createClient } from '@supabase/supabase-js'
 
 function requiredEnv(name) {
@@ -29,6 +30,10 @@ async function functionErrorMessage(name, error) {
   return pieces.filter(Boolean).join(': ')
 }
 
+async function writeDiagnostic(body) {
+  await writeFile('smoke-diagnostic.json', `${JSON.stringify(body, null, 2)}\n`, 'utf8')
+}
+
 const supabaseUrl = requiredEnv('SUPABASE_URL').replace(/\/$/, '')
 const publicKey = requiredEnv('VITE_SUPABASE_ANON_KEY')
 const serviceKey = String(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
@@ -47,6 +52,7 @@ const email = `md-to-pdf-ci-${runId}-${randomBytes(4).toString('hex')}@example.i
 const password = `${randomBytes(24).toString('base64url')}Aa1!`
 let userId = ''
 let jobId = ''
+let stage = 'initializing'
 
 async function cleanup() {
   const cleanupErrors = []
@@ -85,9 +91,11 @@ async function cleanup() {
   if (cleanupErrors.length > 0) {
     console.warn(cleanupErrors.join('; '))
   }
+  return cleanupErrors
 }
 
 async function main() {
+  stage = 'create-user'
   const { data: createdUser, error: createUserError } = await admin.auth.admin.createUser({
     email,
     password,
@@ -98,11 +106,13 @@ async function main() {
   assert(userId, 'Admin user creation returned no user ID')
   console.log('1/7 Temporary Supabase user created')
 
+  stage = 'password-login'
   const { data: login, error: loginError } = await client.auth.signInWithPassword({ email, password })
   if (loginError) throw loginError
   assert(login.session?.access_token, 'Password login returned no session')
   console.log('2/7 Password login succeeded')
 
+  stage = 'create-pdf-job'
   const { data: createdJob, error: createJobError } = await client.functions.invoke('create-pdf-job', {
     body: {
       theme: 'chatgpt-light',
@@ -116,6 +126,7 @@ async function main() {
   assert(createdJob?.inputPath === `jobs/${jobId}/input.md`, 'create-pdf-job returned an unexpected input path')
   console.log('3/7 PDF job created')
 
+  stage = 'upload-markdown'
   const markdown = [
     '# Supabase PDF smoke test',
     '',
@@ -137,6 +148,7 @@ async function main() {
   if (uploadError) throw uploadError
   console.log('4/7 Markdown uploaded through authenticated Storage policy')
 
+  stage = 'start-pdf-job'
   const { data: startedJob, error: startJobError } = await client.functions.invoke('start-pdf-job', {
     body: { jobId },
   })
@@ -152,6 +164,7 @@ async function main() {
   assert(['queued', 'building', 'uploading', 'completed'].includes(String(startedJob?.status || '')), 'start-pdf-job returned an unexpected status')
   console.log('5/7 GitHub Actions build dispatched')
 
+  stage = 'wait-for-build'
   const deadline = Date.now() + 12 * 60 * 1000
   let job = null
   while (Date.now() < deadline) {
@@ -168,6 +181,7 @@ async function main() {
   assert(job?.status === 'completed', 'Timed out waiting for PDF job completion')
   console.log('6/7 PDF build completed')
 
+  stage = 'download-pdf'
   const { data: download, error: downloadError } = await client.functions.invoke('get-pdf-download', {
     body: { jobId },
   })
@@ -180,11 +194,30 @@ async function main() {
   assert(bytes.length > 4, 'Downloaded PDF is empty')
   assert(new TextDecoder().decode(bytes.slice(0, 4)) === '%PDF', 'Downloaded file does not have a PDF header')
   console.log(`7/7 Signed PDF download succeeded (${bytes.length} bytes)`)
+
+  stage = 'completed'
+  return { pdfBytes: bytes.length }
 }
 
+let failure = null
+let result = null
 try {
-  await main()
+  result = await main()
   console.log('Supabase PDF service smoke test passed')
+} catch (error) {
+  failure = error
+  console.error(error instanceof Error ? error.message : String(error))
 } finally {
-  await cleanup()
+  const cleanupErrors = await cleanup()
+  await writeDiagnostic({
+    ok: failure === null,
+    runId,
+    stage,
+    jobId: jobId || null,
+    result,
+    error: failure instanceof Error ? failure.message : failure ? String(failure) : null,
+    cleanupErrors,
+  })
 }
+
+if (failure) process.exit(1)
