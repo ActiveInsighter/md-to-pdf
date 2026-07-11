@@ -6,6 +6,7 @@ on:
       - main
       - 'agent/**'
     paths:
+      - '.github/workflows/build-pdf-api.yml'
       - '.github/workflows/smoke-supabase-service.yml'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
