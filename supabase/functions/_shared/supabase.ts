@@ -39,7 +39,7 @@ export async function requireUser(req: Request): Promise<User> {
 }
 
 export function storageBucket(): string {
-  return Deno.env.get('SUPABASE_STORAGE_BUCKET')?.trim() || 'pdf-jobs'
+  return Deno.env.get('PDF_STORAGE_BUCKET')?.trim() || 'pdf-jobs'
 }
 
 export function safeErrorMessage(error: unknown): string {
