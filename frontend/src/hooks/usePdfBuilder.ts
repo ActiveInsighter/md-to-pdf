@@ -19,7 +19,7 @@ import {
   getTerminalPdfJobRefreshKey,
   isTerminalPdfJobStatus,
 } from '../utils/pdfJobStatus'
-import { shouldApplyPdfJobUpdate } from '../utils/pdfJobUpdates'
+import { mergePdfJobHistory, shouldApplyPdfJobUpdate } from '../utils/pdfJobUpdates'
 import {
   FALLBACK_POLL_INTERVAL_MS,
   getPdfJobPollInterval,
@@ -43,6 +43,8 @@ export function usePdfBuilder() {
   const [job, setJob] = useState<PdfJob | null>(null)
   const [history, setHistory] = useState<PdfJob[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [historySyncedAt, setHistorySyncedAt] = useState<number | null>(null)
+  const [historyError, setHistoryError] = useState('')
   const [submissionRecovery, setSubmissionRecovery] = useState<SubmissionRecovery | null>(null)
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -82,14 +84,16 @@ export function usePdfBuilder() {
 
     const attempt = ++historyAttempt.current
     setHistoryLoading(true)
+    setHistoryError('')
 
     try {
       const nextHistory = await listPdfJobs()
       if (attempt !== historyAttempt.current) return
-      setHistory(nextHistory)
+      setHistory((current) => mergePdfJobHistory(current, nextHistory))
+      setHistorySyncedAt(Date.now())
     } catch (cause) {
       if (attempt !== historyAttempt.current) return
-      setError(readableError(cause))
+      setHistoryError(readableError(cause))
     } finally {
       if (attempt === historyAttempt.current) setHistoryLoading(false)
     }
@@ -100,6 +104,7 @@ export function usePdfBuilder() {
 
     jobRef.current = next
     setJob(next)
+    setHistory((current) => mergePdfJobHistory(current, [next]))
 
     const nextRecovery = getSubmissionRecovery(next)
     setSubmissionRecovery(nextRecovery)
@@ -168,6 +173,8 @@ export function usePdfBuilder() {
     setAssets(null)
     setProgress(0)
     setUploadPhase('idle')
+    setHistorySyncedAt(null)
+    setHistoryError('')
 
     if (!userId) {
       setHistory([])
@@ -485,6 +492,8 @@ export function usePdfBuilder() {
     job,
     history,
     historyLoading,
+    historySyncedAt,
+    historyError,
     submissionRecovery,
     busy,
     progress,
@@ -493,6 +502,7 @@ export function usePdfBuilder() {
     setMarkdown,
     setAssets,
     retryAuth: initializeAuth,
+    refreshHistory,
     start,
     download,
     reset,
