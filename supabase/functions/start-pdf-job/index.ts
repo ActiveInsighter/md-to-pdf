@@ -90,13 +90,30 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ ref, inputs: { job_id: jobId } }),
     })
     if (!response.ok) {
+      const githubRequestId = response.headers.get('x-github-request-id') || null
+      const githubBody = (await response.text()).replace(/\s+/g, ' ').slice(0, 300)
+      console.error('GitHub workflow dispatch failed', JSON.stringify({
+        status: response.status,
+        requestId: githubRequestId,
+        owner,
+        repo,
+        workflow,
+        ref,
+        body: githubBody,
+      }))
+
+      const errorMessage = `GitHub Actions 排队失败（HTTP ${response.status}${githubRequestId ? `，请求 ${githubRequestId}` : ''}）。`
       await admin.from('pdf_jobs').update({
         status: 'failed',
-        error_message: `GitHub Actions 排队失败（HTTP ${response.status}）。`,
+        error_message: errorMessage,
         completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }).eq('id', jobId)
-      return json({ error: 'GitHub Actions 排队失败。' }, 502)
+      return json({
+        error: 'GitHub Actions 排队失败。',
+        githubStatus: response.status,
+        githubRequestId,
+      }, 502)
     }
 
     return json({ jobId, status: 'queued' }, 202)
@@ -107,7 +124,7 @@ Deno.serve(async (req) => {
     if (message === 'MARKDOWN_TOO_LARGE') return json({ error: 'Markdown 超过 10 MiB 限制。' }, 413)
     if (message === 'ASSETS_MISSING') return json({ error: '任务声明了资源文件，但 assets.zip 尚未上传。' }, 400)
     if (message === 'ASSETS_TOO_LARGE') return json({ error: 'assets.zip 超过 50 MiB 限制。' }, 413)
-    console.error('start-pdf-job failed')
+    console.error('start-pdf-job failed', message)
     if (jobId && UUID_RE.test(jobId)) {
       await admin.from('pdf_jobs').update({
         status: 'failed',
