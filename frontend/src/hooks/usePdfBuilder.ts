@@ -13,10 +13,9 @@ import {
 import { supabase } from '../lib/supabase'
 import type { AuthSessionStatus } from '../types/authSession'
 import type { PdfJob } from '../types/pdfJob'
+import type { UploadPhase } from '../types/upload'
 import { isTerminalPdfJobStatus } from '../utils/pdfJobStatus'
-
-const MAX_MARKDOWN_BYTES = 10 * 1024 * 1024
-const MAX_ASSETS_BYTES = 50 * 1024 * 1024
+import { validateAssetsFile, validateMarkdownFile } from '../utils/uploadFiles'
 
 function activeJobKey(userId: string): string {
   return `md-to-pdf-active-job:${userId}`
@@ -32,6 +31,7 @@ export function usePdfBuilder() {
   const [history, setHistory] = useState<PdfJob[]>([])
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle')
   const [error, setError] = useState('')
   const authAttempt = useRef(0)
 
@@ -111,6 +111,7 @@ export function usePdfBuilder() {
       setMarkdown(null)
       setAssets(null)
       setProgress(0)
+      setUploadPhase('idle')
       return
     }
 
@@ -141,44 +142,57 @@ export function usePdfBuilder() {
   }, [applyJobUpdate, job?.id, job?.status, loadJob, userId])
 
   const start = useCallback(async () => {
-    if (!markdown || !userId) return
+    if (!markdown || !userId || uploadPhase === 'submitted') return
 
-    if (markdown.size <= 0 || markdown.size > MAX_MARKDOWN_BYTES) {
-      setError('Markdown 必须大于 0 且不超过 10 MiB。')
+    const markdownError = validateMarkdownFile(markdown)
+    if (markdownError) {
+      setError(markdownError)
       return
     }
-    if (assets && (assets.size <= 0 || assets.size > MAX_ASSETS_BYTES)) {
-      setError('assets.zip 必须大于 0 且不超过 50 MiB。')
-      return
+
+    if (assets) {
+      const assetsError = validateAssetsFile(assets)
+      if (assetsError) {
+        setError(assetsError)
+        return
+      }
     }
 
     setBusy(true)
     setError('')
     setProgress(5)
+    setUploadPhase('creating')
 
     try {
       const created = await createPdfJob(Boolean(assets))
       localStorage.setItem(activeJobKey(userId), created.jobId)
-      setProgress(20)
 
+      setProgress(20)
+      setUploadPhase('uploading-markdown')
       await uploadInput(created.inputPath, markdown)
-      setProgress(assets ? 55 : 85)
 
       if (assets && created.assetsPath) {
+        setProgress(55)
+        setUploadPhase('uploading-assets')
         await uploadAssets(created.assetsPath, assets)
       }
 
       setProgress(85)
+      setUploadPhase('starting')
       await startPdfJob(created.jobId)
+
       setProgress(100)
+      setUploadPhase('submitted')
       await loadJob(created.jobId)
       await refreshHistory()
     } catch (cause) {
       setError(readableError(cause))
+      setProgress(0)
+      setUploadPhase('idle')
     } finally {
       setBusy(false)
     }
-  }, [assets, loadJob, markdown, refreshHistory, userId])
+  }, [assets, loadJob, markdown, refreshHistory, uploadPhase, userId])
 
   const download = useCallback(async () => {
     if (!job) return
@@ -196,6 +210,7 @@ export function usePdfBuilder() {
     setMarkdown(null)
     setAssets(null)
     setProgress(0)
+    setUploadPhase('idle')
     setError('')
   }, [userId])
 
@@ -220,6 +235,7 @@ export function usePdfBuilder() {
     history,
     busy,
     progress,
+    uploadPhase,
     error,
     setMarkdown,
     setAssets,
