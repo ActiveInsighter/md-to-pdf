@@ -1,29 +1,31 @@
 {
   "version": 1,
-  "status": "success",
-  "generated_at": "2026-07-11T08:36:36.407Z",
-  "run_id": "29146353727",
+  "status": "warning",
+  "generated_at": "2026-07-11T09:17:59.378Z",
+  "run_id": "29147463398",
   "artifact_name": "obsidian-style-pdf",
   "scan_root": "dist",
   "output_count": 1,
   "failure_count": 0,
-  "warning_count": 0,
+  "warning_count": 1,
   "outputs": [
     {
       "pdf": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.pdf",
       "html": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.html",
       "preview": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.preview.png",
       "quality": "dist/queue/2026/07/2026-07-11/408模拟选择题详细解答_合并版_600题.quality.json",
-      "bytes": 25735063,
-      "pages": 315,
-      "quality_status": "success",
+      "bytes": 25778822,
+      "pages": 313,
+      "quality_status": "warning",
       "selected_preview_pages": [
-        39,
-        175,
-        293,
-        297
+        117,
+        169,
+        232,
+        266
       ],
-      "warnings": []
+      "warnings": [
+        "overflow"
+      ]
     }
   ]
 }
