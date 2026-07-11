@@ -6,7 +6,8 @@ const eventName = process.env.GITHUB_EVENT_NAME || '';
 const eventPath = process.env.GITHUB_EVENT_PATH || '';
 const apiBase = process.env.GITHUB_API_URL || 'https://api.github.com';
 const dryRun = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
-const maxPulls = Number(process.env.MAX_PULLS || 100);
+const maxPullsRaw = process.env.MAX_PULLS || '100';
+const maxPulls = Number(maxPullsRaw);
 
 if (!token) {
   throw new Error('GITHUB_TOKEN or GH_TOKEN is required.');
@@ -16,12 +17,11 @@ if (!repository || !repository.includes('/')) {
   throw new Error('GITHUB_REPOSITORY must be owner/repo.');
 }
 
-const protectedBranches = new Set([
-  'main',
-  'master',
-  'output',
-  'gh-pages'
-]);
+if (!Number.isInteger(maxPulls) || maxPulls < 1 || maxPulls > 500) {
+  throw new Error(`MAX_PULLS must be an integer between 1 and 500; received ${maxPullsRaw}.`);
+}
+
+const protectedBranches = new Set(['main', 'master', 'output', 'gh-pages']);
 
 const cleanupPatterns = [
   /^feature\//,
@@ -32,7 +32,7 @@ const cleanupPatterns = [
   /^export\//,
   /^chore\//,
   /^patch[\/-]/,
-  /^ai-export-/
+  /^ai-export-/,
 ];
 
 function apiPath(path) {
@@ -46,9 +46,9 @@ async function request(method, path, body = null, allow404 = false) {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
-      ...(body ? { 'Content-Type': 'application/json' } : {})
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
     },
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(body) : undefined,
   });
 
   if (allow404 && response.status === 404) return null;
@@ -75,27 +75,34 @@ function describeBranch(branch) {
   return shouldCleanupBranch(branch) ? 'eligible' : 'skipped';
 }
 
-async function branchExists(branch) {
+async function getBranchRef(branch) {
   const encoded = encodeBranchRef(branch);
-  const result = await request('GET', `/repos/${repository}/git/ref/heads/${encoded}`, null, true);
-  return Boolean(result);
+  return request('GET', `/repos/${repository}/git/ref/heads/${encoded}`, null, true);
 }
 
-async function deleteBranch(branch, reason) {
+async function deleteBranch(branch, expectedSha, reason) {
   const encoded = encodeBranchRef(branch);
-  const exists = await branchExists(branch);
-  if (!exists) {
+  const ref = await getBranchRef(branch);
+  if (!ref) {
     console.log(`Already gone: ${branch}`);
     return { branch, status: 'missing', reason };
   }
 
+  const currentSha = String(ref.object?.sha || '');
+  if (!expectedSha || !currentSha || currentSha !== expectedSha) {
+    console.log(
+      `Skipping ${branch}: remote SHA ${currentSha || 'unknown'} does not match merged PR head ${expectedSha || 'unknown'}.`,
+    );
+    return { branch, status: 'diverged', reason: 'remote branch changed after merge' };
+  }
+
   if (dryRun) {
-    console.log(`[dry-run] Would delete ${branch} (${reason})`);
+    console.log(`[dry-run] Would delete ${branch} at ${currentSha} (${reason})`);
     return { branch, status: 'dry-run', reason };
   }
 
   await request('DELETE', `/repos/${repository}/git/refs/heads/${encoded}`);
-  console.log(`Deleted ${branch} (${reason})`);
+  console.log(`Deleted ${branch} at ${currentSha} (${reason})`);
   return { branch, status: 'deleted', reason };
 }
 
@@ -123,7 +130,13 @@ async function cleanupPullRequest(pr, reasonPrefix = 'merged pull request') {
     return { branch, status: 'skipped', reason: 'not eligible by policy' };
   }
 
-  return deleteBranch(branch, `${reasonPrefix} #${pr.number}`);
+  const expectedSha = String(pr.head?.sha || '');
+  if (!expectedSha) {
+    console.log(`Skipping ${branch}: merged PR head SHA is unavailable.`);
+    return { branch, status: 'skipped', reason: 'missing merged PR head SHA' };
+  }
+
+  return deleteBranch(branch, expectedSha, `${reasonPrefix} #${pr.number}`);
 }
 
 async function cleanupEventPullRequest() {
@@ -147,7 +160,10 @@ async function listClosedPullRequests() {
   let page = 1;
 
   while (all.length < maxPulls) {
-    const pulls = await request('GET', `/repos/${repository}/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=${page}`);
+    const pulls = await request(
+      'GET',
+      `/repos/${repository}/pulls?state=closed&sort=updated&direction=desc&per_page=100&page=${page}`,
+    );
     if (!Array.isArray(pulls) || pulls.length === 0) break;
     all.push(...pulls);
     if (pulls.length < 100) break;
@@ -174,11 +190,13 @@ async function main() {
   console.log(`Repository: ${repository}`);
   console.log(`Event: ${eventName || 'manual/local'}`);
   console.log(`Dry run: ${dryRun}`);
+  console.log(`Max closed pull requests: ${maxPulls}`);
   console.log(`Protected branches: ${[...protectedBranches].join(', ')}`);
 
-  const results = eventName === 'pull_request'
-    ? await cleanupEventPullRequest()
-    : await cleanupRecentMergedPullRequests();
+  const results =
+    eventName === 'pull_request'
+      ? await cleanupEventPullRequest()
+      : await cleanupRecentMergedPullRequests();
 
   const summary = results.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
