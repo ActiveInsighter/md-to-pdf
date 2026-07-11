@@ -76,7 +76,7 @@ export function PdfUpload({
       >
         <span style={{ width: `${progress}%` }} />
       </div>
-      <p id="pdf-upload-status" className="sr-only" aria-live="polite" aria-atomic="true">
+      <p id="pdf-upload-status" className="muted" aria-live="polite" aria-atomic="true">
         {progressText}
       </p>
       <button type="button" disabled={busy || !markdown} onClick={onStart} aria-describedby="pdf-upload-status">
