@@ -1,0 +1,190 @@
+name: Validate branch PDF build
+
+on:
+  push:
+    branches:
+      - 'agent/repository-hygiene-smoke-command'
+    paths:
+      - '.github/workflows/validate-branch-pdf-build.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: validate-branch-pdf-build
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare isolated Supabase job
+        id: prepare
+        working-directory: frontend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFile } from 'node:fs/promises'
+          import { randomBytes, randomUUID } from 'node:crypto'
+          import { createClient } from '@supabase/supabase-js'
+
+          const url = String(process.env.SUPABASE_URL || '').trim()
+          const key = String(
+            process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          ).trim()
+          const bucket = String(process.env.SUPABASE_STORAGE_BUCKET || 'pdf-jobs').trim()
+          if (!url || !key) throw new Error('Missing Supabase admin configuration')
+
+          const admin = createClient(url, key, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          })
+          const jobId = randomUUID()
+          const email = `md-to-pdf-branch-${process.env.GITHUB_RUN_ID}-${randomBytes(4).toString('hex')}@example.invalid`
+          const password = `${randomBytes(24).toString('base64url')}Aa1!`
+          const { data: created, error: userError } = await admin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+          })
+          if (userError) throw userError
+          const userId = created.user?.id
+          if (!userId) throw new Error('No user ID returned')
+
+          const inputPath = `jobs/${jobId}/input.md`
+          const { error: jobError } = await admin.from('pdf_jobs').insert({
+            id: jobId,
+            user_id: userId,
+            status: 'queued',
+            input_path: inputPath,
+            assets_path: null,
+            has_assets: false,
+            theme: 'chatgpt-light',
+            options: { breaks: true, toc: true },
+            attempt_count: 1,
+            expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+          })
+          if (jobError) throw jobError
+
+          const markdown = '# Branch workflow validation\n\n中文、公式与代码构建检查。\n\n$$E = mc^2$$\n'
+          const { error: uploadError } = await admin.storage
+            .from(bucket)
+            .upload(inputPath, new Blob([markdown], { type: 'text/markdown;charset=utf-8' }), {
+              contentType: 'text/markdown;charset=utf-8',
+              upsert: true,
+            })
+          if (uploadError) throw uploadError
+
+          await appendFile(process.env.GITHUB_OUTPUT, `job_id=${jobId}\nuser_id=${userId}\n`)
+          console.log(`Prepared isolated job ${jobId}`)
+          NODE
+
+      - name: Dispatch current branch workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_ID: ${{ steps.prepare.outputs.job_id }}
+        run: gh workflow run build-pdf-api.yml --ref "$GITHUB_REF_NAME" -f job_id="$JOB_ID"
+
+      - name: Verify PDF and clean up
+        if: always() && steps.prepare.outputs.job_id != ''
+        working-directory: frontend
+        env:
+          JOB_ID: ${{ steps.prepare.outputs.job_id }}
+          USER_ID: ${{ steps.prepare.outputs.user_id }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { createClient } from '@supabase/supabase-js'
+
+          const url = String(process.env.SUPABASE_URL || '').trim()
+          const key = String(
+            process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          ).trim()
+          const bucket = String(process.env.SUPABASE_STORAGE_BUCKET || 'pdf-jobs').trim()
+          const jobId = process.env.JOB_ID
+          const userId = process.env.USER_ID
+          const admin = createClient(url, key, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          })
+          let failure = null
+
+          try {
+            const deadline = Date.now() + 12 * 60 * 1000
+            let job = null
+            while (Date.now() < deadline) {
+              const { data, error } = await admin.from('pdf_jobs').select('*').eq('id', jobId).single()
+              if (error) throw error
+              job = data
+              console.log(`Polling branch job: ${job.status}`)
+              if (job.status === 'completed') break
+              if (job.status === 'failed' || job.status === 'expired') {
+                throw new Error(`Branch PDF job ended as ${job.status}: ${job.error_message || 'unknown error'}`)
+              }
+              await new Promise((resolve) => setTimeout(resolve, 5000))
+            }
+            if (job?.status !== 'completed') throw new Error('Timed out waiting for branch PDF build')
+            if (job.github_commit !== process.env.GITHUB_SHA) {
+              throw new Error(`Workflow used ${job.github_commit}, expected ${process.env.GITHUB_SHA}`)
+            }
+
+            const { data: output, error: downloadError } = await admin.storage
+              .from(bucket)
+              .download(`jobs/${jobId}/output.pdf`)
+            if (downloadError) throw downloadError
+            const bytes = new Uint8Array(await output.arrayBuffer())
+            if (bytes.length <= 4 || new TextDecoder().decode(bytes.slice(0, 4)) !== '%PDF') {
+              throw new Error('Branch workflow output is not a valid PDF')
+            }
+            console.log(`Validated branch PDF (${bytes.length} bytes), run ${job.github_run_id}`)
+          } catch (error) {
+            failure = error
+            console.error(error instanceof Error ? error.message : String(error))
+          } finally {
+            const { error: storageError } = await admin.storage
+              .from(bucket)
+              .remove([
+                `jobs/${jobId}/input.md`,
+                `jobs/${jobId}/assets.zip`,
+                `jobs/${jobId}/output.pdf`,
+              ])
+            if (storageError) console.warn(`Storage cleanup failed: ${storageError.message}`)
+            const { error: jobError } = await admin.from('pdf_jobs').delete().eq('id', jobId)
+            if (jobError) console.warn(`Job cleanup failed: ${jobError.message}`)
+            const { error: userError } = await admin.auth.admin.deleteUser(userId)
+            if (userError) console.warn(`User cleanup failed: ${userError.message}`)
+          }
+
+          if (failure) process.exit(1)
+          NODE
+
+      - name: Remove one-time validation workflow
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/validate-branch-pdf-build.yml
+          git commit -m 'chore: remove one-time branch PDF validation workflow'
+          git push
