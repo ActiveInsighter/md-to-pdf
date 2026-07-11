@@ -45,7 +45,12 @@ jobs:
           node-version: 24
 
       - name: Validate cleanup script syntax
-        run: node --check scripts/cleanup-merged-branches.mjs
+        run: |
+          node --check scripts/cleanup-merged-branches.mjs
+          node --check scripts/test-cleanup-merged-branches.mjs
+
+      - name: Run branch cleanup HTTP safety tests
+        run: npm run test:cleanup-branches
 
       - name: Exercise cleanup policy in dry-run mode
         env:
