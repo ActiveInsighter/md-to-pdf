@@ -139,7 +139,13 @@ export function AuthPanel() {
         </div>
       </form>
       {notice && (
-        <p id="auth-notice" className="success-text" role="status" aria-live="polite" aria-atomic="true">
+        <p
+          id="auth-notice"
+          className="success-text"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {notice}
         </p>
       )}

@@ -79,7 +79,12 @@ export function PdfUpload({
       <p id="pdf-upload-status" className="muted" aria-live="polite" aria-atomic="true">
         {progressText}
       </p>
-      <button type="button" disabled={busy || !markdown} onClick={onStart} aria-describedby="pdf-upload-status">
+      <button
+        type="button"
+        disabled={busy || !markdown}
+        onClick={onStart}
+        aria-describedby="pdf-upload-status"
+      >
         {busy ? '正在处理…' : '开始生成 PDF'}
       </button>
     </section>
