@@ -41,6 +41,60 @@ where progress_stage = 'created'
    or rendering_at is null
    or uploading_at is null;
 
+create or replace function public.sync_pdf_job_lifecycle()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare
+  lifecycle_time timestamptz := coalesce(new.updated_at, now());
+begin
+  if tg_op = 'INSERT' or new.status is distinct from old.status then
+    case new.status
+      when 'created' then
+        new.progress_percent := 0;
+        new.progress_stage := 'created';
+      when 'uploaded' then
+        new.progress_percent := greatest(new.progress_percent, 15);
+        new.progress_stage := 'input-ready';
+        new.uploaded_at := coalesce(new.uploaded_at, lifecycle_time);
+      when 'queued' then
+        new.progress_percent := greatest(new.progress_percent, 25);
+        new.progress_stage := 'queued';
+        new.uploaded_at := coalesce(new.uploaded_at, lifecycle_time);
+        new.queued_at := coalesce(new.queued_at, lifecycle_time);
+      when 'building' then
+        new.progress_percent := greatest(new.progress_percent, 35);
+        new.progress_stage := 'runner-started';
+        new.started_at := coalesce(new.started_at, lifecycle_time);
+      when 'uploading' then
+        new.progress_percent := greatest(new.progress_percent, 90);
+        new.progress_stage := 'uploading-output';
+        new.uploading_at := coalesce(new.uploading_at, lifecycle_time);
+      when 'completed' then
+        new.progress_percent := 100;
+        new.progress_stage := 'completed';
+        new.completed_at := coalesce(new.completed_at, lifecycle_time);
+      when 'failed' then
+        new.progress_stage := 'failed';
+        new.completed_at := coalesce(new.completed_at, lifecycle_time);
+      when 'expired' then
+        new.progress_percent := 100;
+        new.progress_stage := 'expired';
+      else
+        null;
+    end case;
+  end if;
+
+  return new;
+end
+$$;
+
+drop trigger if exists sync_pdf_job_lifecycle on public.pdf_jobs;
+create trigger sync_pdf_job_lifecycle
+before insert or update of status on public.pdf_jobs
+for each row execute function public.sync_pdf_job_lifecycle();
+
 comment on column public.pdf_jobs.progress_percent is 'Latest server-confirmed PDF build milestone from 0 to 100.';
 comment on column public.pdf_jobs.progress_stage is 'Machine-readable lifecycle stage reported by the upload API or GitHub Actions.';
 comment on column public.pdf_jobs.uploaded_at is 'Time when required input objects were confirmed in private storage.';
