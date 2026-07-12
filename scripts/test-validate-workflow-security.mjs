@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
@@ -90,4 +90,16 @@ test('discovers every yml and yaml workflow recursively', async () => {
   } finally {
     await rm(root, { recursive: true, force: true })
   }
+})
+
+test('repository hygiene delegates workflow security to the shared validator', async () => {
+  const source = await readFile(
+    new URL('../.github/workflows/repository-hygiene.yml', import.meta.url),
+    'utf8',
+  )
+
+  assert.match(source, /- '\.github\/workflows\/\*\*'/)
+  assert.match(source, /run: npm run validate:workflows/)
+  assert.doesNotMatch(source, /Mutable or invalid GitHub Action reference/)
+  assert.doesNotMatch(source, /read_only_checkouts=\(/)
 })
