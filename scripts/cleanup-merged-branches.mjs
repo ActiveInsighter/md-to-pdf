@@ -8,6 +8,8 @@ const apiBase = process.env.GITHUB_API_URL || 'https://api.github.com';
 const dryRun = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
 const maxPullsRaw = process.env.MAX_PULLS || '100';
 const maxPulls = Number(maxPullsRaw);
+const requestTimeoutRaw = process.env.REQUEST_TIMEOUT_MS || '15000';
+const requestTimeoutMs = Number(requestTimeoutRaw);
 
 if (!token) {
   throw new Error('GITHUB_TOKEN or GH_TOKEN is required.');
@@ -19,6 +21,10 @@ if (!repository || !repository.includes('/')) {
 
 if (!Number.isInteger(maxPulls) || maxPulls < 1 || maxPulls > 500) {
   throw new Error(`MAX_PULLS must be an integer between 1 and 500; received ${maxPullsRaw}.`);
+}
+
+if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 100 || requestTimeoutMs > 120000) {
+  throw new Error(`REQUEST_TIMEOUT_MS must be an integer between 100 and 120000; received ${requestTimeoutRaw}.`);
 }
 
 const protectedBranches = new Set(['main', 'master', 'output', 'gh-pages']);
@@ -39,17 +45,31 @@ function apiPath(path) {
   return `${apiBase}${path}`;
 }
 
+function isTimeoutError(error) {
+  return error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+}
+
 async function request(method, path, body = null, allow404 = false) {
-  const response = await fetch(apiPath(path), {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+
+  try {
+    response = await fetch(apiPath(path), {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(requestTimeoutMs),
+    });
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      throw new Error(`${method} ${path} timed out after ${requestTimeoutMs}ms`);
+    }
+    throw error;
+  }
 
   if (allow404 && response.status === 404) return null;
 
@@ -191,6 +211,7 @@ async function main() {
   console.log(`Event: ${eventName || 'manual/local'}`);
   console.log(`Dry run: ${dryRun}`);
   console.log(`Max closed pull requests: ${maxPulls}`);
+  console.log(`Request timeout: ${requestTimeoutMs}ms`);
   console.log(`Protected branches: ${[...protectedBranches].join(', ')}`);
 
   const results =
