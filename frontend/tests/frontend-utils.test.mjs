@@ -203,7 +203,8 @@ test('Pending job cancellation has UI feedback, tested helper wiring and JWT pro
   assert.match(source, /resolveCancellationRace\(user\.id/)
   assert.match(source, /cleanupCancelledJob\(job/)
   assert.match(source, /\.eq\('user_id', user\.id\)/)
-  assert.match(source, /\.in\('status', \['created', 'uploaded'\]\)/)
+  assert.match(source, /PDF_JOB_PENDING_INPUT_STATUSES/)
+  assert.match(source, /\.in\('status', \[\.\.\.PDF_JOB_PENDING_INPUT_STATUSES\]\)/)
 
   const config = await readFile(new URL('../../supabase/config.toml', import.meta.url), 'utf8')
   assert.match(config, /\[functions\.cancel-pdf-job\]\s+verify_jwt = true/)
