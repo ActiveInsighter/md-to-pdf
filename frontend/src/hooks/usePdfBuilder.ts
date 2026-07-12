@@ -14,7 +14,7 @@ import {
 import { supabase } from '../lib/supabase'
 import type { AuthSessionStatus } from '../types/authSession'
 import type { PdfJob } from '../types/pdfJob'
-import type { SubmissionRecovery, UploadPhase } from '../types/upload'
+import type { MarkdownSource, SubmissionRecovery, UploadPhase } from '../types/upload'
 import {
   getTerminalPdfJobRefreshKey,
   isTerminalPdfJobStatus,
@@ -28,6 +28,7 @@ import {
   createSubmissionRecovery,
   getSubmissionRecovery,
 } from '../utils/submissionRecovery'
+import { markdownSourceToFile } from '../utils/markdownSource'
 import { validateAssetsFile, validateMarkdownFile } from '../utils/uploadFiles'
 
 function activeJobKey(userId: string): string {
@@ -38,7 +39,7 @@ export function usePdfBuilder() {
   const [session, setSession] = useState<Session | null>(null)
   const [authStatus, setAuthStatus] = useState<AuthSessionStatus>('loading')
   const [authError, setAuthError] = useState('')
-  const [markdown, setMarkdown] = useState<File | null>(null)
+  const [markdownSource, setMarkdownSource] = useState<MarkdownSource | null>(null)
   const [assets, setAssets] = useState<File | null>(null)
   const [job, setJob] = useState<PdfJob | null>(null)
   const [history, setHistory] = useState<PdfJob[]>([])
@@ -169,7 +170,7 @@ export function usePdfBuilder() {
     jobRef.current = null
     setJob(null)
     setSubmissionRecovery(null)
-    setMarkdown(null)
+    setMarkdownSource(null)
     setAssets(null)
     setProgress(0)
     setUploadPhase('idle')
@@ -255,14 +256,15 @@ export function usePdfBuilder() {
 
     const recovery = submissionRecovery
     const needsUploads = !recovery || recovery.status === 'created'
+    const markdownFile = markdownSource ? markdownSourceToFile(markdownSource) : null
 
-    if (needsUploads && !markdown) {
-      setError('请选择 Markdown 文件。')
+    if (needsUploads && !markdownFile) {
+      setError('请选择 Markdown 文件或粘贴 Markdown 文本。')
       return
     }
 
-    if (needsUploads && markdown) {
-      const markdownError = validateMarkdownFile(markdown)
+    if (needsUploads && markdownFile) {
+      const markdownError = validateMarkdownFile(markdownFile)
       if (markdownError) {
         setError(markdownError)
         return
@@ -296,7 +298,7 @@ export function usePdfBuilder() {
 
     try {
       if (!target) {
-        const created = await createPdfJob(Boolean(assets))
+        const created = await createPdfJob(Boolean(assets), markdownFile!.name)
         target = createSubmissionRecovery(created, Boolean(assets))
         setSubmissionRecovery(target)
         localStorage.setItem(activeJobKey(userId), target.jobId)
@@ -307,7 +309,7 @@ export function usePdfBuilder() {
       if (target.status === 'created') {
         setProgress(20)
         setUploadPhase('uploading-markdown')
-        await uploadInput(target.inputPath, markdown!)
+        await uploadInput(target.inputPath, markdownFile!)
 
         if (target.hasAssets && target.assetsPath && assets) {
           setProgress(55)
@@ -373,7 +375,7 @@ export function usePdfBuilder() {
     assets,
     busy,
     loadJob,
-    markdown,
+    markdownSource,
     refreshHistory,
     submissionRecovery,
     uploadPhase,
@@ -396,7 +398,7 @@ export function usePdfBuilder() {
     jobRef.current = null
     setJob(null)
     setSubmissionRecovery(null)
-    setMarkdown(null)
+    setMarkdownSource(null)
     setAssets(null)
     setProgress(0)
     setUploadPhase('idle')
@@ -487,7 +489,7 @@ export function usePdfBuilder() {
     session,
     authStatus,
     authError,
-    markdown,
+    markdownSource,
     assets,
     job,
     history,
@@ -499,7 +501,7 @@ export function usePdfBuilder() {
     progress,
     uploadPhase,
     error,
-    setMarkdown,
+    setMarkdownSource,
     setAssets,
     retryAuth: initializeAuth,
     refreshHistory,
