@@ -6,6 +6,11 @@ const WORKFLOW_DIR = '.github/workflows'
 const CHECKOUT_ACTION = 'actions/checkout'
 const SHA_REF_RE = /^[0-9a-f]{40}$/
 const DOCKER_DIGEST_RE = /@sha256:[0-9a-f]{64}$/
+const PERMISSION_RANK = new Map([
+  ['none', 0],
+  ['read', 1],
+  ['write', 2],
+])
 
 const ALLOWED_WRITE_PERMISSIONS = new Map([
   ['.github/workflows/build-pdf.yml', new Set(['contents'])],
@@ -43,12 +48,66 @@ export async function discoverWorkflowFiles(directory = WORKFLOW_DIR) {
   return files.sort()
 }
 
+function parsePermissionMap(
+  lines,
+  startIndex,
+  blockIndent,
+  relativePath,
+  errors,
+  context,
+  { allowEmpty = false } = {},
+) {
+  const header = lines[startIndex].trim()
+  if (/^permissions:\s*\{\}\s*(?:#.*)?$/.test(header)) {
+    if (!allowEmpty) {
+      errors.push(`${relativePath}:${startIndex + 1}: ${context} permissions map cannot be empty`)
+    }
+    return new Map()
+  }
+
+  if (!/^permissions:\s*(?:#.*)?$/.test(header)) {
+    errors.push(
+      `${relativePath}:${startIndex + 1}: ${context} permissions must use an explicit map or {}`,
+    )
+    return new Map()
+  }
+
+  const permissions = new Map()
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index]
+    if (!line.trim() || line.trimStart().startsWith('#')) continue
+    if (indentation(line) <= blockIndent) break
+
+    const match = line.match(/^\s+([a-z-]+):\s*(read|write|none)\s*(?:#.*)?$/)
+    if (!match) {
+      errors.push(`${relativePath}:${index + 1}: invalid ${context} permission entry`)
+      continue
+    }
+    permissions.set(match[1], match[2])
+  }
+
+  if (permissions.size === 0 && !allowEmpty) {
+    errors.push(`${relativePath}: ${context} permissions map must declare at least one scope`)
+  }
+
+  return permissions
+}
+
+function validateAllowedWrites(permissions, relativePath, errors, context) {
+  const allowedWrites = ALLOWED_WRITE_PERMISSIONS.get(relativePath) ?? new Set()
+  for (const [scope, level] of permissions) {
+    if (level === 'write' && !allowedWrites.has(scope)) {
+      errors.push(`${relativePath}: unexpected ${context} write permission for ${scope}`)
+    }
+  }
+}
+
 function parseTopLevelPermissions(lines, relativePath, errors) {
   const jobsIndex = lines.findIndex(
     (line) => indentation(line) === 0 && /^jobs:\s*(?:#.*)?$/.test(line.trim()),
   )
   const permissionsIndex = lines.findIndex(
-    (line) => indentation(line) === 0 && /^permissions:\s*(?:#.*)?$/.test(line.trim()),
+    (line) => indentation(line) === 0 && /^permissions\s*:/.test(line.trim()),
   )
 
   if (permissionsIndex === -1 || (jobsIndex !== -1 && permissionsIndex > jobsIndex)) {
@@ -56,32 +115,91 @@ function parseTopLevelPermissions(lines, relativePath, errors) {
     return new Map()
   }
 
-  const permissions = new Map()
-  for (let index = permissionsIndex + 1; index < lines.length; index += 1) {
+  const permissions = parsePermissionMap(
+    lines,
+    permissionsIndex,
+    0,
+    relativePath,
+    errors,
+    'top-level',
+  )
+  validateAllowedWrites(permissions, relativePath, errors, 'top-level')
+  return permissions
+}
+
+function validateJobPermissions(lines, relativePath, topLevelPermissions, errors) {
+  const jobsIndex = lines.findIndex(
+    (line) => indentation(line) === 0 && /^jobs:\s*(?:#.*)?$/.test(line.trim()),
+  )
+  if (jobsIndex === -1) return
+
+  const jobBlocks = []
+  let jobIndent = null
+  let jobsEnd = lines.length
+
+  for (let index = jobsIndex + 1; index < lines.length; index += 1) {
     const line = lines[index]
     if (!line.trim() || line.trimStart().startsWith('#')) continue
-    if (indentation(line) === 0) break
 
-    const match = line.match(/^\s+([a-z-]+):\s*(read|write|none)\s*(?:#.*)?$/)
-    if (!match) {
-      errors.push(`${relativePath}:${index + 1}: invalid permission entry`)
-      continue
+    const indent = indentation(line)
+    if (indent === 0) {
+      jobsEnd = index
+      break
     }
-    permissions.set(match[1], match[2])
+
+    if (jobIndent === null) jobIndent = indent
+    if (indent !== jobIndent) continue
+
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_-]*):\s*(?:#.*)?$/)
+    if (!match) continue
+    if (jobBlocks.length > 0) jobBlocks.at(-1).end = index
+    jobBlocks.push({ id: match[1], start: index, end: jobsEnd, indent })
   }
 
-  if (permissions.size === 0) {
-    errors.push(`${relativePath}: permissions map must declare at least one scope`)
-  }
+  if (jobBlocks.length > 0) jobBlocks.at(-1).end = jobsEnd
 
-  const allowedWrites = ALLOWED_WRITE_PERMISSIONS.get(relativePath) ?? new Set()
-  for (const [scope, level] of permissions) {
-    if (level === 'write' && !allowedWrites.has(scope)) {
-      errors.push(`${relativePath}: unexpected write permission for ${scope}`)
+  for (const job of jobBlocks) {
+    let propertyIndent = Number.POSITIVE_INFINITY
+    for (let index = job.start + 1; index < job.end; index += 1) {
+      const line = lines[index]
+      if (!line.trim() || line.trimStart().startsWith('#')) continue
+      const indent = indentation(line)
+      if (indent > job.indent) propertyIndent = Math.min(propertyIndent, indent)
+    }
+    if (!Number.isFinite(propertyIndent)) continue
+
+    const permissionIndexes = []
+    for (let index = job.start + 1; index < job.end; index += 1) {
+      if (indentation(lines[index]) !== propertyIndent) continue
+      if (/^permissions\s*:/.test(lines[index].trim())) permissionIndexes.push(index)
+    }
+
+    if (permissionIndexes.length > 1) {
+      errors.push(`${relativePath}:${permissionIndexes[1] + 1}: job ${job.id} has duplicate permissions`)
+    }
+
+    for (const permissionsIndex of permissionIndexes) {
+      const permissions = parsePermissionMap(
+        lines,
+        permissionsIndex,
+        propertyIndent,
+        relativePath,
+        errors,
+        `job ${job.id}`,
+        { allowEmpty: true },
+      )
+      validateAllowedWrites(permissions, relativePath, errors, `job ${job.id}`)
+
+      for (const [scope, level] of permissions) {
+        const topLevel = topLevelPermissions.get(scope) ?? 'none'
+        if (PERMISSION_RANK.get(level) > PERMISSION_RANK.get(topLevel)) {
+          errors.push(
+            `${relativePath}:${permissionsIndex + 1}: job ${job.id} permission ${scope}:${level} exceeds top-level ${topLevel}`,
+          )
+        }
+      }
     }
   }
-
-  return permissions
 }
 
 function actionReference(line) {
@@ -168,7 +286,8 @@ export function validateWorkflowText(source, relativePath) {
     errors.push(`${normalizedPath}: pull_request_target is not allowed`)
   }
 
-  parseTopLevelPermissions(lines, normalizedPath, errors)
+  const topLevelPermissions = parseTopLevelPermissions(lines, normalizedPath, errors)
+  validateJobPermissions(lines, normalizedPath, topLevelPermissions, errors)
   validateActionReferences(lines, normalizedPath, errors)
   validateCheckoutCredentials(lines, normalizedPath, errors)
 
