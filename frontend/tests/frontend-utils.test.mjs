@@ -179,12 +179,12 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
   )
 })
 
-test('Realtime health selects low-frequency reconciliation or fast fallback polling', () => {
+test('Realtime health keeps an active job on a fast reconciliation cadence', () => {
   assert.equal(
     realtimePolling.getPdfJobPollInterval('SUBSCRIBED'),
     realtimePolling.HEALTHY_REALTIME_POLL_INTERVAL_MS,
   )
-  assert.equal(realtimePolling.HEALTHY_REALTIME_POLL_INTERVAL_MS, 60_000)
+  assert.equal(realtimePolling.HEALTHY_REALTIME_POLL_INTERVAL_MS, 5_000)
 
   for (const status of ['CONNECTING', 'TIMED_OUT', 'CLOSED', 'CHANNEL_ERROR']) {
     assert.equal(
@@ -192,7 +192,7 @@ test('Realtime health selects low-frequency reconciliation or fast fallback poll
       realtimePolling.FALLBACK_POLL_INTERVAL_MS,
     )
   }
-  assert.equal(realtimePolling.FALLBACK_POLL_INTERVAL_MS, 10_000)
+  assert.equal(realtimePolling.FALLBACK_POLL_INTERVAL_MS, 3_000)
 })
 
 test('Pending job cancellation has UI feedback, tested helper wiring and JWT protection', async () => {
