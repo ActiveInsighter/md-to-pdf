@@ -1,0 +1,71 @@
+name: Validate repository hygiene
+
+on:
+  push:
+    branches:
+      - 'agent/**'
+      - 'refactor/**'
+    paths:
+      - '.gitignore'
+      - 'ui-ux-pro-max/**'
+      - '.github/workflows/repository-hygiene.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.gitignore'
+      - 'ui-ux-pro-max/**'
+      - '.github/workflows/repository-hygiene.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Reject tracked generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          forbidden_files="$({
+            git ls-files | grep -E '(^|/)(__pycache__/|[^/]+\.py[co]$|\.tmp/|work/|coverage/|playwright-report/|test-results/)' || true
+          })"
+
+          if [[ -n "$forbidden_files" ]]; then
+            echo 'Generated files must not be tracked:'
+            printf '%s\n' "$forbidden_files"
+            exit 1
+          fi
+
+      - name: Validate ignore rules
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ignored_paths=(
+            '.tmp/example.txt'
+            'work/example.txt'
+            'coverage/example.txt'
+            'playwright-report/example.txt'
+            'test-results/example.txt'
+            'ui-ux-pro-max/scripts/__pycache__/example.pyc'
+          )
+
+          for path in "${ignored_paths[@]}"; do
+            if ! git check-ignore --quiet "$path"; then
+              echo "Expected path to be ignored: $path"
+              exit 1
+            fi
+          done
