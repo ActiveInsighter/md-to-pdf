@@ -12,6 +12,7 @@ const branch = 'feature/http-fixture';
 const mergedSha = '1'.repeat(40);
 const divergedSha = '2'.repeat(40);
 const requestTimeoutMs = 200;
+const requestMaxAttempts = 3;
 
 function runCleanup(env) {
   return new Promise((resolve, reject) => {
@@ -70,18 +71,34 @@ async function runScenario({
   dryRun,
   currentSha,
   expectDelete,
-  expectedOutput,
+  expectedOutputs,
   expectedCode = 0,
   hangGet = false,
+  getStatuses = [200],
+  retryAfter = null,
+  expectedGetCount = 1,
 }) {
   const requests = [];
+  let getAttempt = 0;
   const server = http.createServer((request, response) => {
     requests.push({ method: request.method, url: request.url });
 
     if (request.method === 'GET' && request.url === `/repos/${repository}/git/ref/heads/${branch}`) {
+      getAttempt += 1;
       if (hangGet) return;
-      response.writeHead(200, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify({ object: { sha: currentSha } }));
+
+      const status = getStatuses[Math.min(getAttempt - 1, getStatuses.length - 1)];
+      if (status === 200) {
+        response.writeHead(200, { 'Content-Type': 'application/json' });
+        response.end(JSON.stringify({ object: { sha: currentSha } }));
+        return;
+      }
+
+      response.writeHead(status, {
+        'Content-Type': 'application/json',
+        ...(retryAfter !== null ? { 'Retry-After': retryAfter } : {}),
+      });
+      response.end(JSON.stringify({ message: `simulated ${status}` }));
       return;
     }
 
@@ -127,14 +144,22 @@ async function runScenario({
       DRY_RUN: String(dryRun),
       MAX_PULLS: '1',
       REQUEST_TIMEOUT_MS: String(requestTimeoutMs),
+      REQUEST_MAX_ATTEMPTS: String(requestMaxAttempts),
+      RETRY_BASE_DELAY_MS: '5',
+      RETRY_MAX_DELAY_MS: '20',
     });
     const elapsedMs = Date.now() - startedAt;
     const output = `${result.stdout}\n${result.stderr}`;
 
     assert.equal(result.code, expectedCode, `${name}: expected exit ${expectedCode}, received ${result.code}\n${output}`);
     assert.equal(result.signal, null, `${name}: child exited via signal ${result.signal}`);
-    assert.match(output, expectedOutput, `${name}: expected output was not found\n${output}`);
-    assert.ok(elapsedMs < 2_000, `${name}: request timeout took too long (${elapsedMs}ms)`);
+    for (const expectedOutput of expectedOutputs) {
+      assert.match(output, expectedOutput, `${name}: expected output was not found\n${output}`);
+    }
+    assert.ok(elapsedMs < 2_000, `${name}: retry policy took too long (${elapsedMs}ms)`);
+
+    const getRequests = requests.filter((request) => request.method === 'GET');
+    assert.equal(getRequests.length, expectedGetCount, `${name}: unexpected GET count: ${JSON.stringify(requests)}`);
 
     const deleteRequests = requests.filter((request) => request.method === 'DELETE');
     assert.equal(
@@ -153,7 +178,7 @@ await runScenario({
   dryRun: true,
   currentSha: mergedSha,
   expectDelete: false,
-  expectedOutput: /\[dry-run\] Would delete feature\/http-fixture/,
+  expectedOutputs: [/\[dry-run\] Would delete feature\/http-fixture/],
 });
 
 await runScenario({
@@ -161,7 +186,7 @@ await runScenario({
   dryRun: false,
   currentSha: divergedSha,
   expectDelete: false,
-  expectedOutput: /does not match merged PR head/,
+  expectedOutputs: [/does not match merged PR head/],
 });
 
 await runScenario({
@@ -169,17 +194,60 @@ await runScenario({
   dryRun: false,
   currentSha: mergedSha,
   expectDelete: true,
-  expectedOutput: /Deleted feature\/http-fixture/,
+  expectedOutputs: [/Deleted feature\/http-fixture/],
 });
 
 await runScenario({
-  name: 'hung branch lookup times out',
+  name: 'rate limit honors Retry-After and recovers',
+  dryRun: true,
+  currentSha: mergedSha,
+  expectDelete: false,
+  getStatuses: [429, 200],
+  retryAfter: '0',
+  expectedGetCount: 2,
+  expectedOutputs: [
+    new RegExp(`Retrying GET /repos/${repository}/git/ref/heads/${branch} in 0ms .*HTTP 429`),
+    /\[dry-run\] Would delete feature\/http-fixture/,
+  ],
+});
+
+await runScenario({
+  name: 'transient failures stop at max attempts',
+  dryRun: false,
+  currentSha: mergedSha,
+  expectDelete: false,
+  expectedCode: 1,
+  getStatuses: [503],
+  expectedGetCount: requestMaxAttempts,
+  expectedOutputs: [
+    new RegExp(`attempt ${requestMaxAttempts}/${requestMaxAttempts}`),
+    /failed: 503 Service Unavailable/,
+  ],
+});
+
+await runScenario({
+  name: 'permanent client error is not retried',
+  dryRun: false,
+  currentSha: mergedSha,
+  expectDelete: false,
+  expectedCode: 1,
+  getStatuses: [403],
+  expectedGetCount: 1,
+  expectedOutputs: [/failed: 403 Forbidden/],
+});
+
+await runScenario({
+  name: 'hung branch lookup retries then times out',
   dryRun: false,
   currentSha: mergedSha,
   expectDelete: false,
   expectedCode: 1,
   hangGet: true,
-  expectedOutput: new RegExp(`GET /repos/${repository}/git/ref/heads/${branch} timed out after ${requestTimeoutMs}ms`),
+  expectedGetCount: requestMaxAttempts,
+  expectedOutputs: [
+    new RegExp(`request timeout after ${requestTimeoutMs}ms`),
+    new RegExp(`GET /repos/${repository}/git/ref/heads/${branch} timed out after ${requestTimeoutMs}ms`),
+  ],
 });
 
-console.log('Branch cleanup HTTP safety tests passed: 4 scenario(s).');
+console.log('Branch cleanup HTTP safety tests passed: 7 scenario(s).');
