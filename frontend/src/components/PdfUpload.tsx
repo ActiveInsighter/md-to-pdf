@@ -163,7 +163,7 @@ export function PdfUpload({
         <p className="muted upload-help" role="status" aria-live="polite">
           {submitted
             ? autoDownload
-              ? '可以离开当前区域；完成后页面会自动开始下载。'
+              ? '可切换到其他标签页；请保持本页面打开，完成后会自动下载。'
               : '任务已提交，可在下方查看实时构建状态。'
             : cancelling
               ? '正在停止未启动任务并清理已上传文件。'
