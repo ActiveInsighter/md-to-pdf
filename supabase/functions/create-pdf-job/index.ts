@@ -13,20 +13,20 @@ const ALLOWED_THEMES = new Set(['chatgpt-light'])
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
   if (optionsResponse) return optionsResponse
-  if (req.method !== 'POST') return json({ error: '只允许 POST 请求。' }, 405)
+  if (req.method !== 'POST') return json(req, { error: '只允许 POST 请求。' }, 405)
 
   try {
     const user = await requireUser(req)
     const body = (await req.json().catch(() => ({}))) as CreateJobBody
     const theme = String(body.theme || 'chatgpt-light').trim()
     if (!THEME_RE.test(theme) || !ALLOWED_THEMES.has(theme)) {
-      return json({ error: '不支持的 PDF 主题。' }, 400)
+      return json(req, { error: '不支持的 PDF 主题。' }, 400)
     }
 
     const breaks = body.options?.breaks ?? true
     const toc = body.options?.toc ?? true
     if (breaks !== true || toc !== true) {
-      return json({ error: '当前版本仅支持启用软换行和 PDF 书签。' }, 400)
+      return json(req, { error: '当前版本仅支持启用软换行和 PDF 书签。' }, 400)
     }
 
     const hasAssets = body.hasAssets === true
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (error) throw error
-    return json({
+    return json(req, {
       jobId: data.id,
       status: data.status,
       inputPath: data.input_path,
@@ -62,8 +62,8 @@ Deno.serve(async (req) => {
       expiresAt: data.expires_at,
     }, 201)
   } catch (error) {
-    if (safeErrorMessage(error) === 'UNAUTHORIZED') return json({ error: '请先登录。' }, 401)
+    if (safeErrorMessage(error) === 'UNAUTHORIZED') return json(req, { error: '请先登录。' }, 401)
     console.error('create-pdf-job failed')
-    return json({ error: '创建 PDF 任务失败。' }, 500)
+    return json(req, { error: '创建 PDF 任务失败。' }, 500)
   }
 })
