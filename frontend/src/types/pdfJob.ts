@@ -1,12 +1,15 @@
-export type PdfJobStatus =
-  | 'created'
-  | 'uploaded'
-  | 'queued'
-  | 'building'
-  | 'uploading'
-  | 'completed'
-  | 'failed'
-  | 'expired'
+export const PDF_JOB_STATUSES = [
+  'created',
+  'uploaded',
+  'queued',
+  'building',
+  'uploading',
+  'completed',
+  'failed',
+  'expired',
+] as const
+
+export type PdfJobStatus = (typeof PDF_JOB_STATUSES)[number]
 
 export type PdfJob = {
   id: string
