@@ -1,6 +1,29 @@
 name: Repository hygiene
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+      - '.gitignore'
+      - '.env.example'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'fixtures/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'themes/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/src/**'
+      - 'frontend/scripts/**'
+      - 'frontend/tests/**'
+      - 'scripts/**'
+      - 'supabase/config.toml'
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
   pull_request:
     branches:
       - main
@@ -8,8 +31,13 @@ on:
       - '.github/workflows/**'
       - '.gitignore'
       - '.env.example'
+      - 'AGENTS.md'
       - 'README.md'
-      - 'docs/supabase-pdf-service.md'
+      - 'docs/**'
+      - 'fixtures/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'themes/**'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - 'frontend/src/**'
@@ -39,6 +67,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Validate repository integrity
+        run: |
+          npm run validate:repository
+          npm run test:repository
 
       - name: Setup Node with frontend npm cache
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
