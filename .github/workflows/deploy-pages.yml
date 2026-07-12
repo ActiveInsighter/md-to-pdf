@@ -219,6 +219,7 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload-ui-screenshots.outputs.artifact-url }}
           PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
         run: |
+          set -euo pipefail
           {
             echo '## Cloudflare Pages UI capture'
             echo
