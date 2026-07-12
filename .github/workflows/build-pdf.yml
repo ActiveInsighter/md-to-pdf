@@ -71,6 +71,7 @@ jobs:
         run: node scripts/git-commit-state.mjs "Record workflow start [skip ci]"
 
       - name: Install dependencies, fonts, Chrome, and PDF tools
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p .github
@@ -130,7 +131,9 @@ jobs:
         id: consume_queue
         if: steps.build_pdf.outcome == 'success' && steps.publish_output.outcome == 'success' && (github.event_name != 'workflow_dispatch' || inputs.consume_after_success == 'true')
         continue-on-error: true
+        shell: bash
         run: |
+          set -euo pipefail
           node scripts/consume-queue.mjs
           node scripts/git-commit-all.mjs "Consume processed inbox jobs [skip ci]"
 
@@ -155,7 +158,9 @@ jobs:
           ARTIFACT_OUTCOME: ${{ steps.upload_artifact.outcome }}
           PUBLISH_OUTCOME: ${{ steps.publish_output.outcome }}
           CONSUME_OUTCOME: ${{ steps.consume_queue.outcome }}
+        shell: bash
         run: |
+          set -euo pipefail
           if [ "$BUILD_OUTCOME" != "success" ]; then
             echo "PDF build failed: $BUILD_OUTCOME"
             exit 1
