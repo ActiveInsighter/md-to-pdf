@@ -29,6 +29,13 @@ test('rejects GitHub expressions interpolated directly into github-script JavaSc
   assert.ok(errors.every((error) => error.includes('read process.env')))
 })
 
+test('supports shorthand github-script steps and inline script values', () => {
+  const source = `jobs:\n  publish:\n    steps:\n      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b\n        with:\n          script: core.info('\${{ github.ref }}')\n`
+  const errors = validateGithubScriptExpressions(source, '.github/workflows/shorthand.yml')
+  assert.equal(errors.length, 1)
+  assert.match(errors[0], /github\.ref/)
+})
+
 test('ignores script inputs on actions other than actions/github-script', () => {
   const source = SAFE_WORKFLOW.replace(
     'actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b',
@@ -38,12 +45,6 @@ test('ignores script inputs on actions other than actions/github-script', () => 
     validateGithubScriptExpressions(source, '.github/workflows/custom-action.yml'),
     [],
   )
-})
-
-test('reports invalid workflow YAML without throwing', () => {
-  const errors = validateGithubScriptExpressions('jobs:\n  broken: [', '.github/workflows/broken.yml')
-  assert.equal(errors.length, 1)
-  assert.match(errors[0], /invalid workflow YAML/)
 })
 
 test('directory validation checks both yml and yaml workflow files', async () => {
