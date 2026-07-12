@@ -61,7 +61,7 @@ async function ensureUploaded(admin: ReturnType<typeof createAdminClient>, job: 
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
   if (optionsResponse) return optionsResponse
-  if (req.method !== 'POST') return json({ error: '只允许 POST 请求。' }, 405)
+  if (req.method !== 'POST') return json(req, { error: '只允许 POST 请求。' }, 405)
 
   let jobId = ''
   const admin = createAdminClient()
@@ -69,14 +69,14 @@ Deno.serve(async (req) => {
     const user = await requireUser(req)
     const body = (await req.json().catch(() => ({}))) as StartBody
     jobId = String(body.jobId || '').trim()
-    if (!UUID_RE.test(jobId)) return json({ error: '任务 ID 格式错误。' }, 400)
+    if (!UUID_RE.test(jobId)) return json(req, { error: '任务 ID 格式错误。' }, 400)
 
     const { data: job, error: jobError } = await admin.from('pdf_jobs').select('*').eq('id', jobId).maybeSingle()
     if (jobError) throw jobError
-    if (!job || job.user_id !== user.id) return json({ error: '任务不存在或无权访问。' }, 404)
-    if (IDEMPOTENT_STATUSES.has(job.status)) return json({ jobId, status: job.status, idempotent: true })
+    if (!job || job.user_id !== user.id) return json(req, { error: '任务不存在或无权访问。' }, 404)
+    if (IDEMPOTENT_STATUSES.has(job.status)) return json(req, { jobId, status: job.status, idempotent: true })
     if (!new Set(['created', 'uploaded']).has(job.status)) {
-      return json({ error: '该任务不能再次启动，请创建新任务。', status: job.status }, 409)
+      return json(req, { error: '该任务不能再次启动，请创建新任务。', status: job.status }, 409)
     }
 
     await ensureUploaded(admin, job)
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
     if (queueError) throw queueError
     if (!queued) {
       const { data: latest } = await admin.from('pdf_jobs').select('status').eq('id', jobId).single()
-      return json({ jobId, status: latest?.status || 'queued', idempotent: true })
+      return json(req, { jobId, status: latest?.status || 'queued', idempotent: true })
     }
 
     const token = requiredEnv('GITHUB_TOKEN')
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
         status: 'failed', error_message: errorMessage,
         completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       }).eq('id', jobId)
-      return json({
+      return json(req, {
         error: 'GitHub Token 无法访问目标仓库，请检查 Fine-grained Token 的仓库范围。',
         githubStage: failure.stage,
         githubStatus: failure.status,
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
         status: 'failed', error_message: errorMessage,
         completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       }).eq('id', jobId)
-      return json({
+      return json(req, {
         error: 'GitHub Token 可以访问仓库，但无法访问 PDF 工作流，请检查 Actions 权限。',
         githubStage: failure.stage,
         githubStatus: failure.status,
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
         status: 'failed', error_message: errorMessage,
         completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       }).eq('id', jobId)
-      return json({
+      return json(req, {
         error: 'GitHub Actions 排队失败，请检查 Token 的 Actions: Read and write 权限。',
         githubStage: failure.stage,
         githubStatus: failure.status,
@@ -164,14 +164,14 @@ Deno.serve(async (req) => {
       }, 502)
     }
 
-    return json({ jobId, status: 'queued' }, 202)
+    return json(req, { jobId, status: 'queued' }, 202)
   } catch (error) {
     const message = safeErrorMessage(error)
-    if (message === 'UNAUTHORIZED') return json({ error: '请先登录。' }, 401)
-    if (message === 'MARKDOWN_MISSING') return json({ error: 'Markdown 尚未上传或文件为空。' }, 400)
-    if (message === 'MARKDOWN_TOO_LARGE') return json({ error: 'Markdown 超过 10 MiB 限制。' }, 413)
-    if (message === 'ASSETS_MISSING') return json({ error: '任务声明了资源文件，但 assets.zip 尚未上传。' }, 400)
-    if (message === 'ASSETS_TOO_LARGE') return json({ error: 'assets.zip 超过 50 MiB 限制。' }, 413)
+    if (message === 'UNAUTHORIZED') return json(req, { error: '请先登录。' }, 401)
+    if (message === 'MARKDOWN_MISSING') return json(req, { error: 'Markdown 尚未上传或文件为空。' }, 400)
+    if (message === 'MARKDOWN_TOO_LARGE') return json(req, { error: 'Markdown 超过 10 MiB 限制。' }, 413)
+    if (message === 'ASSETS_MISSING') return json(req, { error: '任务声明了资源文件，但 assets.zip 尚未上传。' }, 400)
+    if (message === 'ASSETS_TOO_LARGE') return json(req, { error: 'assets.zip 超过 50 MiB 限制。' }, 413)
     console.error('start-pdf-job failed', message)
     if (jobId && UUID_RE.test(jobId)) {
       await admin.from('pdf_jobs').update({
@@ -179,6 +179,6 @@ Deno.serve(async (req) => {
         completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       }).eq('id', jobId).in('status', ['uploaded', 'queued'])
     }
-    return json({ error: '启动 PDF 任务失败。' }, 500)
+    return json(req, { error: '启动 PDF 任务失败。' }, 500)
   }
 })
