@@ -20,11 +20,12 @@ concurrency:
 
 env:
   CLOUDFLARE_PAGES_PROJECT: md-to-pdf-web
+  PLAYWRIGHT_VERSION: 1.55.0
 
 jobs:
   deploy:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Mark Pages deployment pending
@@ -115,6 +116,123 @@ jobs:
             --branch main \
             --commit-hash "$GITHUB_SHA"
 
+      - name: Wait for production UI
+        shell: bash
+        env:
+          PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            if curl --fail --silent --show-error --location \
+              --max-time 20 \
+              --header 'Cache-Control: no-cache' \
+              "$PAGES_URL/?deployment=$GITHUB_SHA" \
+              --output /tmp/pages-index.html; then
+              test -s /tmp/pages-index.html
+              echo "Production UI is reachable on attempt $attempt."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Production UI did not become reachable after deployment."
+          exit 1
+
+      - name: Verify screenshot tooling
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          google-chrome --version
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" --version
+
+      - name: Capture deployed UI screenshots
+        working-directory: frontend
+        shell: bash
+        env:
+          PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
+        run: |
+          set -euo pipefail
+          SCREENSHOT_DIR="deployment-screenshots"
+          TARGET_URL="$PAGES_URL/?deployment=$GITHUB_SHA"
+          rm -rf "$SCREENSHOT_DIR"
+          mkdir -p "$SCREENSHOT_DIR"
+
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
+            --channel chrome \
+            --color-scheme light \
+            --lang zh-CN \
+            --viewport-size "1440,1000" \
+            --full-page \
+            --wait-for-selector "#root" \
+            --wait-for-timeout 2500 \
+            --timeout 30000 \
+            "$TARGET_URL" \
+            "$SCREENSHOT_DIR/desktop-1440.png"
+
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
+            --channel chrome \
+            --color-scheme light \
+            --lang zh-CN \
+            --device "iPhone 13" \
+            --full-page \
+            --wait-for-selector "#root" \
+            --wait-for-timeout 2500 \
+            --timeout 30000 \
+            "$TARGET_URL" \
+            "$SCREENSHOT_DIR/mobile-iphone-13.png"
+
+          node --input-type=module <<'NODE'
+          import { writeFile } from 'node:fs/promises'
+
+          const metadata = {
+            url: process.env.PAGES_URL,
+            commit: process.env.GITHUB_SHA,
+            runId: process.env.GITHUB_RUN_ID,
+            capturedAt: new Date().toISOString(),
+            playwrightVersion: process.env.PLAYWRIGHT_VERSION,
+            browserChannel: 'chrome',
+            screenshots: [
+              { file: 'desktop-1440.png', viewport: '1440x1000', fullPage: true },
+              { file: 'mobile-iphone-13.png', device: 'iPhone 13', fullPage: true },
+            ],
+          }
+          await writeFile('deployment-screenshots/metadata.json', `${JSON.stringify(metadata, null, 2)}\n`)
+          NODE
+
+          test -s "$SCREENSHOT_DIR/desktop-1440.png"
+          test -s "$SCREENSHOT_DIR/mobile-iphone-13.png"
+
+      - name: Upload deployed UI screenshots
+        id: upload-ui-screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: cloudflare-pages-ui-${{ github.run_id }}
+          path: frontend/deployment-screenshots
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Add screenshot summary
+        if: always()
+        shell: bash
+        env:
+          ARTIFACT_URL: ${{ steps.upload-ui-screenshots.outputs.artifact-url }}
+          PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
+        run: |
+          set -euo pipefail
+          {
+            echo '## Cloudflare Pages UI capture'
+            echo
+            echo "- Production: $PAGES_URL"
+            echo "- Commit: \`$GITHUB_SHA\`"
+            if [[ -n "${ARTIFACT_URL:-}" ]]; then
+              echo "- Screenshots: $ARTIFACT_URL"
+            else
+              echo "- Screenshots: not available"
+            fi
+            echo '- Files: desktop-1440.png, mobile-iphone-13.png, metadata.json'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish Pages deployment result
         if: always()
         env:
@@ -129,10 +247,10 @@ jobs:
                 ? 'error'
                 : 'failure'
             const description = state === 'success'
-              ? 'Cloudflare Pages deployment completed'
+              ? 'Cloudflare Pages deployment and UI capture completed'
               : state === 'error'
                 ? 'Cloudflare Pages deployment was cancelled'
-                : 'Cloudflare Pages deployment failed'
+                : 'Cloudflare Pages deployment or UI capture failed'
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
             const pagesUrl = `https://${process.env.CLOUDFLARE_PAGES_PROJECT}.pages.dev`
 
