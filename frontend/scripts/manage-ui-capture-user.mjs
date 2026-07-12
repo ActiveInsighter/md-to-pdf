@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const command = process.argv[2]
 const workDirectory = path.resolve(process.cwd(), '.tmp', 'deployment-auth')
-const statePath = path.join(workDirectory, 'storage-state.json')
+const credentialsPath = path.join(workDirectory, 'credentials.json')
 const userIdPath = path.join(workDirectory, 'user-id.txt')
 
 function requiredEnv(name) {
@@ -21,32 +21,19 @@ function secretKey() {
   return value
 }
 
-function createMemoryStorage(initialEntries = []) {
-  const values = new Map(initialEntries.map(({ name, value }) => [name, value]))
-  return {
-    getItem(key) {
-      return values.get(key) ?? null
-    },
-    setItem(key, value) {
-      values.set(key, value)
-    },
-    removeItem(key) {
-      values.delete(key)
-    },
-    entries() {
-      return [...values.entries()].map(([name, value]) => ({ name, value }))
-    },
-  }
-}
-
 function adminClient() {
   return createClient(requiredEnv('VITE_SUPABASE_URL'), secretKey(), {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 }
 
+function userClient() {
+  return createClient(requiredEnv('VITE_SUPABASE_URL'), requiredEnv('VITE_SUPABASE_ANON_KEY'), {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  })
+}
+
 async function prepare() {
-  const pagesOrigin = new URL(requiredEnv('PAGES_URL')).origin
   const runId = requiredEnv('GITHUB_RUN_ID').replace(/[^0-9A-Za-z_-]/g, '')
   const suffix = randomBytes(8).toString('hex')
   const email = `ui-capture-${runId}-${suffix}@example.com`
@@ -67,31 +54,8 @@ async function prepare() {
   }
 
   await writeFile(userIdPath, `${created.user.id}\n`, { mode: 0o600 })
-
-  const storage = createMemoryStorage()
-  const userClient = createClient(requiredEnv('VITE_SUPABASE_URL'), requiredEnv('VITE_SUPABASE_ANON_KEY'), {
-    auth: {
-      storage,
-      persistSession: true,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  })
-
-  const { data: signedIn, error: signInError } = await userClient.auth.signInWithPassword({ email, password })
-  if (signInError || !signedIn.session) {
-    throw new Error(`Unable to sign in temporary UI capture user: ${signInError?.message || 'unknown error'}`)
-  }
-
-  const localStorage = storage.entries()
-  if (localStorage.length === 0) throw new Error('Supabase did not persist an authenticated browser session.')
-
-  const storageState = {
-    cookies: [],
-    origins: [{ origin: pagesOrigin, localStorage }],
-  }
-  await writeFile(statePath, `${JSON.stringify(storageState, null, 2)}\n`, { mode: 0o600 })
-  console.log('Prepared temporary authenticated browser state for UI capture.')
+  await writeFile(credentialsPath, `${JSON.stringify({ email, password })}\n`, { mode: 0o600 })
+  console.log('Prepared temporary confirmed user credentials for browser UI capture.')
 }
 
 async function cleanup() {
@@ -99,20 +63,12 @@ async function cleanup() {
   let cleanupError = null
 
   try {
-    const rawState = await readFile(statePath, 'utf8').catch(() => '')
-    if (rawState) {
-      const state = JSON.parse(rawState)
-      const localStorage = state.origins?.[0]?.localStorage || []
-      const storage = createMemoryStorage(localStorage)
-      const userClient = createClient(requiredEnv('VITE_SUPABASE_URL'), requiredEnv('VITE_SUPABASE_ANON_KEY'), {
-        auth: {
-          storage,
-          persistSession: true,
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
-        },
-      })
-      await userClient.auth.signOut({ scope: 'global' }).catch(() => undefined)
+    const rawCredentials = await readFile(credentialsPath, 'utf8').catch(() => '')
+    if (rawCredentials) {
+      const credentials = JSON.parse(rawCredentials)
+      const client = userClient()
+      const { error: signInError } = await client.auth.signInWithPassword(credentials)
+      if (!signInError) await client.auth.signOut({ scope: 'global' }).catch(() => undefined)
     }
 
     const userId = (await readFile(userIdPath, 'utf8').catch(() => '')).trim()
@@ -125,7 +81,7 @@ async function cleanup() {
   }
 
   if (cleanupError) throw new Error(`Unable to delete temporary UI capture user: ${cleanupError.message}`)
-  console.log('Removed temporary authenticated UI capture user and browser state.')
+  console.log('Removed temporary authenticated UI capture user and credentials.')
 }
 
 if (command === 'prepare') {
