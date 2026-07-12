@@ -7,8 +7,8 @@ on:
     paths:
       - '.github/workflows/**'
       - 'package.json'
-      - 'scripts/validate-workflow-security.mjs'
-      - 'scripts/test-validate-workflow-security.mjs'
+      - 'scripts/validate-workflow-*.mjs'
+      - 'scripts/test-validate-workflow-*.mjs'
   workflow_dispatch:
 
 permissions:
@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: 24
 
-      - name: Test workflow security validator
+      - name: Test workflow security validators
         run: npm run test:workflows
 
       - name: Validate every workflow
