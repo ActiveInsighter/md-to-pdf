@@ -9,13 +9,20 @@ type CancelPdfJobResponse = {
   cleanupPending: boolean
 }
 
+type PdfDownloadResponse = {
+  jobId: string
+  filename: string
+  downloadUrl: string
+  expiresIn: number
+}
+
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-export async function createPdfJob(hasAssets: boolean): Promise<CreatePdfJobResponse> {
+export async function createPdfJob(hasAssets: boolean, sourceName: string): Promise<CreatePdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CreatePdfJobResponse>('create-pdf-job', {
-    body: { theme: 'chatgpt-light', options: { breaks: true, toc: true }, hasAssets },
+    body: { theme: 'chatgpt-light', options: { breaks: true, toc: true }, hasAssets, sourceName },
   })
   if (error) throw new Error(error.message)
   if (!data?.jobId) throw new Error('创建任务返回的数据不完整。')
@@ -68,13 +75,13 @@ export async function listPdfJobs(): Promise<PdfJob[]> {
   return (data || []) as PdfJob[]
 }
 
-export async function getDownloadUrl(jobId: string): Promise<string> {
-  const { data, error } = await supabase.functions.invoke<{ downloadUrl: string }>('get-pdf-download', {
+export async function getDownloadInfo(jobId: string): Promise<PdfDownloadResponse> {
+  const { data, error } = await supabase.functions.invoke<PdfDownloadResponse>('get-pdf-download', {
     body: { jobId },
   })
   if (error) throw new Error(error.message)
-  if (!data?.downloadUrl) throw new Error('下载地址生成失败。')
-  return data.downloadUrl
+  if (!data?.downloadUrl || !data.filename) throw new Error('下载地址生成失败。')
+  return data
 }
 
 export function readableError(error: unknown): string {
