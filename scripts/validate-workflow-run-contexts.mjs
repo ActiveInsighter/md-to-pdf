@@ -30,7 +30,7 @@ export function validateRunContextExpressions(source, relativePath) {
   const errors = []
 
   for (let index = 0; index < lines.length; index += 1) {
-    const match = lines[index].match(/^(\s*)run:\s*(.*)$/)
+    const match = lines[index].match(/^(\s*)(?:-\s+)?run:\s*(.*)$/)
     if (!match) continue
 
     const runIndent = match[1].length
