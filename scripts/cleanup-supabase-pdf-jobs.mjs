@@ -35,6 +35,7 @@ async function expiredJobs() {
   const url = new URL(`${SUPABASE_URL}/rest/v1/pdf_jobs`);
   url.searchParams.set('expires_at', `lt.${new Date().toISOString()}`);
   url.searchParams.set('status', 'neq.expired');
+  url.searchParams.set('is_favorite', 'eq.false');
   url.searchParams.set('select', 'id');
   url.searchParams.set('limit', '200');
   const response = await fetch(url, { headers: headers() });
@@ -59,6 +60,7 @@ async function removeJobObjects(id) {
 async function markExpired(id) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/pdf_jobs`);
   url.searchParams.set('id', `eq.${id}`);
+  url.searchParams.set('is_favorite', 'eq.false');
   const response = await fetch(url, {
     method: 'PATCH',
     headers: headers({ 'Content-Type': 'application/json' }),
@@ -85,7 +87,7 @@ async function main() {
       console.error(`Cleanup failed for ${job.id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  console.log(`Expired jobs cleaned: ${cleaned}/${jobs.length}`);
+  console.log(`Expired non-favorite jobs cleaned: ${cleaned}/${jobs.length}`);
 }
 
 main().catch((error) => {
