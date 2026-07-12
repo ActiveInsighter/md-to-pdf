@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getDownloadUrl } from '../api/pdfJobs'
+import { getDownloadInfo } from '../api/pdfJobs'
 import type { PdfJob } from '../types/pdfJob'
 import { isTerminalPdfJobStatus } from '../utils/pdfJobStatus'
 
@@ -76,11 +76,11 @@ function sendBrowserNotification(title: string, body: string): void {
   }
 }
 
-async function triggerDownload(jobId: string): Promise<void> {
-  const href = await getDownloadUrl(jobId)
+async function triggerDownload(jobId: string, fallbackFilename: string): Promise<void> {
+  const result = await getDownloadInfo(jobId)
   const anchor = document.createElement('a')
-  anchor.href = href
-  anchor.download = `pdf-${jobId}.pdf`
+  anchor.href = result.downloadUrl
+  anchor.download = result.filename || fallbackFilename
   anchor.rel = 'noopener'
   anchor.style.display = 'none'
   document.body.appendChild(anchor)
@@ -205,8 +205,8 @@ export function usePdfDelivery({ job, userId }: Options) {
 
     if (job.status === 'completed') {
       const completionMessage = autoDownload
-        ? 'PDF 已生成，正在自动开始下载。'
-        : 'PDF 已生成，可以立即下载。'
+        ? `${job.output_filename} 已生成，正在自动下载。`
+        : `${job.output_filename} 已生成，可以立即下载。`
       setNotice({ kind: 'success', title: 'PDF 构建完成', message: completionMessage })
       if (notifyOnComplete) sendBrowserNotification('PDF 构建完成', completionMessage)
 
@@ -214,7 +214,7 @@ export function usePdfDelivery({ job, userId }: Options) {
         const downloadMarker = `md-to-pdf:auto-downloaded:${job.id}`
         if (!readSessionMarker(downloadMarker)) {
           writeSessionMarker(downloadMarker)
-          void triggerDownload(job.id).catch((error) => {
+          void triggerDownload(job.id, job.output_filename).catch((error) => {
             removeSessionMarker(downloadMarker)
             setNotice({
               kind: 'error',
