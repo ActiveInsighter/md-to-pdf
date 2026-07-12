@@ -1,5 +1,6 @@
 import type { PdfJob } from '../types/pdfJob'
-import { PDF_JOB_STATUS_LABELS } from '../utils/pdfJobStatus'
+import { formatDuration, getPdfJobElapsedMs, getPdfJobProgress } from '../utils/pdfJobProgress'
+import { isTerminalPdfJobStatus, PDF_JOB_STATUS_LABELS } from '../utils/pdfJobStatus'
 
 type Props = {
   jobs: PdfJob[]
@@ -80,6 +81,9 @@ export function PdfJobHistory({
           {jobs.map((job) => {
             const selected = job.id === selectedJobId
             const createdAt = new Date(job.created_at).toLocaleString()
+            const progress = getPdfJobProgress(job)
+            const terminal = isTerminalPdfJobStatus(job.status)
+            const elapsed = formatDuration(getPdfJobElapsedMs(job))
 
             return (
               <button
@@ -91,6 +95,9 @@ export function PdfJobHistory({
               >
                 <span>{createdAt}</span>
                 <strong className={`badge status-${job.status}`}>{PDF_JOB_STATUS_LABELS[job.status]}</strong>
+                <span className="history-progress-summary">
+                  {terminal ? `总用时 ${elapsed}` : `${progress.percent}% · ${progress.message}`}
+                </span>
                 <span className="history-item-meta">
                   <code>{job.id.slice(0, 8)}</code>
                   {selected && <span className="history-current">当前查看</span>}
