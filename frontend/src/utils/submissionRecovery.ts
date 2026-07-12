@@ -42,7 +42,8 @@ export function getSubmissionRecovery(job: PdfJob): SubmissionRecovery | null {
     inputPath: job.input_path,
     assetsPath: job.assets_path,
     hasAssets: job.has_assets,
-    sourceFilename: job.source_filename,
-    documentName: job.document_name,
+    ...(job.source_filename && job.document_name
+      ? { sourceFilename: job.source_filename, documentName: job.document_name }
+      : {}),
   }
 }
