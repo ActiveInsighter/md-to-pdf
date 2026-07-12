@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       return json(req, { error: '不支持的 PDF 主题。' }, 400)
     }
 
-    const document = normalizeDocumentName(body.sourceFilename)
+    const document = normalizeDocumentName(body.sourceFilename || 'document.md')
     if (!document) return json(req, { error: '源文件名必须是有效的 Markdown 文件名。' }, 400)
 
     const breaks = body.options?.breaks ?? true
