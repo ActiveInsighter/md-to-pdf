@@ -25,7 +25,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Mark Pages deployment pending
@@ -62,6 +62,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
           for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY; do
@@ -70,6 +72,10 @@ jobs:
               exit 1
             }
           done
+          [[ -n "${SUPABASE_SECRET_KEY:-}" || -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]] || {
+            echo 'Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY for authenticated UI capture.'
+            exit 1
+          }
 
       - name: Install and build frontend
         working-directory: frontend
@@ -153,6 +159,23 @@ jobs:
           set -euo pipefail
           google-chrome --version
           npx --yes "playwright@${PLAYWRIGHT_VERSION}" --version
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot --help | tee /tmp/playwright-screenshot-help.txt
+          grep -q -- '--load-storage' /tmp/playwright-screenshot-help.txt
+
+      - name: Prepare authenticated UI session
+        id: prepare-auth
+        working-directory: frontend
+        shell: bash
+        env:
+          PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          node scripts/manage-ui-capture-user.mjs prepare
+          test -s .tmp/deployment-auth/storage-state.json
 
       - name: Capture deployed UI screenshots
         working-directory: frontend
@@ -162,9 +185,11 @@ jobs:
         run: |
           set -euo pipefail
           SCREENSHOT_DIR="deployment-screenshots"
+          AUTH_STATE=".tmp/deployment-auth/storage-state.json"
           TARGET_URL="$PAGES_URL/?deployment=$GITHUB_SHA"
           rm -rf "$SCREENSHOT_DIR"
           mkdir -p "$SCREENSHOT_DIR"
+          test -s "$AUTH_STATE"
 
           npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
             --channel chrome \
@@ -172,11 +197,11 @@ jobs:
             --lang zh-CN \
             --viewport-size "1440,1000" \
             --full-page \
-            --wait-for-selector "#root" \
-            --wait-for-timeout 2500 \
+            --wait-for-selector "#auth-panel" \
+            --wait-for-timeout 1500 \
             --timeout 30000 \
             "$TARGET_URL" \
-            "$SCREENSHOT_DIR/desktop-1440.png"
+            "$SCREENSHOT_DIR/public-desktop-1440.png"
 
           npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
             --channel chrome \
@@ -184,11 +209,37 @@ jobs:
             --lang zh-CN \
             --viewport-size "390,844" \
             --full-page \
-            --wait-for-selector "#root" \
-            --wait-for-timeout 2500 \
+            --wait-for-selector "#auth-panel" \
+            --wait-for-timeout 1500 \
             --timeout 30000 \
             "$TARGET_URL" \
-            "$SCREENSHOT_DIR/mobile-390.png"
+            "$SCREENSHOT_DIR/public-mobile-390.png"
+
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
+            --channel chrome \
+            --color-scheme light \
+            --lang zh-CN \
+            --viewport-size "1440,1000" \
+            --load-storage "$AUTH_STATE" \
+            --full-page \
+            --wait-for-selector ".workspace-hero" \
+            --wait-for-timeout 3000 \
+            --timeout 30000 \
+            "$TARGET_URL" \
+            "$SCREENSHOT_DIR/authenticated-desktop-1440.png"
+
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
+            --channel chrome \
+            --color-scheme light \
+            --lang zh-CN \
+            --viewport-size "390,844" \
+            --load-storage "$AUTH_STATE" \
+            --full-page \
+            --wait-for-selector ".workspace-hero" \
+            --wait-for-timeout 3000 \
+            --timeout 30000 \
+            "$TARGET_URL" \
+            "$SCREENSHOT_DIR/authenticated-mobile-390.png"
 
           node --input-type=module <<'NODE'
           import { writeFile } from 'node:fs/promises'
@@ -200,17 +251,39 @@ jobs:
             capturedAt: new Date().toISOString(),
             playwrightVersion: process.env.PLAYWRIGHT_VERSION,
             browserChannel: 'chrome',
+            temporaryAuthenticatedUser: true,
             screenshots: [
-              { file: 'desktop-1440.png', viewport: '1440x1000', fullPage: true },
-              { file: 'mobile-390.png', viewport: '390x844', fullPage: true },
+              { file: 'public-desktop-1440.png', viewport: '1440x1000', fullPage: true, authenticated: false },
+              { file: 'public-mobile-390.png', viewport: '390x844', fullPage: true, authenticated: false },
+              { file: 'authenticated-desktop-1440.png', viewport: '1440x1000', fullPage: true, authenticated: true },
+              { file: 'authenticated-mobile-390.png', viewport: '390x844', fullPage: true, authenticated: true },
             ],
           }
           await writeFile('deployment-screenshots/metadata.json', `${JSON.stringify(metadata, null, 2)}\n`)
           NODE
 
-          test -s "$SCREENSHOT_DIR/desktop-1440.png"
-          test -s "$SCREENSHOT_DIR/mobile-390.png"
-          test -s "$SCREENSHOT_DIR/metadata.json"
+          for file in \
+            public-desktop-1440.png \
+            public-mobile-390.png \
+            authenticated-desktop-1440.png \
+            authenticated-mobile-390.png \
+            metadata.json; do
+            test -s "$SCREENSHOT_DIR/$file"
+          done
+
+      - name: Remove temporary authenticated UI user
+        if: always() && steps.prepare-auth.outcome != 'skipped'
+        working-directory: frontend
+        shell: bash
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          node scripts/manage-ui-capture-user.mjs cleanup
+          test ! -e .tmp/deployment-auth/storage-state.json
 
       - name: Upload deployed UI screenshots
         id: upload-ui-screenshots
@@ -240,7 +313,9 @@ jobs:
             else
               echo "- Screenshots: not available"
             fi
-            echo '- Files: desktop-1440.png, mobile-390.png, metadata.json'
+            echo '- Primary: authenticated-desktop-1440.png, authenticated-mobile-390.png'
+            echo '- Public: public-desktop-1440.png, public-mobile-390.png'
+            echo '- Authentication: temporary confirmed Supabase user, removed after capture'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Pages deployment result
@@ -257,7 +332,7 @@ jobs:
                 ? 'error'
                 : 'failure'
             const description = state === 'success'
-              ? 'Cloudflare Pages deployment and UI capture completed'
+              ? 'Cloudflare Pages deployment and authenticated UI capture completed'
               : state === 'error'
                 ? 'Cloudflare Pages deployment was cancelled'
                 : 'Cloudflare Pages deployment or UI capture failed'
