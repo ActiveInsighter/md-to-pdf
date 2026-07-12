@@ -10,17 +10,15 @@ type CreateJobBody = {
 
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
 const ALLOWED_THEMES = new Set(['chatgpt-light'])
-const MAX_FILENAME_LENGTH = 180
+const MAX_SOURCE_FILENAME_LENGTH = 179
+const INVALID_FILENAME_RE = /[\u0000-\u001f\u007f/\\]/
 
-function normalizeSourceName(value: unknown): string | null {
-  const normalized = String(value || '未命名文档.md')
-    .normalize('NFKC')
-    .replace(/[\u0000-\u001f\u007f/\\]/g, '')
-    .trim()
-
-  if (!normalized || normalized.length > MAX_FILENAME_LENGTH) return null
-  if (!normalized.toLowerCase().endsWith('.md')) return null
-  return normalized
+function validateSourceName(value: unknown): string | null {
+  const sourceName = String(value || '未命名文档.md')
+  if (!sourceName || sourceName.length > MAX_SOURCE_FILENAME_LENGTH) return null
+  if (INVALID_FILENAME_RE.test(sourceName)) return null
+  if (!sourceName.toLowerCase().endsWith('.md')) return null
+  return sourceName
 }
 
 function toPdfFilename(sourceName: string): string {
@@ -46,7 +44,7 @@ Deno.serve(async (req) => {
       return json(req, { error: '当前版本仅支持启用软换行和 PDF 书签。' }, 400)
     }
 
-    const sourceName = normalizeSourceName(body.sourceName)
+    const sourceName = validateSourceName(body.sourceName)
     if (!sourceName) return json(req, { error: 'Markdown 文件名无效。' }, 400)
     const outputFilename = toPdfFilename(sourceName)
 
