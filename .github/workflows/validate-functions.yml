@@ -1,0 +1,61 @@
+name: Validate Supabase Functions
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validate-functions.yml'
+      - 'package.json'
+      - 'supabase/functions/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: functions-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Test shared Edge Function modules
+        run: npm run test:functions
+
+      - name: Validate CORS wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s supabase/functions/_shared/cors.test.ts
+          if grep -RFn "'Access-Control-Allow-Origin': '*'" supabase/functions; then
+            echo 'Supabase Functions must not allow every browser origin.'
+            exit 1
+          fi
+
+          functions=(
+            create-pdf-job
+            start-pdf-job
+            cancel-pdf-job
+            get-pdf-download
+          )
+
+          for function_name in "${functions[@]}"; do
+            file="supabase/functions/${function_name}/index.ts"
+            grep -q "handleOptions(req)" "$file"
+            grep -q "json(req," "$file"
+          done
