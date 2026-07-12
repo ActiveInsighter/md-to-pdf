@@ -1,5 +1,5 @@
 import type { PdfJob } from '../types/pdfJob'
-import { PDF_JOB_STATUS_LABELS } from '../utils/pdfJobStatus'
+import { getPdfJobProgress, getPdfJobStageLabel, PDF_JOB_STATUS_LABELS } from '../utils/pdfJobStatus'
 
 type Props = {
   jobs: PdfJob[]
@@ -9,6 +9,16 @@ type Props = {
   selectedJobId: string | null
   onRefresh: () => void
   onSelect: (job: PdfJob) => void
+}
+
+function compactDuration(job: PdfJob): string {
+  const start = new Date(job.created_at).getTime()
+  const end = new Date(job.completed_at || job.updated_at).getTime()
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return '—'
+  const seconds = Math.round((end - start) / 1000)
+  if (seconds < 60) return `${seconds} 秒`
+  const minutes = Math.floor(seconds / 60)
+  return `${minutes} 分 ${seconds % 60} 秒`
 }
 
 export function PdfJobHistory({
@@ -80,6 +90,7 @@ export function PdfJobHistory({
           {jobs.map((job) => {
             const selected = job.id === selectedJobId
             const createdAt = new Date(job.created_at).toLocaleString()
+            const progress = getPdfJobProgress(job)
 
             return (
               <button
@@ -91,8 +102,13 @@ export function PdfJobHistory({
               >
                 <span>{createdAt}</span>
                 <strong className={`badge status-${job.status}`}>{PDF_JOB_STATUS_LABELS[job.status]}</strong>
+                <span className="history-stage">{getPdfJobStageLabel(job)}</span>
+                <span className="history-mini-progress" aria-label={`进度 ${progress}%`}>
+                  <span style={{ width: `${progress}%` }} />
+                </span>
                 <span className="history-item-meta">
                   <code>{job.id.slice(0, 8)}</code>
+                  <span className="history-duration">{compactDuration(job)}</span>
                   {selected && <span className="history-current">当前查看</span>}
                 </span>
               </button>

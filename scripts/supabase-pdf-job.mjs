@@ -9,6 +9,12 @@ if (!SERVICE_KEY) throw new Error('Missing SUPABASE_SECRET_KEY or SUPABASE_SERVI
 const BUCKET = requiredEnv('SUPABASE_STORAGE_BUCKET');
 const JOB_ID = requiredEnv('JOB_ID');
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const PROGRESS_STAGES = new Map([
+  ['fetching-input', { percent: 40 }],
+  ['preparing-source', { percent: 52 }],
+  ['rendering', { percent: 65, timestamp: 'rendering_at' }],
+  ['validating-output', { percent: 82 }],
+]);
 
 if (!UUID_RE.test(JOB_ID)) {
   throw new Error('JOB_ID is not a valid UUID');
@@ -154,7 +160,31 @@ async function main() {
       const status = args[0];
       if (!new Set(['building', 'uploading']).has(status)) throw new Error('Invalid status command');
       const body = { status, error_message: null, ...runMetadata() };
-      if (status === 'building') body.started_at = new Date().toISOString();
+      if (status === 'building') {
+        body.started_at = new Date().toISOString();
+        body.progress_percent = 35;
+        body.progress_stage = 'runner-started';
+      }
+      if (status === 'uploading') {
+        body.uploading_at = new Date().toISOString();
+        body.progress_percent = 90;
+        body.progress_stage = 'uploading-output';
+      }
+      await patchJob(body);
+      break;
+    }
+    case 'progress': {
+      const stage = args[0];
+      const config = PROGRESS_STAGES.get(stage);
+      if (!config) throw new Error(`Invalid progress stage: ${stage || '(none)'}`);
+      const now = new Date().toISOString();
+      const body = {
+        progress_percent: config.percent,
+        progress_stage: stage,
+        error_message: null,
+        ...runMetadata(),
+      };
+      if (config.timestamp) body[config.timestamp] = now;
       await patchJob(body);
       break;
     }
@@ -184,6 +214,8 @@ async function main() {
     case 'complete': {
       await patchJob({
         status: 'completed',
+        progress_percent: 100,
+        progress_stage: 'completed',
         output_path: objectPath('output.pdf'),
         completed_at: new Date().toISOString(),
         error_message: null,
@@ -200,6 +232,7 @@ async function main() {
       }
       await patchJob({
         status: 'failed',
+        progress_stage: 'failed',
         error_message: message,
         completed_at: new Date().toISOString(),
         ...runMetadata(),

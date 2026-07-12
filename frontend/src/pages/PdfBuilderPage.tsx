@@ -5,39 +5,37 @@ import { PdfJobHistory } from '../components/PdfJobHistory'
 import { PdfJobStatus } from '../components/PdfJobStatus'
 import { PdfUpload } from '../components/PdfUpload'
 import { usePdfBuilder } from '../hooks/usePdfBuilder'
+import { usePdfDelivery } from '../hooks/usePdfDelivery'
 
 const capabilities = [
   ['KaTeX', '数学公式'],
   ['Shiki', '代码高亮'],
   ['Private', '私有存储'],
-  ['Signed', '安全下载'],
+  ['Auto', '完成后自动下载'],
 ]
 
 const workflow = [
   ['01', '上传源文件', 'Markdown 与可选资源包'],
-  ['02', '隔离构建', '异步渲染并持续同步状态'],
-  ['03', '签名交付', '完成后获取短期下载链接'],
+  ['02', '查看真实进度', '构建里程碑和耗时持续同步'],
+  ['03', '自动交付', '完成后通知并按设置自动下载'],
 ]
 
 function ProductIntro() {
   return (
-    <section className="intro-panel glass-panel hero-panel" aria-labelledby="hero-title">
-      <div className="hero-glow hero-glow-blue" aria-hidden="true" />
-      <div className="hero-glow hero-glow-orange" aria-hidden="true" />
-
+    <section className="intro-panel surface-panel hero-panel" aria-labelledby="hero-title">
       <div className="hero-content">
-        <p className="hero-kicker"><span aria-hidden="true" />DESIGN-READY DOCUMENT PIPELINE</p>
+        <p className="hero-kicker"><span aria-hidden="true" />RELIABLE DOCUMENT PIPELINE</p>
         <h2 id="hero-title">
           <span className="hero-gradient">Markdown</span>
-          <br />生成精致 PDF
+          <br />生成清晰 PDF
         </h2>
         <p className="hero-description">
-          将结构化内容、数学公式和代码高亮送入稳定的 Chromium 渲染链路，获得适合阅读与交付的高质量文档。
+          将结构化内容、数学公式和代码高亮送入稳定的 Chromium 渲染链路，实时查看构建阶段，完成后自动交付文件。
         </p>
 
         <div className="command-strip" aria-label="构建流程摘要">
           <span aria-hidden="true">›</span>
-          <code>source.md → private build → document.pdf</code>
+          <code>source.md → tracked build → document.pdf</code>
         </div>
 
         <div className="hero-actions">
@@ -98,6 +96,11 @@ export function PdfBuilderPage() {
     signOut,
   } = usePdfBuilder()
 
+  const delivery = usePdfDelivery({
+    job,
+    userId: session?.user.id ?? null,
+  })
+
   if (authStatus !== 'ready') {
     return (
       <AppShell authenticated={false}>
@@ -124,8 +127,22 @@ export function PdfBuilderPage() {
     )
   }
 
+  const startWithDelivery = () => {
+    delivery.armNextJob()
+    void start()
+  }
+
   return (
     <AppShell authenticated onSignOut={() => void signOut()}>
+      {delivery.notice && (
+        <div className={`job-notice notice-${delivery.notice.kind}`} role="status" aria-live="assertive">
+          <div>
+            <strong>{delivery.notice.title}</strong>
+            <span>{delivery.notice.message}</span>
+          </div>
+          <button type="button" className="notice-dismiss" onClick={delivery.dismissNotice} aria-label="关闭提示">×</button>
+        </div>
+      )}
       {error && <div className="alert" role="alert">{error}</div>}
       <div className="workspace-grid" id="workspace">
         <div className="workspace-main">
@@ -136,12 +153,22 @@ export function PdfBuilderPage() {
             busy={busy}
             progress={progress}
             phase={uploadPhase}
+            autoDownload={delivery.autoDownload}
+            notifyOnComplete={delivery.notifyOnComplete}
             onMarkdown={setMarkdown}
             onAssets={setAssets}
-            onStart={() => void start()}
+            onAutoDownload={delivery.setAutoDownload}
+            onNotifyOnComplete={delivery.setNotifyOnComplete}
+            onStart={startWithDelivery}
             onReset={() => void reset()}
           />
-          <PdfJobStatus job={job} onDownload={() => void download()} onNew={() => void reset()} />
+          <PdfJobStatus
+            job={job}
+            autoDownload={delivery.autoDownload}
+            notifyOnComplete={delivery.notifyOnComplete}
+            onDownload={() => void download()}
+            onNew={() => void reset()}
+          />
         </div>
         <aside className="workspace-sidebar" id="history" aria-label="任务历史">
           <PdfJobHistory

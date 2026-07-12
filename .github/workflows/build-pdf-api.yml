@@ -164,6 +164,10 @@ jobs:
         shell: bash
         run: node scripts/supabase-pdf-job.mjs status building
 
+      - name: Mark input download
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs progress fetching-input
+
       - name: Download Markdown
         shell: bash
         run: |
@@ -180,6 +184,10 @@ jobs:
             --output work/input/assets.zip \
             --github-output "$GITHUB_OUTPUT" \
             2>&1 | tee work/logs/download-assets.log
+
+      - name: Mark source preparation
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs progress preparing-source
 
       - name: Prepare source safely
         env:
@@ -202,11 +210,22 @@ jobs:
           fi
           python3 scripts/prepare-supabase-input.py "${ARGS[@]}"
 
-      - name: Build and validate PDF
+      - name: Mark rendering
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs progress rendering
+
+      - name: Render PDF
+        shell: bash
+        run: node scripts/build-pdf.mjs work/source/input.md dist/output.pdf --theme "$PDF_THEME"
+
+      - name: Mark output validation
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs progress validating-output
+
+      - name: Validate PDF
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/build-pdf.mjs work/source/input.md dist/output.pdf --theme "$PDF_THEME"
           test -s dist/output.pdf
           [[ "$(head -c 4 dist/output.pdf)" == "%PDF" ]] || {
             echo "Invalid PDF header"
