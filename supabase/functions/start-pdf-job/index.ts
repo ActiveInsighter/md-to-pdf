@@ -63,6 +63,20 @@ async function ensureUploaded(admin: ReturnType<typeof createAdminClient>, job: 
   }
 }
 
+function failedFields(errorMessage: string) {
+  const now = new Date().toISOString()
+  return {
+    status: 'failed',
+    error_message: errorMessage,
+    progress_message: errorMessage,
+    failed_at: now,
+    completed_at: now,
+    status_changed_at: now,
+    progress_updated_at: now,
+    updated_at: now,
+  }
+}
+
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
   if (optionsResponse) return optionsResponse
@@ -88,17 +102,32 @@ Deno.serve(async (req) => {
 
     await ensureUploaded(admin, job)
     if (job.status === 'created') {
-      const { error } = await admin.from('pdf_jobs').update({ status: 'uploaded', updated_at: new Date().toISOString() }).eq('id', jobId).eq('status', 'created')
+      const uploadedAt = new Date().toISOString()
+      const { error } = await admin.from('pdf_jobs').update({
+        status: 'uploaded',
+        progress_percent: 25,
+        progress_message: '文件上传完成，正在提交构建任务',
+        uploaded_at: uploadedAt,
+        status_changed_at: uploadedAt,
+        progress_updated_at: uploadedAt,
+        updated_at: uploadedAt,
+      }).eq('id', jobId).eq('status', 'created')
       if (error) throw error
     }
 
+    const queuedAt = new Date().toISOString()
     const { data: queued, error: queueError } = await admin
       .from('pdf_jobs')
       .update({
         status: 'queued',
         attempt_count: Number(job.attempt_count || 0) + 1,
         error_message: null,
-        updated_at: new Date().toISOString(),
+        progress_percent: 35,
+        progress_message: '已进入 GitHub Actions 构建队列',
+        queued_at: queuedAt,
+        status_changed_at: queuedAt,
+        progress_updated_at: queuedAt,
+        updated_at: queuedAt,
       })
       .eq('id', jobId)
       .in('status', [...PDF_JOB_PENDING_INPUT_STATUSES])
@@ -117,10 +146,7 @@ Deno.serve(async (req) => {
     if (!repositoryResponse.ok) {
       const failure = await githubFailure(repositoryResponse, 'repository')
       const errorMessage = `GitHub Token 无法访问仓库（HTTP ${failure.status}${failure.requestId ? `，请求 ${failure.requestId}` : ''}）。`
-      await admin.from('pdf_jobs').update({
-        status: 'failed', error_message: errorMessage,
-        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      }).eq('id', jobId)
+      await admin.from('pdf_jobs').update(failedFields(errorMessage)).eq('id', jobId)
       return json(req, {
         error: 'GitHub Token 无法访问目标仓库，请检查 Fine-grained Token 的仓库范围。',
         githubStage: failure.stage,
@@ -136,10 +162,7 @@ Deno.serve(async (req) => {
     if (!workflowResponse.ok) {
       const failure = await githubFailure(workflowResponse, 'workflow')
       const errorMessage = `GitHub Token 无法访问工作流（HTTP ${failure.status}${failure.requestId ? `，请求 ${failure.requestId}` : ''}）。`
-      await admin.from('pdf_jobs').update({
-        status: 'failed', error_message: errorMessage,
-        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      }).eq('id', jobId)
+      await admin.from('pdf_jobs').update(failedFields(errorMessage)).eq('id', jobId)
       return json(req, {
         error: 'GitHub Token 可以访问仓库，但无法访问 PDF 工作流，请检查 Actions 权限。',
         githubStage: failure.stage,
@@ -159,10 +182,7 @@ Deno.serve(async (req) => {
     if (!dispatchResponse.ok) {
       const failure = await githubFailure(dispatchResponse, 'dispatch')
       const errorMessage = `GitHub Actions 排队失败（HTTP ${failure.status}${failure.requestId ? `，请求 ${failure.requestId}` : ''}）。`
-      await admin.from('pdf_jobs').update({
-        status: 'failed', error_message: errorMessage,
-        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      }).eq('id', jobId)
+      await admin.from('pdf_jobs').update(failedFields(errorMessage)).eq('id', jobId)
       return json(req, {
         error: 'GitHub Actions 排队失败，请检查 Token 的 Actions: Read and write 权限。',
         githubStage: failure.stage,
@@ -181,10 +201,9 @@ Deno.serve(async (req) => {
     if (message === 'ASSETS_TOO_LARGE') return json(req, { error: 'assets.zip 超过 50 MiB 限制。' }, 413)
     console.error('start-pdf-job failed', message)
     if (jobId && UUID_RE.test(jobId)) {
-      await admin.from('pdf_jobs').update({
-        status: 'failed', error_message: '启动 PDF 任务失败。',
-        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      }).eq('id', jobId).in('status', [...PDF_JOB_START_FAILURE_STATUSES])
+      await admin.from('pdf_jobs').update(failedFields('启动 PDF 任务失败。'))
+        .eq('id', jobId)
+        .in('status', [...PDF_JOB_START_FAILURE_STATUSES])
     }
     return json(req, { error: '启动 PDF 任务失败。' }, 500)
   }
