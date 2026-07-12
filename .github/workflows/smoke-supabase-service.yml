@@ -9,6 +9,7 @@ on:
       - '.github/workflows/smoke-supabase-service.yml'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
+      - 'frontend/scripts/smoke-function-cors.mjs'
       - 'frontend/scripts/smoke-supabase-service.mjs'
       - 'scripts/cleanup-supabase-pdf-jobs.mjs'
       - 'scripts/prepare-supabase-input.py'
@@ -83,6 +84,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Verify browser CORS preflights
+        working-directory: frontend
+        run: npm run smoke:cors
 
       - name: Run end-to-end smoke test
         working-directory: frontend
