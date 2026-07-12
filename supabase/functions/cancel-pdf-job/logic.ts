@@ -1,7 +1,8 @@
+import { isPendingInputPdfJobStatus } from '../_shared/pdf-job-status.ts'
+
 export const CANCELLED_ERROR_MESSAGE = '用户已取消未启动任务。'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const CANCELLABLE_STATUSES = new Set(['created', 'uploaded'])
 
 export type PdfJobRow = {
   id: string
@@ -43,7 +44,7 @@ export function decideCancellation(
     return { kind: 'idempotent', job: current }
   }
 
-  if (!CANCELLABLE_STATUSES.has(current.status)) {
+  if (!isPendingInputPdfJobStatus(current.status)) {
     return { kind: 'conflict', status: current.status }
   }
 
