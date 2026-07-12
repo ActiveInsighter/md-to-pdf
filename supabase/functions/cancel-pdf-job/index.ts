@@ -91,7 +91,11 @@ Deno.serve(async (req) => {
         .update({
           status: 'failed',
           error_message: CANCELLED_ERROR_MESSAGE,
+          progress_message: '任务已取消',
+          failed_at: now,
           completed_at: now,
+          status_changed_at: now,
+          progress_updated_at: now,
           updated_at: now,
         })
         .eq('id', jobId)
