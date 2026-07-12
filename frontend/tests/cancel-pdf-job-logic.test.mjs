@@ -1,29 +1,7 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import ts from 'typescript'
 
-async function importTypeScriptModule(relativePath) {
-  const sourceUrl = new URL(relativePath, import.meta.url)
-  const source = await readFile(sourceUrl, 'utf8')
-  const result = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.ESNext,
-      target: ts.ScriptTarget.ES2022,
-    },
-    fileName: sourceUrl.pathname,
-    reportDiagnostics: true,
-  })
-  const errors = (result.diagnostics ?? []).filter(
-    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
-  )
-  assert.deepEqual(errors, [], `Failed to transpile ${relativePath}`)
-
-  const encoded = Buffer.from(result.outputText).toString('base64')
-  return import(`data:text/javascript;base64,${encoded}`)
-}
-
-const cancellation = await importTypeScriptModule('../../supabase/functions/cancel-pdf-job/logic.ts')
+const cancellation = await import('../../supabase/functions/cancel-pdf-job/logic.ts')
 
 function job(overrides = {}) {
   return {
