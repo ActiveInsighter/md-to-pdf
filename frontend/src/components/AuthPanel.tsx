@@ -87,9 +87,21 @@ export function AuthPanel() {
   }
 
   return (
-    <section className="card auth-card">
-      <h2>登录后生成 PDF</h2>
-      <p className="muted">使用 Supabase 邮箱密码账号登录。首次使用请先注册。</p>
+    <section className="card auth-card" id="auth-panel">
+      <div className="auth-card-header">
+        <span className="auth-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="10" width="16" height="10" rx="3" />
+            <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
+            <path d="M12 14v2" />
+          </svg>
+        </span>
+        <div>
+          <p className="eyebrow">PRIVATE WORKSPACE</p>
+          <h2>登录后生成 PDF</h2>
+        </div>
+      </div>
+      <p className="muted auth-description">使用 Supabase 邮箱密码账号登录。首次使用请先注册。</p>
       <form className="stack" onSubmit={submitLogin} noValidate>
         <label>
           邮箱
@@ -100,6 +112,7 @@ export function AuthPanel() {
             autoComplete="email"
             inputMode="email"
             maxLength={254}
+            placeholder="name@example.com"
             disabled={busyMode !== null}
             required
           />
@@ -113,11 +126,12 @@ export function AuthPanel() {
             autoComplete="current-password"
             minLength={6}
             maxLength={72}
+            placeholder="至少 6 位"
             disabled={busyMode !== null}
             required
           />
         </label>
-        <div className="row">
+        <div className="row auth-actions">
           <button type="submit" disabled={busyMode !== null || !canSubmit}>
             {busyMode === 'signin' ? '正在登录…' : '登录'}
           </button>
@@ -131,8 +145,9 @@ export function AuthPanel() {
           </button>
         </div>
       </form>
-      {notice && <p className="success-text" role="status">{notice}</p>}
-      {error && <p className="error-text" role="alert">{error}</p>}
+      <p className="auth-footnote">登录凭据只由 Supabase Auth 处理。</p>
+      {notice && <p className="success-text auth-message" role="status">{notice}</p>}
+      {error && <p className="error-text auth-message" role="alert">{error}</p>}
     </section>
   )
 }

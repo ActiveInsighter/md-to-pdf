@@ -12,6 +12,20 @@ type Props = {
   onChange: (file: File | null) => void
 }
 
+function FileStateIcon({ selected }: { selected: boolean }) {
+  return selected ? (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m5 12.5 4.2 4.2L19 7" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 16V5" />
+      <path d="m8 9 4-4 4 4" />
+      <path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
+    </svg>
+  )
+}
+
 export function FileDropField({
   title,
   hint,
@@ -62,7 +76,7 @@ export function FileDropField({
       onDrop={handleDrop}
     >
       <label className="file-drop-target" htmlFor={inputId}>
-        <span className="file-drop-icon" aria-hidden="true">{file ? '✓' : '＋'}</span>
+        <span className="file-drop-icon" aria-hidden="true"><FileStateIcon selected={Boolean(file)} /></span>
         <span className="file-drop-copy">
           <span className="file-drop-title-row">
             <strong>{title}</strong>
