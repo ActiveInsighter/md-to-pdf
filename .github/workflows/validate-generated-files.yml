@@ -1,0 +1,80 @@
+name: Validate generated files
+
+on:
+  push:
+    branches:
+      - 'refactor/**'
+      - 'agent/**'
+    paths:
+      - '.github/workflows/validate-generated-files.yml'
+      - '.gitignore'
+      - '.tmp/**'
+      - 'ui-ux-pro-max/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validate-generated-files.yml'
+      - '.gitignore'
+      - '.tmp/**'
+      - 'ui-ux-pro-max/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generated-files-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Reject tracked generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          forbidden_files="$({
+            git ls-files | grep -E '(^|/)(node_modules/|dist/|\.tmp/|work/|coverage/|playwright-report/|test-results/|__pycache__/|[^/]+\.py[co]$|[^/]+\.tsbuildinfo$|smoke-diagnostic\.json$|lint-output\.txt$)' || true
+          })"
+
+          if [[ -n "$forbidden_files" ]]; then
+            echo 'Generated files must not be tracked:'
+            printf '%s\n' "$forbidden_files"
+            exit 1
+          fi
+
+      - name: Validate ignore rules
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ignored_paths=(
+            'node_modules/example.txt'
+            'dist/example.txt'
+            '.tmp/example.txt'
+            'work/example.txt'
+            'coverage/example.txt'
+            'playwright-report/example.txt'
+            'test-results/example.txt'
+            'frontend/tsconfig.tsbuildinfo'
+            'frontend/smoke-diagnostic.json'
+            'frontend/lint-output.txt'
+            'ui-ux-pro-max/scripts/__pycache__/example.pyc'
+          )
+
+          for path in "${ignored_paths[@]}"; do
+            if ! git check-ignore --quiet "$path"; then
+              echo "Expected path to be ignored: $path"
+              exit 1
+            fi
+          done
