@@ -17,9 +17,11 @@ export const PDF_JOB_TERMINAL_STATUSES = [
   'expired',
 ] as const satisfies readonly PdfJobStatus[]
 
+export type TerminalPdfJobStatus = (typeof PDF_JOB_TERMINAL_STATUSES)[number]
+
 const terminalPdfJobStatuses = new Set<PdfJobStatus>(PDF_JOB_TERMINAL_STATUSES)
 
-export function isTerminalPdfJobStatus(status: PdfJobStatus): boolean {
+export function isTerminalPdfJobStatus(status: PdfJobStatus): status is TerminalPdfJobStatus {
   return terminalPdfJobStatuses.has(status)
 }
 
