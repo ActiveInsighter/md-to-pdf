@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
-import { readableError, rebuildPdfJob, setPdfJobFavorite } from '../api/pdfJobs'
+import { getPdfJob, readableError, rebuildPdfJob, setPdfJobFavorite } from '../api/pdfJobs'
 import type { PdfJob } from '../types/pdfJob'
-import { getPdfJobProgress, getPdfJobStageLabel, PDF_JOB_STATUS_LABELS } from '../utils/pdfJobStatus'
+import {
+  getPdfJobProgress,
+  getPdfJobStageLabel,
+  isTerminalPdfJobStatus,
+  PDF_JOB_STATUS_LABELS,
+} from '../utils/pdfJobStatus'
 
 type Props = {
   jobs: PdfJob[]
@@ -18,6 +23,8 @@ type JobGroup = {
   label: string
   jobs: PdfJob[]
 }
+
+type HistoryFilter = 'all' | 'active' | 'favorite' | 'failed'
 
 function compactDuration(job: PdfJob): string {
   const start = new Date(job.created_at).getTime()
@@ -39,9 +46,9 @@ function buildGroups(jobs: PdfJob[]): JobGroup[] {
   const now = Date.now()
   const groups: JobGroup[] = [
     { key: 'day-1', label: '1 天内', jobs: [] },
-    { key: 'day-3', label: '3 天内', jobs: [] },
-    { key: 'day-7', label: '7 天内', jobs: [] },
-    { key: 'day-30', label: '30 天内', jobs: [] },
+    { key: 'day-3', label: '1–3 天', jobs: [] },
+    { key: 'day-7', label: '3–7 天', jobs: [] },
+    { key: 'day-30', label: '7–30 天', jobs: [] },
     { key: 'favorite-older', label: '更早的收藏', jobs: [] },
   ]
 
@@ -71,6 +78,23 @@ function buildGroups(jobs: PdfJob[]): JobGroup[] {
   return groups.filter((group) => group.jobs.length > 0)
 }
 
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="8.5" cy="8.5" r="5" />
+      <path d="m12.5 12.5 4 4" />
+    </svg>
+  )
+}
+
+function FavoriteIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="m10 2.8 2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z" />
+    </svg>
+  )
+}
+
 export function PdfJobHistory({
   jobs,
   loading,
@@ -82,7 +106,31 @@ export function PdfJobHistory({
 }: Props) {
   const [actionJobId, setActionJobId] = useState<string | null>(null)
   const [actionError, setActionError] = useState('')
-  const groups = useMemo(() => buildGroups(jobs), [jobs])
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<HistoryFilter>('all')
+
+  const filterCounts = useMemo(() => ({
+    all: jobs.length,
+    active: jobs.filter((job) => !isTerminalPdfJobStatus(job.status)).length,
+    favorite: jobs.filter((job) => job.is_favorite).length,
+    failed: jobs.filter((job) => job.status === 'failed').length,
+  }), [jobs])
+
+  const visibleJobs = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase()
+    return jobs.filter((job) => {
+      const matchesQuery = !normalizedQuery || `${job.document_name} ${job.source_filename}`
+        .toLocaleLowerCase()
+        .includes(normalizedQuery)
+      if (!matchesQuery) return false
+      if (filter === 'active') return !isTerminalPdfJobStatus(job.status)
+      if (filter === 'favorite') return job.is_favorite
+      if (filter === 'failed') return job.status === 'failed'
+      return true
+    })
+  }, [filter, jobs, query])
+
+  const groups = useMemo(() => buildGroups(visibleJobs), [visibleJobs])
   const showInitialLoading = loading && jobs.length === 0
   const syncedTime = lastSyncedAt
     ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -100,10 +148,10 @@ export function PdfJobHistory({
     setActionError('')
     try {
       await setPdfJobFavorite(job.id, !job.is_favorite)
-      onRefresh()
     } catch (cause) {
       setActionError(readableError(cause))
     } finally {
+      onRefresh()
       setActionJobId(null)
     }
   }
@@ -112,11 +160,13 @@ export function PdfJobHistory({
     setActionJobId(job.id)
     setActionError('')
     try {
-      await rebuildPdfJob(job.id)
-      onRefresh()
+      const rebuilt = await rebuildPdfJob(job.id)
+      const nextJob = await getPdfJob(rebuilt.jobId)
+      onSelect(nextJob)
     } catch (cause) {
       setActionError(readableError(cause))
     } finally {
+      onRefresh()
       setActionJobId(null)
     }
   }
@@ -125,8 +175,9 @@ export function PdfJobHistory({
     <section className="card history-card" aria-busy={loading}>
       <div className="section-heading history-heading">
         <div>
+          <span className="section-kicker">LIBRARY</span>
           <h2>任务记录</h2>
-          <p>{syncLabel} · 最近 30 天</p>
+          <p>{syncLabel} · 最近 30 天与长期收藏</p>
         </div>
         <button
           type="button"
@@ -138,17 +189,54 @@ export function PdfJobHistory({
         </button>
       </div>
 
+      <label className="history-search">
+        <span><SearchIcon /></span>
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="搜索任务或源文件"
+          aria-label="搜索任务记录"
+        />
+      </label>
+
+      <div className="history-filters" role="tablist" aria-label="筛选任务记录">
+        {([
+          ['all', '全部'],
+          ['active', '进行中'],
+          ['favorite', '收藏'],
+          ['failed', '失败'],
+        ] as const).map(([key, label]) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filter === key}
+            className={filter === key ? 'is-active' : ''}
+            onClick={() => setFilter(key)}
+            key={key}
+          >
+            {label}<span>{filterCounts[key]}</span>
+          </button>
+        ))}
+      </div>
+
       {error && jobs.length > 0 && <p className="history-error" role="alert">{error}</p>}
       {actionError && <p className="history-error" role="alert">{actionError}</p>}
 
       {showInitialLoading ? (
         <div className="history-state" role="status">
           <strong>正在加载任务</strong>
+          <p>正在同步最新构建状态。</p>
         </div>
       ) : jobs.length === 0 ? (
         <div className="history-state history-empty">
           <strong>{error ? '任务暂时不可用' : '还没有任务'}</strong>
           <p>{error || '生成 PDF 后会显示在这里。'}</p>
+        </div>
+      ) : groups.length === 0 ? (
+        <div className="history-state history-empty">
+          <strong>没有匹配的任务</strong>
+          <p>调整关键词或切换筛选条件。</p>
         </div>
       ) : (
         <div className="history-groups">
@@ -173,7 +261,10 @@ export function PdfJobHistory({
                         aria-pressed={selected}
                       >
                         <span className="history-item-topline">
-                          <strong title={job.document_name}>{job.is_favorite ? '★ ' : ''}{job.document_name}</strong>
+                          <strong title={job.document_name}>
+                            {job.is_favorite && <span className="history-favorite-icon"><FavoriteIcon /></span>}
+                            <span>{job.document_name}</span>
+                          </strong>
                           <span className={`badge status-${job.status}`}>{PDF_JOB_STATUS_LABELS[job.status]}</span>
                         </span>
                         <span className="history-stage">{getPdfJobStageLabel(job)}</span>
@@ -196,7 +287,7 @@ export function PdfJobHistory({
                           <div><dt>完成时间</dt><dd>{formatDate(job.completed_at)}</dd></div>
                           <div><dt>保留期限</dt><dd>{job.is_favorite ? '收藏任务不会自动删除' : formatDate(job.expires_at)}</dd></div>
                         </dl>
-                        {job.error_message && <p className="error-text">{job.error_message}</p>}
+                        {job.error_message && <p className="inline-message is-error">{job.error_message}</p>}
                         <div className="history-item-actions">
                           <button type="button" disabled={actionBusy} onClick={() => void toggleFavorite(job)}>
                             {job.is_favorite ? '取消收藏' : '收藏任务'}
