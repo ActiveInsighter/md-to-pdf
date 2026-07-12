@@ -6,18 +6,13 @@
   "scripts": {
     "build:pdf": "node scripts/build-pdf.mjs notes.md dist/notes.pdf",
     "build:html": "node scripts/build-pdf.mjs notes.md dist/notes.pdf --html-only",
-    "build:single": "node scripts/build-single.mjs",
-    "build:day": "node scripts/build-day.mjs",
-    "build:queue": "node scripts/build-queue.mjs",
     "postprocess:pdf": "node scripts/postprocess-pdfs.mjs",
-    "validate:manifest": "node scripts/validate-manifest.mjs",
     "validate:workflows": "node scripts/validate-workflow-security.mjs && node scripts/validate-workflow-run-contexts.mjs && node scripts/validate-workflow-github-script.mjs && node scripts/validate-workflow-timeouts.mjs && node scripts/validate-workflow-concurrency.mjs && node scripts/validate-workflow-continue-on-error.mjs && node scripts/validate-workflow-renderer-paths.mjs",
     "cleanup:branches": "node scripts/cleanup-merged-branches.mjs",
     "test": "node scripts/test-render.mjs",
     "test:render": "node scripts/test-render.mjs",
     "test:functions": "node --test supabase/functions/_shared/*.test.ts",
-    "test:workflows": "node --test scripts/test-validate-workflow-*.mjs",
-    "ci:build": "node scripts/build-with-log.mjs"
+    "test:workflows": "node --test scripts/test-validate-workflow-*.mjs"
   },
   "devDependencies": {
     "js-yaml": "^4.1.0",
