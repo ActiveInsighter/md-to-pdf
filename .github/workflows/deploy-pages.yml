@@ -53,9 +53,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            frontend/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Validate deployment secrets
         shell: bash
@@ -161,6 +159,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci --prefer-offline --no-audit --no-fund
+          node --check scripts/capture-deployed-ui.mjs
           google-chrome --version
           node --input-type=module -e "import puppeteer from 'puppeteer'; console.log('Puppeteer', puppeteer.version || 'loaded')"
 
@@ -175,6 +174,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
+          node --check scripts/manage-ui-capture-user.mjs
           node scripts/manage-ui-capture-user.mjs prepare
           test -s .tmp/deployment-auth/credentials.json
 
