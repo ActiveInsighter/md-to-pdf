@@ -24,9 +24,15 @@ export type PdfJob = {
   github_run_id: number | null
   github_run_url: string | null
   error_message: string | null
+  progress_percent?: number | null
+  progress_stage?: string | null
   created_at: string
   updated_at: string
+  uploaded_at?: string | null
+  queued_at?: string | null
   started_at: string | null
+  rendering_at?: string | null
+  uploading_at?: string | null
   completed_at: string | null
   expires_at: string
 }
