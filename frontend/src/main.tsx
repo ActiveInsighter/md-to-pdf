@@ -7,6 +7,7 @@ import './auth-session.css'
 import './upload.css'
 import './submission-recovery.css'
 import './white-ui.css'
+import './markdown-input.css'
 
 // Mount the production application with React development safeguards enabled.
 ReactDOM.createRoot(document.getElementById('root')!).render(
