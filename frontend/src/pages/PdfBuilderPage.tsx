@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { AppShell } from '../components/AppShell'
 import { AuthPanel } from '../components/AuthPanel'
 import { AuthSessionState } from '../components/AuthSessionState'
+import { PdfBatchUpload } from '../components/PdfBatchUpload'
 import { PdfJobHistory } from '../components/PdfJobHistory'
 import { PdfJobStatus } from '../components/PdfJobStatus'
 import { PdfUpload } from '../components/PdfUpload'
@@ -123,7 +124,7 @@ export function PdfBuilderPage() {
           <h1>生成 PDF</h1>
           <p>上传 Markdown 文件或直接粘贴文本，任务和 PDF 都会沿用文档名称。</p>
         </div>
-        <span>私有存储 · 真实进度</span>
+        <span>私有存储 · 并发构建 · 真实进度</span>
       </div>
 
       {delivery.notice && (
@@ -137,6 +138,8 @@ export function PdfBuilderPage() {
       )}
       {globalDrop.error && <div className="alert" role="alert">{globalDrop.error}</div>}
       {error && <div className="alert" role="alert">{error}</div>}
+
+      <PdfBatchUpload disabled={busy} onSubmitted={() => void refreshHistory()} />
 
       <div className="workspace-grid" id="workspace">
         <div className="workspace-main">
