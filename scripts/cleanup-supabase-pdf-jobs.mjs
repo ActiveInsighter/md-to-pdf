@@ -5,9 +5,32 @@ const USE_LEGACY_BEARER = !SERVICE_KEY.startsWith('sb_secret_');
 const BUCKET = requiredEnv('SUPABASE_STORAGE_BUCKET');
 const REQUEST_TIMEOUT_RAW = process.env.REQUEST_TIMEOUT_MS || '15000';
 const REQUEST_TIMEOUT_MS = Number(REQUEST_TIMEOUT_RAW);
+const REQUEST_MAX_ATTEMPTS_RAW = process.env.REQUEST_MAX_ATTEMPTS || '3';
+const REQUEST_MAX_ATTEMPTS = Number(REQUEST_MAX_ATTEMPTS_RAW);
+const RETRY_BASE_DELAY_RAW = process.env.RETRY_BASE_DELAY_MS || '250';
+const RETRY_BASE_DELAY_MS = Number(RETRY_BASE_DELAY_RAW);
+const RETRY_MAX_DELAY_RAW = process.env.RETRY_MAX_DELAY_MS || '5000';
+const RETRY_MAX_DELAY_MS = Number(RETRY_MAX_DELAY_RAW);
+const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
 
 if (!Number.isInteger(REQUEST_TIMEOUT_MS) || REQUEST_TIMEOUT_MS < 100 || REQUEST_TIMEOUT_MS > 120000) {
   throw new Error(`REQUEST_TIMEOUT_MS must be an integer between 100 and 120000; received ${REQUEST_TIMEOUT_RAW}.`);
+}
+
+if (!Number.isInteger(REQUEST_MAX_ATTEMPTS) || REQUEST_MAX_ATTEMPTS < 1 || REQUEST_MAX_ATTEMPTS > 5) {
+  throw new Error(
+    `REQUEST_MAX_ATTEMPTS must be an integer between 1 and 5; received ${REQUEST_MAX_ATTEMPTS_RAW}.`,
+  );
+}
+
+if (!Number.isInteger(RETRY_BASE_DELAY_MS) || RETRY_BASE_DELAY_MS < 1 || RETRY_BASE_DELAY_MS > 10000) {
+  throw new Error(`RETRY_BASE_DELAY_MS must be an integer between 1 and 10000; received ${RETRY_BASE_DELAY_RAW}.`);
+}
+
+if (!Number.isInteger(RETRY_MAX_DELAY_MS) || RETRY_MAX_DELAY_MS < RETRY_BASE_DELAY_MS || RETRY_MAX_DELAY_MS > 30000) {
+  throw new Error(
+    `RETRY_MAX_DELAY_MS must be an integer between RETRY_BASE_DELAY_MS and 30000; received ${RETRY_MAX_DELAY_RAW}.`,
+  );
 }
 
 function requiredEnv(name) {
@@ -28,21 +51,80 @@ function isTimeoutError(error) {
   return error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
 }
 
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function parseRetryAfter(value) {
+  if (!value) return null;
+
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.min(Math.round(seconds * 1000), RETRY_MAX_DELAY_MS);
+  }
+
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return null;
+  return Math.min(Math.max(0, timestamp - Date.now()), RETRY_MAX_DELAY_MS);
+}
+
+function retryDelay(response, attempt) {
+  const retryAfter = parseRetryAfter(response?.headers?.get('retry-after'));
+  if (retryAfter !== null) return retryAfter;
+  return Math.min(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1), RETRY_MAX_DELAY_MS);
+}
+
+function requestTarget(url) {
+  const target = url instanceof URL ? url : new URL(url);
+  return `${target.pathname}${target.search}`;
+}
+
+function retryReason(error, response) {
+  if (response) return `HTTP ${response.status}`;
+  if (isTimeoutError(error)) return `request timeout after ${REQUEST_TIMEOUT_MS}ms`;
+  return `network error: ${error instanceof Error ? error.message : String(error)}`;
+}
+
 async function request(url, options = {}) {
   const method = options.method || 'GET';
-  const target = url instanceof URL ? url : new URL(url);
+  const target = requestTarget(url);
 
-  try {
-    return await fetch(url, {
-      ...options,
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
-  } catch (error) {
-    if (isTimeoutError(error)) {
-      throw new Error(`Supabase request timed out after ${REQUEST_TIMEOUT_MS}ms: ${method} ${target.pathname}`);
+  for (let attempt = 1; attempt <= REQUEST_MAX_ATTEMPTS; attempt += 1) {
+    let response = null;
+    let requestError = null;
+
+    try {
+      response = await fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      requestError = error;
     }
-    throw error;
+
+    if (response && !RETRYABLE_STATUSES.has(response.status)) return response;
+    if (response?.ok) return response;
+
+    if (attempt < REQUEST_MAX_ATTEMPTS) {
+      const delayMs = retryDelay(response, attempt);
+      await response?.body?.cancel().catch(() => {});
+      console.warn(
+        `Retrying ${method} ${target} in ${delayMs}ms (attempt ${attempt + 1}/${REQUEST_MAX_ATTEMPTS}): ${retryReason(requestError, response)}`,
+      );
+      await sleep(delayMs);
+      continue;
+    }
+
+    if (response) return response;
+    if (isTimeoutError(requestError)) {
+      throw new Error(`Supabase request timed out after ${REQUEST_TIMEOUT_MS}ms: ${method} ${target}`);
+    }
+    throw new Error(
+      `Supabase network error: ${method} ${target}: ${requestError instanceof Error ? requestError.message : String(requestError)}`,
+    );
   }
+
+  throw new Error(`Supabase request failed after ${REQUEST_MAX_ATTEMPTS} attempts: ${method} ${target}`);
 }
 
 async function parseResponse(response) {
@@ -110,6 +192,8 @@ async function main() {
   let failed = 0;
 
   console.log(`Request timeout: ${REQUEST_TIMEOUT_MS}ms`);
+  console.log(`Request attempts: ${REQUEST_MAX_ATTEMPTS}`);
+  console.log(`Retry delay range: ${RETRY_BASE_DELAY_MS}-${RETRY_MAX_DELAY_MS}ms`);
 
   for (const job of jobs) {
     try {
