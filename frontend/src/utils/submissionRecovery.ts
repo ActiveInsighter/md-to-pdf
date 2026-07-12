@@ -6,7 +6,15 @@ export const PDF_JOB_PENDING_INPUT_STATUSES = [
   'uploaded',
 ] as const satisfies readonly PdfJobStatus[]
 
+export type PendingInputPdfJobStatus = (typeof PDF_JOB_PENDING_INPUT_STATUSES)[number]
+
 const pendingInputStatuses = new Set<PdfJobStatus>(PDF_JOB_PENDING_INPUT_STATUSES)
+
+export function isPendingInputPdfJobStatus(
+  status: PdfJobStatus,
+): status is PendingInputPdfJobStatus {
+  return pendingInputStatuses.has(status)
+}
 
 export function createSubmissionRecovery(
   created: CreatePdfJobResponse,
@@ -22,7 +30,7 @@ export function createSubmissionRecovery(
 }
 
 export function getSubmissionRecovery(job: PdfJob): SubmissionRecovery | null {
-  if (!pendingInputStatuses.has(job.status)) return null
+  if (!isPendingInputPdfJobStatus(job.status)) return null
   if (!job.input_path) return null
   if (job.has_assets && !job.assets_path) return null
 
