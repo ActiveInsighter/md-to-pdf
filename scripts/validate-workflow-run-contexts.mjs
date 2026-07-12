@@ -68,12 +68,25 @@ function stepRange(lines, runIndex, header) {
   return { start, end }
 }
 
+function shellValue(line, expectedIndent, allowSequenceItem) {
+  if (indentation(line) === expectedIndent) {
+    const match = line.trim().match(/^shell:\s*([^#]+?)(?:\s+#.*)?$/)
+    if (match) return match[1].trim()
+  }
+
+  if (allowSequenceItem && indentation(line) === expectedIndent - 2) {
+    const match = line.trim().match(/^-\s+shell:\s*([^#]+?)(?:\s+#.*)?$/)
+    if (match) return match[1].trim()
+  }
+
+  return null
+}
+
 function stepShell(lines, runIndex, header) {
   const { start, end } = stepRange(lines, runIndex, header)
   for (let cursor = start; cursor < end; cursor += 1) {
-    if (indentation(lines[cursor]) !== header.propertyIndent) continue
-    const match = lines[cursor].trim().match(/^shell:\s*([^#]+?)(?:\s+#.*)?$/)
-    if (match) return match[1].trim()
+    const value = shellValue(lines[cursor], header.propertyIndent, cursor === start)
+    if (value !== null) return value
   }
   return null
 }
