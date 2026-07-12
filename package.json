@@ -11,7 +11,7 @@
     "build:queue": "node scripts/build-queue.mjs",
     "postprocess:pdf": "node scripts/postprocess-pdfs.mjs",
     "validate:manifest": "node scripts/validate-manifest.mjs",
-    "validate:workflows": "node scripts/validate-workflow-security.mjs && node scripts/validate-workflow-run-contexts.mjs && node scripts/validate-workflow-github-script.mjs && node scripts/validate-workflow-timeouts.mjs && node scripts/validate-workflow-concurrency.mjs && node scripts/validate-workflow-continue-on-error.mjs",
+    "validate:workflows": "node scripts/validate-workflow-security.mjs && node scripts/validate-workflow-run-contexts.mjs && node scripts/validate-workflow-github-script.mjs && node scripts/validate-workflow-timeouts.mjs && node scripts/validate-workflow-concurrency.mjs && node scripts/validate-workflow-continue-on-error.mjs && node scripts/validate-workflow-renderer-paths.mjs",
     "cleanup:branches": "node scripts/cleanup-merged-branches.mjs",
     "test": "node scripts/test-render.mjs",
     "test:render": "node scripts/test-render.mjs",
