@@ -101,7 +101,8 @@ export async function rebuildPdfJob(jobId: string): Promise<RebuildPdfJobRespons
   })
   if (error) throw new Error(error.message)
   if (!data?.jobId || data.sourceJobId !== jobId) throw new Error('重复构建返回的数据不完整。')
-  return data
+  await startPdfJob(data.jobId)
+  return { ...data, status: 'queued' }
 }
 
 export async function setPdfJobFavorite(jobId: string, isFavorite: boolean): Promise<FavoritePdfJobResponse> {
