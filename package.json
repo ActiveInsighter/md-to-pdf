@@ -14,6 +14,7 @@
     "cleanup:branches": "node scripts/cleanup-merged-branches.mjs",
     "test": "node scripts/test-render.mjs",
     "test:render": "node scripts/test-render.mjs",
+    "test:functions": "node --test supabase/functions/_shared/*.test.ts",
     "ci:build": "node scripts/build-with-log.mjs"
   },
   "devDependencies": {
