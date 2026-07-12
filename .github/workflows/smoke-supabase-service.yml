@@ -99,10 +99,12 @@ jobs:
 
       - name: Publish smoke test result
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const jobStatus = '${{ job.status }}'
+            const jobStatus = process.env.JOB_STATUS
             const state = jobStatus === 'success'
               ? 'success'
               : jobStatus === 'cancelled'
