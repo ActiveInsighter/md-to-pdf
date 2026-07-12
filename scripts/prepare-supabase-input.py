@@ -18,7 +18,7 @@ COPIED_DISPLAY_MATH_RE = re.compile(
     r"^[ \t]*\[[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*\][ \t]*$",
     re.MULTILINE,
 )
-COPIED_INLINE_MATH_RE = re.compile(r"(?<![\\\]])\(([^()\n]{1,160})\)")
+COPIED_INLINE_MATH_RE = re.compile(r"(?<![\\\]A-Za-z0-9_/:])\(([^()\n]{1,160})\)")
 
 
 def positive_int(value: str) -> int:
