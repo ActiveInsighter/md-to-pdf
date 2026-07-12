@@ -130,6 +130,10 @@ async function main() {
     }
   }
 
+  if (html.includes('class="katex-error"')) {
+    throw new Error('Rendered HTML contains a KaTeX error fallback instead of a formula');
+  }
+
   if (pdfHeader !== '%PDF-') {
     throw new Error(`Invalid PDF header: ${JSON.stringify(pdfHeader)}`);
   }
