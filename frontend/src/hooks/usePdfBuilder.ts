@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import {
   cancelPdfJob,
   createPdfJob,
-  getDownloadUrl,
+  getDownloadInfo,
   getPdfJob,
   listPdfJobs,
   readableError,
@@ -20,6 +20,7 @@ import {
   isTerminalPdfJobStatus,
 } from '../utils/pdfJobStatus'
 import { mergePdfJobHistory, shouldApplyPdfJobUpdate } from '../utils/pdfJobUpdates'
+import { classifyPageDrop } from '../utils/pageDrop'
 import {
   FALLBACK_POLL_INTERVAL_MS,
   getPdfJobPollInterval,
@@ -32,6 +33,17 @@ import { validateAssetsFile, validateMarkdownFile } from '../utils/uploadFiles'
 
 function activeJobKey(userId: string): string {
   return `md-to-pdf-active-job:${userId}`
+}
+
+function downloadFile(href: string, filename: string): void {
+  const anchor = document.createElement('a')
+  anchor.href = href
+  anchor.download = filename
+  anchor.rel = 'noopener'
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
 }
 
 export function usePdfBuilder() {
@@ -57,6 +69,9 @@ export function usePdfBuilder() {
   const terminalHistoryRefreshKey = useRef<string | null>(null)
 
   const userId = session?.user.id ?? null
+  const pageDropDisabled = busy
+    || uploadPhase === 'submitted'
+    || submissionRecovery?.status === 'uploaded'
 
   const initializeAuth = useCallback(async () => {
     const attempt = ++authAttempt.current
@@ -184,8 +199,12 @@ export function usePdfBuilder() {
 
     setHistory([])
     void refreshHistory()
-    const savedJobId = localStorage.getItem(activeJobKey(userId))
-    if (savedJobId) void loadJob(savedJobId)
+    try {
+      const savedJobId = localStorage.getItem(activeJobKey(userId))
+      if (savedJobId) void loadJob(savedJobId)
+    } catch {
+      // The workspace still works when local storage is unavailable.
+    }
   }, [loadJob, refreshHistory, userId])
 
   useEffect(() => {
@@ -250,6 +269,34 @@ export function usePdfBuilder() {
     }
   }, [applyJobUpdate, job?.id, job?.status, loadJob, userId])
 
+  const acceptDroppedFiles = useCallback((files: File[]) => {
+    if (pageDropDisabled) {
+      setError('当前任务正在提交或构建，暂时不能替换文件。')
+      return
+    }
+
+    const selection = classifyPageDrop(files)
+    if (selection.error) {
+      setError(selection.error)
+      return
+    }
+
+    if (submissionRecovery?.status === 'created') {
+      if (selection.markdown && selection.markdown.name !== submissionRecovery.sourceName) {
+        setError(`恢复任务需要原文件“${submissionRecovery.sourceName}”。如需更换文件，请先放弃该任务。`)
+        return
+      }
+      if (selection.assets && !submissionRecovery.hasAssets) {
+        setError('该恢复任务创建时未包含资源包，请先放弃任务后重新创建。')
+        return
+      }
+    }
+
+    if (selection.markdown) setMarkdown(selection.markdown)
+    if (selection.assets) setAssets(selection.assets)
+    setError('')
+  }, [pageDropDisabled, submissionRecovery])
+
   const start = useCallback(async () => {
     if (!userId || busy || uploadPhase === 'submitted') return
 
@@ -277,6 +324,11 @@ export function usePdfBuilder() {
       }
     }
 
+    if (recovery?.status === 'created' && markdown?.name !== recovery.sourceName) {
+      setError(`恢复任务需要原文件“${recovery.sourceName}”。`)
+      return
+    }
+
     if (recovery?.status === 'created' && recovery.hasAssets && !assets) {
       setError('该任务需要原资源压缩包，请重新选择 ZIP 文件后重试。')
       return
@@ -296,12 +348,20 @@ export function usePdfBuilder() {
 
     try {
       if (!target) {
-        const created = await createPdfJob(Boolean(assets))
+        const created = await createPdfJob(Boolean(assets), markdown!.name)
         target = createSubmissionRecovery(created, Boolean(assets))
         setSubmissionRecovery(target)
-        localStorage.setItem(activeJobKey(userId), target.jobId)
+        try {
+          localStorage.setItem(activeJobKey(userId), target.jobId)
+        } catch {
+          // The active task is still retained in React state.
+        }
       } else {
-        localStorage.setItem(activeJobKey(userId), target.jobId)
+        try {
+          localStorage.setItem(activeJobKey(userId), target.jobId)
+        } catch {
+          // The active task is still retained in React state.
+        }
       }
 
       if (target.status === 'created') {
@@ -326,8 +386,8 @@ export function usePdfBuilder() {
       await loadJob(target.jobId)
       await refreshHistory()
     } catch (cause) {
-      const message = readableError(cause)
-      setError(target ? `${message} 任务已保留，可修复后重试。` : message)
+      const failureMessage = readableError(cause)
+      setError(target ? `${failureMessage} 任务已保留，可修复后重试。` : failureMessage)
 
       if (!target) {
         setProgress(0)
@@ -384,14 +444,21 @@ export function usePdfBuilder() {
     if (!job) return
 
     try {
-      window.location.assign(await getDownloadUrl(job.id))
+      const result = await getDownloadInfo(job.id)
+      downloadFile(result.downloadUrl, result.filename || job.output_filename)
     } catch (cause) {
       setError(readableError(cause))
     }
   }, [job])
 
   const clearWorkspace = useCallback(() => {
-    if (userId) localStorage.removeItem(activeJobKey(userId))
+    if (userId) {
+      try {
+        localStorage.removeItem(activeJobKey(userId))
+      } catch {
+        // Continue clearing the in-memory workspace.
+      }
+    }
     jobContextVersion.current += 1
     jobRef.current = null
     setJob(null)
@@ -475,7 +542,13 @@ export function usePdfBuilder() {
       setUploadPhase('submitted')
     }
 
-    if (userId) localStorage.setItem(activeJobKey(userId), selected.id)
+    if (userId) {
+      try {
+        localStorage.setItem(activeJobKey(userId), selected.id)
+      } catch {
+        // The selected task remains active in React state.
+      }
+    }
   }, [userId])
 
   const signOut = useCallback(async () => {
@@ -499,8 +572,10 @@ export function usePdfBuilder() {
     progress,
     uploadPhase,
     error,
+    pageDropDisabled,
     setMarkdown,
     setAssets,
+    acceptDroppedFiles,
     retryAuth: initializeAuth,
     refreshHistory,
     start,
