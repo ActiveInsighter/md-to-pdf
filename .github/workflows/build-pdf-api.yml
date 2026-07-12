@@ -66,6 +66,28 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Fetch and validate queued job
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/input work/source work/logs dist
+          node scripts/supabase-pdf-job.mjs get --output work/job.json
+          JOB_STATUS="$(node -e 'const j=require("./work/job.json"); process.stdout.write(j.status)')"
+          [[ "$JOB_STATUS" == "queued" ]] || {
+            echo "Job is not queued; current status: $JOB_STATUS"
+            exit 1
+          }
+          THEME="$(node -e 'const j=require("./work/job.json"); const t=String(j.theme||""); if(!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(t)) process.exit(2); process.stdout.write(t)')"
+          [[ -f "themes/${THEME}.css" ]] || {
+            echo "Theme does not exist: $THEME"
+            exit 1
+          }
+          echo "PDF_THEME=$THEME" >> "$GITHUB_ENV"
+
+      - name: Mark building
+        shell: bash
+        run: node scripts/supabase-pdf-job.mjs status building
+
       - name: Restore installed Node dependencies
         id: node-modules-cache
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
@@ -141,28 +163,7 @@ jobs:
             exit 1
           }
           echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
-
-      - name: Fetch and validate queued job
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p work/input work/source work/logs dist
-          node scripts/supabase-pdf-job.mjs get --output work/job.json
-          JOB_STATUS="$(node -e 'const j=require("./work/job.json"); process.stdout.write(j.status)')"
-          [[ "$JOB_STATUS" == "queued" ]] || {
-            echo "Job is not queued; current status: $JOB_STATUS"
-            exit 1
-          }
-          THEME="$(node -e 'const j=require("./work/job.json"); const t=String(j.theme||""); if(!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(t)) process.exit(2); process.stdout.write(t)')"
-          [[ -f "themes/${THEME}.css" ]] || {
-            echo "Theme does not exist: $THEME"
-            exit 1
-          }
-          echo "PDF_THEME=$THEME" >> "$GITHUB_ENV"
-
-      - name: Mark building
-        shell: bash
-        run: node scripts/supabase-pdf-job.mjs status building
+          node scripts/supabase-pdf-job.mjs progress 48 --message "构建环境准备完成"
 
       - name: Download Markdown
         shell: bash
@@ -170,6 +171,7 @@ jobs:
           set -euo pipefail
           node scripts/supabase-pdf-job.mjs download-input --output work/input/input.md \
             2>&1 | tee work/logs/download-input.log
+          node scripts/supabase-pdf-job.mjs progress 52 --message "Markdown 已下载"
 
       - name: Download optional assets
         id: download
@@ -180,6 +182,7 @@ jobs:
             --output work/input/assets.zip \
             --github-output "$GITHUB_OUTPUT" \
             2>&1 | tee work/logs/download-assets.log
+          node scripts/supabase-pdf-job.mjs progress 58 --message "输入文件已准备完成"
 
       - name: Prepare source safely
         env:
@@ -201,11 +204,13 @@ jobs:
             ARGS+=(--assets work/input/assets.zip)
           fi
           python3 scripts/prepare-supabase-input.py "${ARGS[@]}"
+          node scripts/supabase-pdf-job.mjs progress 68 --message "源文件已通过安全检查"
 
       - name: Build and validate PDF
         shell: bash
         run: |
           set -euo pipefail
+          node scripts/supabase-pdf-job.mjs progress 72 --message "正在渲染 PDF"
           node scripts/build-pdf.mjs work/source/input.md dist/output.pdf --theme "$PDF_THEME"
           test -s dist/output.pdf
           [[ "$(head -c 4 dist/output.pdf)" == "%PDF" ]] || {
@@ -213,6 +218,7 @@ jobs:
             exit 1
           }
           pdfinfo dist/output.pdf | tee dist/pdfinfo.txt
+          node scripts/supabase-pdf-job.mjs progress 88 --message "PDF 已生成并通过有效性检查"
 
       - name: Mark uploading
         shell: bash
@@ -220,7 +226,10 @@ jobs:
 
       - name: Upload PDF to Supabase Storage
         shell: bash
-        run: node scripts/supabase-pdf-job.mjs upload-output --input dist/output.pdf
+        run: |
+          set -euo pipefail
+          node scripts/supabase-pdf-job.mjs upload-output --input dist/output.pdf
+          node scripts/supabase-pdf-job.mjs progress 97 --message "PDF 已上传，正在完成任务"
 
       - name: Mark completed
         shell: bash
