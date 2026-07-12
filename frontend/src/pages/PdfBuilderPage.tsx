@@ -5,6 +5,7 @@ import { PdfJobHistory } from '../components/PdfJobHistory'
 import { PdfJobStatus } from '../components/PdfJobStatus'
 import { PdfUpload } from '../components/PdfUpload'
 import { usePdfBuilder } from '../hooks/usePdfBuilder'
+import { usePdfJobNotifications } from '../hooks/usePdfJobNotifications'
 
 const capabilities = [
   ['KaTeX', '数学公式'],
@@ -22,14 +23,11 @@ const workflow = [
 function ProductIntro() {
   return (
     <section className="intro-panel glass-panel hero-panel" aria-labelledby="hero-title">
-      <div className="hero-glow hero-glow-blue" aria-hidden="true" />
-      <div className="hero-glow hero-glow-orange" aria-hidden="true" />
-
       <div className="hero-content">
-        <p className="hero-kicker"><span aria-hidden="true" />DESIGN-READY DOCUMENT PIPELINE</p>
+        <p className="hero-kicker"><span aria-hidden="true" />DOCUMENT BUILD SERVICE</p>
         <h2 id="hero-title">
           <span className="hero-gradient">Markdown</span>
-          <br />生成精致 PDF
+          <br />生成清晰 PDF
         </h2>
         <p className="hero-description">
           将结构化内容、数学公式和代码高亮送入稳定的 Chromium 渲染链路，获得适合阅读与交付的高质量文档。
@@ -98,6 +96,14 @@ export function PdfBuilderPage() {
     signOut,
   } = usePdfBuilder()
 
+  const {
+    notice,
+    notificationSupported,
+    notificationsEnabled,
+    enableNotifications,
+    dismissNotice,
+  } = usePdfJobNotifications(job)
+
   if (authStatus !== 'ready') {
     return (
       <AppShell authenticated={false}>
@@ -126,6 +132,15 @@ export function PdfBuilderPage() {
 
   return (
     <AppShell authenticated onSignOut={() => void signOut()}>
+      {notice && (
+        <div className={`completion-notice notice-${notice.status}`} role="status" aria-live="assertive">
+          <div>
+            <strong>{notice.title}</strong>
+            <p>{notice.message}</p>
+          </div>
+          <button type="button" className="secondary" onClick={dismissNotice}>关闭</button>
+        </div>
+      )}
       {error && <div className="alert" role="alert">{error}</div>}
       <div className="workspace-grid" id="workspace">
         <div className="workspace-main">
@@ -141,7 +156,14 @@ export function PdfBuilderPage() {
             onStart={() => void start()}
             onReset={() => void reset()}
           />
-          <PdfJobStatus job={job} onDownload={() => void download()} onNew={() => void reset()} />
+          <PdfJobStatus
+            job={job}
+            notificationSupported={notificationSupported}
+            notificationsEnabled={notificationsEnabled}
+            onEnableNotifications={() => void enableNotifications()}
+            onDownload={() => void download()}
+            onNew={() => void reset()}
+          />
         </div>
         <aside className="workspace-sidebar" id="history" aria-label="任务历史">
           <PdfJobHistory
