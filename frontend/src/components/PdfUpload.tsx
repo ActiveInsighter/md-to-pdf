@@ -48,6 +48,7 @@ export function PdfUpload({
   const sourceFilename = recovery?.sourceFilename || markdown?.name || ''
   const documentName = recovery?.documentName
     || (sourceFilename ? documentNameFromMarkdown(sourceFilename) : '')
+  const recoveryLabel = recovery?.documentName || `任务 ${recovery?.jobId.slice(0, 8) || ''}`
   const outputFilename = sourceFilename
     ? pdfFilenameFromMarkdown(sourceFilename)
     : documentName
@@ -85,7 +86,7 @@ export function PdfUpload({
 
       {recovery && (
         <div className="upload-recovery-note" role="status">
-          <strong>{recovery.documentName}</strong>
+          <strong>{recoveryLabel}</strong>
           <span>
             {recovery.status === 'uploaded'
               ? '文件已上传，将直接重新请求构建。'
@@ -97,7 +98,9 @@ export function PdfUpload({
       <div className="upload-grid">
         <FileDropField
           title="Markdown"
-          hint={recovery?.status === 'uploaded' ? recovery.sourceFilename : '.md，最大 10 MiB'}
+          hint={recovery?.status === 'uploaded'
+            ? recovery.sourceFilename || 'Markdown 文件已上传'
+            : '.md，最大 10 MiB'}
           accept=".md,text/markdown,text/plain"
           file={markdown}
           disabled={filesLocked}
