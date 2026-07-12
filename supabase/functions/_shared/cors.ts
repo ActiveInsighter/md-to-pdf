@@ -5,6 +5,8 @@ const EXACT_ALLOWED_ORIGINS = new Set([
 ])
 
 const CLOUDFLARE_PREVIEW_ORIGIN_RE = /^https:\/\/[a-z0-9-]+\.md-to-pdf-web\.pages\.dev$/i
+const TO_ANY_ORIGIN_RE = /^https:\/\/(?:[a-z0-9-]+\.)*to-any\.top$/i
+const ANY1_ORIGIN_RE = /^https:\/\/(?:[a-z0-9-]+\.)*any1\.tech$/i
 
 const BASE_CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -14,7 +16,10 @@ const BASE_CORS_HEADERS = {
 }
 
 export function isAllowedOrigin(origin: string): boolean {
-  return EXACT_ALLOWED_ORIGINS.has(origin) || CLOUDFLARE_PREVIEW_ORIGIN_RE.test(origin)
+  return EXACT_ALLOWED_ORIGINS.has(origin)
+    || CLOUDFLARE_PREVIEW_ORIGIN_RE.test(origin)
+    || TO_ANY_ORIGIN_RE.test(origin)
+    || ANY1_ORIGIN_RE.test(origin)
 }
 
 export function corsHeaders(req: Request): HeadersInit {
@@ -30,6 +35,7 @@ export function handleOptions(req: Request): Response | null {
 
   const origin = req.headers.get('origin')?.trim() || ''
   if (origin && !isAllowedOrigin(origin)) {
+    console.warn(`CORS rejected origin: ${origin}`)
     return json(req, { error: '不允许的请求来源。' }, 403)
   }
 
