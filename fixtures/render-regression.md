@@ -16,6 +16,19 @@ P(X=k) &= \binom{n}{k}p^k(1-p)^{n-k}
 \end{aligned}
 \]
 
+导数与变限积分公式：
+
+\[
+\boxed{F'(x)=f\bigl(\beta(x)\bigr)\beta'(x)-f\bigl(\alpha(x)\bigr)\alpha'(x)}
+\]
+
+\[
+\begin{aligned}
+F'(x)&=\sqrt{\ln(1+x)}\,\mathrm e^{\ln(1+x)}\frac{1}{1+x}\\
+&\quad-\sqrt{2x}\,\mathrm e^{2x}\cdot 2
+\end{aligned}
+\]
+
 ## 提示块
 
 > [!NOTE] 渲染检查
