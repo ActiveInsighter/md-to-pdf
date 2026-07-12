@@ -137,21 +137,19 @@ jobs:
           echo "Production UI did not become reachable after deployment."
           exit 1
 
-      - name: Install screenshot browser
+      - name: Verify screenshot tooling
         working-directory: frontend
         shell: bash
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
         run: |
           set -euo pipefail
-          npx --yes "playwright@${PLAYWRIGHT_VERSION}" install --with-deps chromium
+          google-chrome --version
+          npx --yes "playwright@${PLAYWRIGHT_VERSION}" --version
 
       - name: Capture deployed UI screenshots
         working-directory: frontend
         shell: bash
         env:
           PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
-          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
         run: |
           set -euo pipefail
           SCREENSHOT_DIR="deployment-screenshots"
@@ -160,7 +158,7 @@ jobs:
           mkdir -p "$SCREENSHOT_DIR"
 
           npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
-            --browser chromium \
+            --channel chrome \
             --color-scheme light \
             --lang zh-CN \
             --viewport-size "1440,1000" \
@@ -172,7 +170,7 @@ jobs:
             "$SCREENSHOT_DIR/desktop-1440.png"
 
           npx --yes "playwright@${PLAYWRIGHT_VERSION}" screenshot \
-            --browser chromium \
+            --channel chrome \
             --color-scheme light \
             --lang zh-CN \
             --device "iPhone 13" \
@@ -192,6 +190,7 @@ jobs:
             runId: process.env.GITHUB_RUN_ID,
             capturedAt: new Date().toISOString(),
             playwrightVersion: process.env.PLAYWRIGHT_VERSION,
+            browserChannel: 'chrome',
             screenshots: [
               { file: 'desktop-1440.png', viewport: '1440x1000', fullPage: true },
               { file: 'mobile-iphone-13.png', device: 'iPhone 13', fullPage: true },
