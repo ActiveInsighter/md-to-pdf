@@ -34,35 +34,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Collect tracked generated files
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          git ls-files \
-            | grep -E '(^|/)(__pycache__/|[^/]+\.py[co]$|\.tmp/|work/|coverage/|playwright-report/|test-results/)' \
-            > tracked-generated-files.txt \
-            || true
-
-          if [[ -s tracked-generated-files.txt ]]; then
-            echo 'Generated files must not be tracked:'
-            cat tracked-generated-files.txt
-          fi
-
-      - name: Upload hygiene diagnostics
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: repository-hygiene-diagnostics
-          path: tracked-generated-files.txt
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Reject tracked generated files
         shell: bash
         run: |
           set -euo pipefail
-          test ! -s tracked-generated-files.txt
+
+          forbidden_files="$({
+            git ls-files | grep -E '(^|/)(__pycache__/|[^/]+\.py[co]$|\.tmp/|work/|coverage/|playwright-report/|test-results/)' || true
+          })"
+
+          if [[ -n "$forbidden_files" ]]; then
+            echo 'Generated files must not be tracked:'
+            printf '%s\n' "$forbidden_files"
+            exit 1
+          fi
 
       - name: Validate ignore rules
         shell: bash
