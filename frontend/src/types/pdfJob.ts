@@ -15,6 +15,8 @@ export type PdfJob = {
   id: string
   user_id: string
   status: PdfJobStatus
+  source_name: string
+  output_filename: string
   input_path: string | null
   assets_path: string | null
   output_path: string | null
@@ -44,5 +46,7 @@ export type CreatePdfJobResponse = {
   assetsPath: string | null
   theme: string
   options: { breaks: true; toc: true }
+  sourceName: string
+  outputFilename: string
   expiresAt: string
 }
