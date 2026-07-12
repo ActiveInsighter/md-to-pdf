@@ -14,6 +14,8 @@ export type SubmissionRecovery = {
   inputPath: string
   assetsPath: string | null
   hasAssets: boolean
+  sourceFilename?: string
+  documentName?: string
 }
 
 export const uploadPhaseLabels: Record<UploadPhase, string> = {

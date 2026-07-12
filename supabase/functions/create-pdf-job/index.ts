@@ -1,10 +1,12 @@
 import { handleOptions, json } from '../_shared/cors.ts'
+import { normalizeDocumentName } from '../_shared/document-name.ts'
 import { createAdminClient, requireUser, safeErrorMessage } from '../_shared/supabase.ts'
 
 type CreateJobBody = {
   theme?: string
   options?: { breaks?: boolean; toc?: boolean }
   hasAssets?: boolean
+  sourceFilename?: string
 }
 
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
@@ -22,6 +24,9 @@ Deno.serve(async (req) => {
     if (!THEME_RE.test(theme) || !ALLOWED_THEMES.has(theme)) {
       return json(req, { error: '不支持的 PDF 主题。' }, 400)
     }
+
+    const document = normalizeDocumentName(body.sourceFilename || 'document.md')
+    if (!document) return json(req, { error: '源文件名必须是有效的 Markdown 文件名。' }, 400)
 
     const breaks = body.options?.breaks ?? true
     const toc = body.options?.toc ?? true
@@ -44,11 +49,13 @@ Deno.serve(async (req) => {
         input_path: inputPath,
         assets_path: assetsPath,
         has_assets: hasAssets,
+        source_filename: document.sourceFilename,
+        document_name: document.documentName,
         theme,
         options: { breaks: true, toc: true },
         expires_at: expiresAt,
       })
-      .select('id,status,input_path,assets_path,theme,options,expires_at')
+      .select('id,status,input_path,assets_path,source_filename,document_name,theme,options,expires_at')
       .single()
 
     if (error) throw error
@@ -57,6 +64,9 @@ Deno.serve(async (req) => {
       status: data.status,
       inputPath: data.input_path,
       assetsPath: data.assets_path,
+      sourceFilename: data.source_filename,
+      documentName: data.document_name,
+      outputFilename: document.outputFilename,
       theme: data.theme,
       options: data.options,
       expiresAt: data.expires_at,

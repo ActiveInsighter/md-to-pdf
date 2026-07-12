@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getDownloadUrl } from '../api/pdfJobs'
+import { getPdfDownload } from '../api/pdfJobs'
 import type { PdfJob } from '../types/pdfJob'
 import { isTerminalPdfJobStatus } from '../utils/pdfJobStatus'
 
@@ -77,10 +77,10 @@ function sendBrowserNotification(title: string, body: string): void {
 }
 
 async function triggerDownload(jobId: string): Promise<void> {
-  const href = await getDownloadUrl(jobId)
+  const download = await getPdfDownload(jobId)
   const anchor = document.createElement('a')
-  anchor.href = href
-  anchor.download = `pdf-${jobId}.pdf`
+  anchor.href = download.downloadUrl
+  anchor.download = download.fileName
   anchor.rel = 'noopener'
   anchor.style.display = 'none'
   document.body.appendChild(anchor)
@@ -205,8 +205,8 @@ export function usePdfDelivery({ job, userId }: Options) {
 
     if (job.status === 'completed') {
       const completionMessage = autoDownload
-        ? 'PDF 已生成，正在自动开始下载。'
-        : 'PDF 已生成，可以立即下载。'
+        ? `${job.document_name}.pdf 已生成，正在自动下载。`
+        : `${job.document_name}.pdf 已生成，可以立即下载。`
       setNotice({ kind: 'success', title: 'PDF 构建完成', message: completionMessage })
       if (notifyOnComplete) sendBrowserNotification('PDF 构建完成', completionMessage)
 
@@ -219,7 +219,7 @@ export function usePdfDelivery({ job, userId }: Options) {
             setNotice({
               kind: 'error',
               title: '自动下载未能启动',
-              message: error instanceof Error ? error.message : '请使用“下载 PDF”按钮重试。',
+              message: error instanceof Error ? error.message : '请使用下载按钮重试。',
             })
           })
         }
@@ -229,7 +229,7 @@ export function usePdfDelivery({ job, userId }: Options) {
 
     if (job.status === 'failed') {
       const failureMessage = job.error_message || '构建未成功，请查看任务状态和 Actions 日志。'
-      setNotice({ kind: 'error', title: 'PDF 构建失败', message: failureMessage })
+      setNotice({ kind: 'error', title: `${job.document_name} 构建失败`, message: failureMessage })
       if (notifyOnComplete) sendBrowserNotification('PDF 构建失败', failureMessage)
       return
     }

@@ -34,8 +34,7 @@ function formatDuration(milliseconds: number | null): string {
   const remainingSeconds = seconds % 60
   if (minutes < 60) return `${minutes} 分 ${remainingSeconds} 秒`
   const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
-  return `${hours} 小时 ${remainingMinutes} 分`
+  return `${hours} 小时 ${minutes % 60} 分`
 }
 
 export function PdfJobStatus({ job, autoDownload, notifyOnComplete, onDownload, onNew }: Props) {
@@ -67,29 +66,29 @@ export function PdfJobStatus({ job, autoDownload, notifyOnComplete, onDownload, 
 
   const timeline = [
     ['创建任务', job.created_at],
-    ['输入文件就绪', job.uploaded_at],
-    ['进入构建队列', job.queued_at],
-    ['运行器启动', job.started_at],
-    ['开始渲染', job.rendering_at],
-    ['上传生成结果', job.uploading_at],
+    ['文件就绪', job.uploaded_at],
+    ['进入队列', job.queued_at],
+    ['开始构建', job.started_at],
+    ['渲染 PDF', job.rendering_at],
+    ['上传结果', job.uploading_at],
     [job.status === 'failed' ? '任务终止' : '构建完成', job.completed_at],
   ] as const
 
   return (
     <section className="card status-card" aria-live="polite">
-      <div className="status-heading">
+      <div className="section-heading status-heading">
         <div>
           <span className={`badge status-${job.status}`}>{PDF_JOB_STATUS_LABELS[job.status]}</span>
-          <h2>PDF 构建进度</h2>
-          <p className="status-stage-copy">{getPdfJobStageLabel(job)}</p>
+          <h2 title={job.document_name}>{job.document_name}</h2>
+          <p>{getPdfJobStageLabel(job)}</p>
         </div>
-        <code title={job.id}>{job.id.slice(0, 8)}</code>
+        <code title={job.source_filename}>{job.source_filename.replace(/\.md$/i, '.pdf')}</code>
       </div>
 
       <div className={`build-progress-panel${job.status === 'failed' ? ' is-failed' : ''}`}>
         <div className="build-progress-summary">
           <strong>{progress}%</strong>
-          <span>{terminal ? '最终状态' : '服务器已确认的最新里程碑'}</span>
+          <span>{terminal ? '最终状态' : '实际构建进度'}</span>
         </div>
         <div
           className="progress build-progress"
@@ -102,50 +101,40 @@ export function PdfJobStatus({ job, autoDownload, notifyOnComplete, onDownload, 
         >
           <span style={{ width: `${progress}%` }} />
         </div>
-        {!terminal && (
-          <p className="build-progress-note">
-            状态由 GitHub Actions 在真实步骤完成后写回，不再使用前端模拟进度。
-          </p>
-        )}
       </div>
 
       <div className="duration-grid" aria-label="任务耗时">
         <div><span>总耗时</span><strong>{formatDuration(totalDuration)}</strong></div>
-        <div><span>排队耗时</span><strong>{formatDuration(queueDuration)}</strong></div>
-        <div><span>实际构建</span><strong>{formatDuration(buildDuration)}</strong></div>
+        <div><span>排队</span><strong>{formatDuration(queueDuration)}</strong></div>
+        <div><span>构建</span><strong>{formatDuration(buildDuration)}</strong></div>
       </div>
 
-      <ol className="job-timeline" aria-label="任务时间线">
-        {timeline.map(([label, value]) => (
-          <li className={value ? 'is-complete' : ''} key={label}>
-            <span className="timeline-marker" aria-hidden="true" />
-            <div>
-              <strong>{label}</strong>
-              <time>{formatTime(value)}</time>
-            </div>
-          </li>
-        ))}
-      </ol>
+      <details className="timeline-details">
+        <summary>查看时间线</summary>
+        <ol className="job-timeline">
+          {timeline.map(([label, value]) => (
+            <li className={value ? 'is-complete' : ''} key={label}>
+              <span className="timeline-marker" aria-hidden="true" />
+              <div>
+                <strong>{label}</strong>
+                <time>{formatTime(value)}</time>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </details>
 
-      <dl className="job-metadata">
-        <div><dt>主题</dt><dd>{job.theme}</dd></div>
-        <div><dt>更新时间</dt><dd>{formatTime(job.updated_at)}</dd></div>
-        <div><dt>到期时间</dt><dd>{formatTime(job.expires_at)}</dd></div>
-        <div>
-          <dt>完成后交付</dt>
-          <dd>{autoDownload ? '自动下载' : '手动下载'}{notifyOnComplete ? ' · 系统通知' : ''}</dd>
-        </div>
-      </dl>
+      <div className="status-footer">
+        <span>{autoDownload ? '完成后自动下载' : '手动下载'}{notifyOnComplete ? ' · 浏览器通知' : ''}</span>
+        {job.github_run_url && (
+          <a href={job.github_run_url} target="_blank" rel="noreferrer">构建日志</a>
+        )}
+      </div>
 
-      {job.github_run_url && (
-        <a className="actions-link" href={job.github_run_url} target="_blank" rel="noreferrer">
-          查看 GitHub Actions 运行日志
-        </a>
-      )}
       {job.error_message && <p className="error-text status-error">{job.error_message}</p>}
-      <div className="row status-actions">
-        {job.status === 'completed' && <button onClick={onDownload}>下载 PDF</button>}
-        {terminal && <button className="secondary" onClick={onNew}>重新生成</button>}
+      <div className="status-actions">
+        {job.status === 'completed' && <button onClick={onDownload}>下载 {job.document_name}.pdf</button>}
+        {terminal && <button className="secondary" onClick={onNew}>新建任务</button>}
       </div>
     </section>
   )

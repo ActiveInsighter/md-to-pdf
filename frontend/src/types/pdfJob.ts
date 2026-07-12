@@ -18,6 +18,8 @@ export type PdfJob = {
   input_path: string | null
   assets_path: string | null
   output_path: string | null
+  source_filename: string
+  document_name: string
   has_assets: boolean
   theme: string
   options: { breaks?: boolean; toc?: boolean }
@@ -42,7 +44,15 @@ export type CreatePdfJobResponse = {
   status: PdfJobStatus
   inputPath: string
   assetsPath: string | null
+  sourceFilename: string
+  documentName: string
+  outputFilename: string
   theme: string
   options: { breaks: true; toc: true }
   expiresAt: string
+}
+
+export type PdfDownload = {
+  downloadUrl: string
+  fileName: string
 }
