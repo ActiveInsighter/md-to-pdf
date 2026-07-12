@@ -11,6 +11,7 @@ const repository = 'owner/repository';
 const branch = 'feature/http-fixture';
 const mergedSha = '1'.repeat(40);
 const divergedSha = '2'.repeat(40);
+const requestTimeoutMs = 200;
 
 function runCleanup(env) {
   return new Promise((resolve, reject) => {
@@ -58,17 +59,27 @@ async function listen(server) {
 }
 
 async function close(server) {
+  if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
   await new Promise((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()));
   });
 }
 
-async function runScenario({ name, dryRun, currentSha, expectDelete, expectedOutput }) {
+async function runScenario({
+  name,
+  dryRun,
+  currentSha,
+  expectDelete,
+  expectedOutput,
+  expectedCode = 0,
+  hangGet = false,
+}) {
   const requests = [];
   const server = http.createServer((request, response) => {
     requests.push({ method: request.method, url: request.url });
 
     if (request.method === 'GET' && request.url === `/repos/${repository}/git/ref/heads/${branch}`) {
+      if (hangGet) return;
       response.writeHead(200, { 'Content-Type': 'application/json' });
       response.end(JSON.stringify({ object: { sha: currentSha } }));
       return;
@@ -106,6 +117,7 @@ async function runScenario({ name, dryRun, currentSha, expectDelete, expectedOut
       'utf8',
     );
 
+    const startedAt = Date.now();
     const result = await runCleanup({
       GITHUB_TOKEN: 'test-token',
       GITHUB_REPOSITORY: repository,
@@ -114,12 +126,15 @@ async function runScenario({ name, dryRun, currentSha, expectDelete, expectedOut
       GITHUB_API_URL: apiBase,
       DRY_RUN: String(dryRun),
       MAX_PULLS: '1',
+      REQUEST_TIMEOUT_MS: String(requestTimeoutMs),
     });
+    const elapsedMs = Date.now() - startedAt;
     const output = `${result.stdout}\n${result.stderr}`;
 
-    assert.equal(result.code, 0, `${name}: expected success, received ${result.code}\n${output}`);
+    assert.equal(result.code, expectedCode, `${name}: expected exit ${expectedCode}, received ${result.code}\n${output}`);
     assert.equal(result.signal, null, `${name}: child exited via signal ${result.signal}`);
     assert.match(output, expectedOutput, `${name}: expected output was not found\n${output}`);
+    assert.ok(elapsedMs < 2_000, `${name}: request timeout took too long (${elapsedMs}ms)`);
 
     const deleteRequests = requests.filter((request) => request.method === 'DELETE');
     assert.equal(
@@ -157,4 +172,14 @@ await runScenario({
   expectedOutput: /Deleted feature\/http-fixture/,
 });
 
-console.log('Branch cleanup HTTP safety tests passed: 3 scenario(s).');
+await runScenario({
+  name: 'hung branch lookup times out',
+  dryRun: false,
+  currentSha: mergedSha,
+  expectDelete: false,
+  expectedCode: 1,
+  hangGet: true,
+  expectedOutput: new RegExp(`GET /repos/${repository}/git/ref/heads/${branch} timed out after ${requestTimeoutMs}ms`),
+});
+
+console.log('Branch cleanup HTTP safety tests passed: 4 scenario(s).');
