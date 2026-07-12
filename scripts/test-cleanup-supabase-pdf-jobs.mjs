@@ -7,6 +7,7 @@ import process from 'node:process';
 const scriptPath = path.resolve(process.cwd(), 'scripts', 'cleanup-supabase-pdf-jobs.mjs');
 const bucket = 'pdf-jobs';
 const requestTimeoutMs = 200;
+const requestMaxAttempts = 3;
 
 function runCleanup(env) {
   return new Promise((resolve, reject) => {
@@ -73,6 +74,9 @@ function cleanupEnvironment(supabaseUrl) {
     SUPABASE_SERVICE_ROLE_KEY: '',
     SUPABASE_STORAGE_BUCKET: bucket,
     REQUEST_TIMEOUT_MS: String(requestTimeoutMs),
+    REQUEST_MAX_ATTEMPTS: String(requestMaxAttempts),
+    RETRY_BASE_DELAY_MS: '5',
+    RETRY_MAX_DELAY_MS: '20',
   };
 }
 
@@ -127,7 +131,7 @@ async function runPartialFailureScenario() {
     assert.match(output, /Cleanup failed for 1\/2 expired jobs/);
 
     const deleteRequests = requests.filter((request) => request.method === 'DELETE');
-    assert.equal(deleteRequests.length, 2, `Expected both jobs to be attempted: ${JSON.stringify(requests)}`);
+    assert.equal(deleteRequests.length, 2, `HTTP 500 must not be retried: ${JSON.stringify(requests)}`);
 
     const patchRequests = requests.filter((request) => request.method === 'PATCH');
     assert.equal(patchRequests.length, 1, `Expected only the successful job to be marked expired: ${JSON.stringify(requests)}`);
@@ -181,7 +185,8 @@ async function runTimeoutContinuationScenario() {
 
     assert.equal(result.code, 1, `Expected timeout scenario to exit 1, received ${result.code}\n${output}`);
     assert.equal(result.signal, null, `Cleanup child exited via signal ${result.signal}`);
-    assert.ok(elapsedMs < 2_000, `Timed-out request took too long (${elapsedMs}ms)`);
+    assert.ok(elapsedMs < 2_000, `Timed-out requests took too long (${elapsedMs}ms)`);
+    assert.match(output, new RegExp(`attempt ${requestMaxAttempts}/${requestMaxAttempts}`));
     assert.match(
       output,
       new RegExp(
@@ -191,7 +196,11 @@ async function runTimeoutContinuationScenario() {
     assert.match(output, /Expired jobs cleaned: 1\/2; failed: 1/);
 
     const deleteRequests = requests.filter((request) => request.method === 'DELETE');
-    assert.equal(deleteRequests.length, 2, `Expected cleanup to continue after timeout: ${JSON.stringify(requests)}`);
+    assert.equal(
+      deleteRequests.length,
+      requestMaxAttempts + 1,
+      `Expected timeout retries followed by the next job: ${JSON.stringify(requests)}`,
+    );
 
     const patchRequests = requests.filter((request) => request.method === 'PATCH');
     assert.equal(patchRequests.length, 1, `Expected only the second job to be marked expired: ${JSON.stringify(requests)}`);
@@ -202,7 +211,85 @@ async function runTimeoutContinuationScenario() {
   }
 }
 
+async function runListingScenario({ name, statuses, retryAfter = null, expectedCode, expectedGetCount, expectedOutputs }) {
+  const requests = [];
+  let getAttempt = 0;
+  const server = http.createServer(async (request, response) => {
+    const body = await readBody(request);
+    requests.push({ method: request.method, url: request.url, body });
+    const url = new URL(request.url || '/', 'http://localhost');
+
+    if (request.method === 'GET' && url.pathname === '/rest/v1/pdf_jobs') {
+      getAttempt += 1;
+      const status = statuses[Math.min(getAttempt - 1, statuses.length - 1)];
+      if (status === 200) {
+        response.writeHead(200, { 'Content-Type': 'application/json' });
+        response.end(JSON.stringify([{ id: 'ok-job' }]));
+        return;
+      }
+      response.writeHead(status, {
+        'Content-Type': 'application/json',
+        ...(retryAfter !== null ? { 'Retry-After': retryAfter } : {}),
+      });
+      response.end(JSON.stringify({ message: `simulated ${status}` }));
+      return;
+    }
+
+    if (request.method === 'DELETE' && url.pathname === `/storage/v1/object/${bucket}`) {
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end('{}');
+      return;
+    }
+
+    if (request.method === 'PATCH' && url.pathname === '/rest/v1/pdf_jobs') {
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end('{}');
+      return;
+    }
+
+    response.writeHead(404, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify({ message: 'Not found' }));
+  });
+
+  try {
+    const supabaseUrl = await listen(server);
+    const result = await runCleanup(cleanupEnvironment(supabaseUrl));
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    assert.equal(result.code, expectedCode, `${name}: expected exit ${expectedCode}, received ${result.code}\n${output}`);
+    assert.equal(result.signal, null, `${name}: child exited via signal ${result.signal}`);
+    for (const expectedOutput of expectedOutputs) assert.match(output, expectedOutput);
+
+    const getRequests = requests.filter((request) => request.method === 'GET');
+    assert.equal(getRequests.length, expectedGetCount, `${name}: unexpected GET count: ${JSON.stringify(requests)}`);
+  } finally {
+    if (server.listening) await close(server);
+  }
+}
+
 await runPartialFailureScenario();
 await runTimeoutContinuationScenario();
+await runListingScenario({
+  name: 'rate limit honors Retry-After and recovers',
+  statuses: [429, 200],
+  retryAfter: '0',
+  expectedCode: 0,
+  expectedGetCount: 2,
+  expectedOutputs: [/Retrying GET \/rest\/v1\/pdf_jobs\?.* in 0ms .*HTTP 429/, /Expired jobs cleaned: 1\/1; failed: 0/],
+});
+await runListingScenario({
+  name: 'transient listing failures stop at max attempts',
+  statuses: [503],
+  expectedCode: 1,
+  expectedGetCount: requestMaxAttempts,
+  expectedOutputs: [new RegExp(`attempt ${requestMaxAttempts}/${requestMaxAttempts}`), /Supabase request failed \(503\): simulated 503/],
+});
+await runListingScenario({
+  name: 'permanent listing error is not retried',
+  statuses: [400],
+  expectedCode: 1,
+  expectedGetCount: 1,
+  expectedOutputs: [/Supabase request failed \(400\): simulated 400/],
+});
 
-console.log('Supabase cleanup HTTP tests passed: 2 scenario(s).');
+console.log('Supabase cleanup HTTP tests passed: 5 scenario(s).');
