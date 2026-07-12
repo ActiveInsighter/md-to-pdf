@@ -3,6 +3,12 @@ const SERVICE_KEY = String(process.env.SUPABASE_SECRET_KEY || process.env.SUPABA
 if (!SERVICE_KEY) throw new Error('Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY');
 const USE_LEGACY_BEARER = !SERVICE_KEY.startsWith('sb_secret_');
 const BUCKET = requiredEnv('SUPABASE_STORAGE_BUCKET');
+const REQUEST_TIMEOUT_RAW = process.env.REQUEST_TIMEOUT_MS || '15000';
+const REQUEST_TIMEOUT_MS = Number(REQUEST_TIMEOUT_RAW);
+
+if (!Number.isInteger(REQUEST_TIMEOUT_MS) || REQUEST_TIMEOUT_MS < 100 || REQUEST_TIMEOUT_MS > 120000) {
+  throw new Error(`REQUEST_TIMEOUT_MS must be an integer between 100 and 120000; received ${REQUEST_TIMEOUT_RAW}.`);
+}
 
 function requiredEnv(name) {
   const value = String(process.env[name] || '').trim();
@@ -18,11 +24,36 @@ function headers(extra = {}) {
   };
 }
 
+function isTimeoutError(error) {
+  return error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+}
+
+async function request(url, options = {}) {
+  const method = options.method || 'GET';
+  const target = url instanceof URL ? url : new URL(url);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      throw new Error(`Supabase request timed out after ${REQUEST_TIMEOUT_MS}ms: ${method} ${target.pathname}`);
+    }
+    throw error;
+  }
+}
+
 async function parseResponse(response) {
   const text = await response.text();
   let data = null;
   if (text) {
-    try { data = JSON.parse(text); } catch { data = text; }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
   }
   if (!response.ok) {
     const message = typeof data === 'string' ? data : data?.message || data?.error || response.statusText;
@@ -37,7 +68,7 @@ async function expiredJobs() {
   url.searchParams.set('status', 'neq.expired');
   url.searchParams.set('select', 'id');
   url.searchParams.set('limit', '200');
-  const response = await fetch(url, { headers: headers() });
+  const response = await request(url, { headers: headers() });
   const rows = await parseResponse(response);
   return Array.isArray(rows) ? rows : [];
 }
@@ -48,7 +79,7 @@ async function removeJobObjects(id) {
     `jobs/${id}/assets.zip`,
     `jobs/${id}/output.pdf`,
   ];
-  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`, {
+  const response = await request(`${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`, {
     method: 'DELETE',
     headers: headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ prefixes }),
@@ -59,7 +90,7 @@ async function removeJobObjects(id) {
 async function markExpired(id) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/pdf_jobs`);
   url.searchParams.set('id', `eq.${id}`);
-  const response = await fetch(url, {
+  const response = await request(url, {
     method: 'PATCH',
     headers: headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({
@@ -77,6 +108,8 @@ async function main() {
   const jobs = await expiredJobs();
   let cleaned = 0;
   let failed = 0;
+
+  console.log(`Request timeout: ${REQUEST_TIMEOUT_MS}ms`);
 
   for (const job of jobs) {
     try {
