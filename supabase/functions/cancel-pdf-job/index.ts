@@ -1,4 +1,5 @@
 import { handleOptions, json } from '../_shared/cors.ts'
+import { PDF_JOB_PENDING_INPUT_STATUSES } from '../_shared/pdf-job-status.ts'
 import { createAdminClient, requireUser, safeErrorMessage, storageBucket } from '../_shared/supabase.ts'
 import {
   CANCELLED_ERROR_MESSAGE,
@@ -95,7 +96,7 @@ Deno.serve(async (req) => {
         })
         .eq('id', jobId)
         .eq('user_id', user.id)
-        .in('status', ['created', 'uploaded'])
+        .in('status', [...PDF_JOB_PENDING_INPUT_STATUSES])
         .select('id,user_id,status,input_path,assets_path,error_message')
         .maybeSingle()
 
