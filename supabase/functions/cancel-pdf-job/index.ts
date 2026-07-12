@@ -55,13 +55,13 @@ async function removePendingObjects(
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
   if (optionsResponse) return optionsResponse
-  if (req.method !== 'POST') return json({ error: '只允许 POST 请求。' }, 405)
+  if (req.method !== 'POST') return json(req, { error: '只允许 POST 请求。' }, 405)
 
   try {
     const user = await requireUser(req)
     const body = (await req.json().catch(() => ({}))) as CancelBody
     const jobId = String(body.jobId || '').trim()
-    if (!isValidJobId(jobId)) return json({ error: '任务 ID 格式错误。' }, 400)
+    if (!isValidJobId(jobId)) return json(req, { error: '任务 ID 格式错误。' }, 400)
 
     const admin = createAdminClient()
     const { data: current, error: currentError } = await admin
@@ -74,10 +74,10 @@ Deno.serve(async (req) => {
 
     const decision = decideCancellation(user.id, current as PdfJobRow | null)
     if (decision.kind === 'not-found') {
-      return json({ error: '任务不存在或无权访问。' }, 404)
+      return json(req, { error: '任务不存在或无权访问。' }, 404)
     }
     if (decision.kind === 'conflict') {
-      return json({ error: '任务已经启动，不能再取消。', status: decision.status }, 409)
+      return json(req, { error: '任务已经启动，不能再取消。', status: decision.status }, 409)
     }
 
     let cancelled = decision.job
@@ -111,10 +111,10 @@ Deno.serve(async (req) => {
 
         const raceDecision = resolveCancellationRace(user.id, latest as PdfJobRow | null)
         if (raceDecision.kind === 'not-found') {
-          return json({ error: '任务不存在或无权访问。' }, 404)
+          return json(req, { error: '任务不存在或无权访问。' }, 404)
         }
         if (raceDecision.kind === 'conflict') {
-          return json({ error: '任务状态已经变化，不能再取消。', status: raceDecision.status }, 409)
+          return json(req, { error: '任务状态已经变化，不能再取消。', status: raceDecision.status }, 409)
         }
 
         cancelled = raceDecision.job
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
     }
 
     const cleanupPending = await removePendingObjects(admin, cancelled)
-    return json({
+    return json(req, {
       jobId,
       status: 'failed',
       cancelled: true,
@@ -134,8 +134,8 @@ Deno.serve(async (req) => {
     })
   } catch (error) {
     const message = safeErrorMessage(error)
-    if (message === 'UNAUTHORIZED') return json({ error: '请先登录。' }, 401)
+    if (message === 'UNAUTHORIZED') return json(req, { error: '请先登录。' }, 401)
     console.error('cancel-pdf-job failed', message)
-    return json({ error: '取消 PDF 任务失败。' }, 500)
+    return json(req, { error: '取消 PDF 任务失败。' }, 500)
   }
 })
