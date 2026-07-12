@@ -1,4 +1,5 @@
 import { handleOptions, json } from '../_shared/cors.ts'
+import { outputFilenameFromDocumentName } from '../_shared/document-name.ts'
 import { createAdminClient, requireUser, safeErrorMessage, storageBucket } from '../_shared/supabase.ts'
 
 type DownloadBody = { jobId?: string }
@@ -19,19 +20,20 @@ Deno.serve(async (req) => {
     const admin = createAdminClient()
     const { data: job, error } = await admin
       .from('pdf_jobs')
-      .select('id,user_id,status,output_path')
+      .select('id,user_id,status,output_path,document_name')
       .eq('id', jobId)
       .maybeSingle()
     if (error) throw error
     if (!job || job.user_id !== user.id) return json(req, { error: '任务不存在或无权访问。' }, 404)
     if (job.status !== 'completed' || !job.output_path) return json(req, { error: 'PDF 尚未生成完成。' }, 409)
 
+    const fileName = outputFilenameFromDocumentName(job.document_name)
     const { data, error: signedError } = await admin.storage
       .from(storageBucket())
-      .createSignedUrl(job.output_path, EXPIRES_IN, { download: `pdf-${jobId}.pdf` })
+      .createSignedUrl(job.output_path, EXPIRES_IN, { download: fileName })
     if (signedError || !data?.signedUrl) throw signedError || new Error('SIGNED_URL_FAILED')
 
-    return json(req, { jobId, downloadUrl: data.signedUrl, expiresIn: EXPIRES_IN })
+    return json(req, { jobId, downloadUrl: data.signedUrl, fileName, expiresIn: EXPIRES_IN })
   } catch (error) {
     if (safeErrorMessage(error) === 'UNAUTHORIZED') return json(req, { error: '请先登录。' }, 401)
     console.error('get-pdf-download failed')
