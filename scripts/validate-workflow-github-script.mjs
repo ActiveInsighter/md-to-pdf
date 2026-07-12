@@ -1,54 +1,103 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { load } from 'js-yaml'
 import { discoverWorkflowFiles } from './validate-workflow-security.mjs'
 
 const WORKFLOW_DIR = '.github/workflows'
-const GITHUB_SCRIPT_ACTION_RE = /^actions\/github-script@/
+const BLOCK_SCALAR_RE = /^[|>][+-]?(?:[1-9])?\s*(?:#.*)?$/
 const GITHUB_EXPRESSION_RE = /\$\{\{\s*([^}]+?)\s*\}\}/g
 
-function isRecord(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
+function indentation(line) {
+  return line.match(/^\s*/)?.[0].length ?? 0
 }
 
 function workflowPath(filePath) {
   return filePath.split(path.sep).join('/')
 }
 
-export function validateGithubScriptExpressions(source, relativePath) {
-  const normalizedPath = workflowPath(relativePath)
-  let workflow
-  try {
-    workflow = load(source)
-  } catch (error) {
-    const message = error instanceof Error ? error.message.split('\n')[0] : String(error)
-    return [`${normalizedPath}: invalid workflow YAML: ${message}`]
+function githubScriptHeader(line) {
+  const match = line.match(/^(\s*)(-\s+)?uses:\s*actions\/github-script@[^\s#]+(?:\s+#.*)?$/)
+  if (!match) return null
+
+  const sequenceItem = Boolean(match[2])
+  const headerIndent = match[1].length
+  return {
+    sequenceItem,
+    headerIndent,
+    propertyIndent: headerIndent + (sequenceItem ? 2 : 0),
   }
+}
 
-  if (!isRecord(workflow) || !isRecord(workflow.jobs)) return []
-
-  const errors = []
-  for (const [jobName, job] of Object.entries(workflow.jobs)) {
-    if (!isRecord(job) || !Array.isArray(job.steps)) continue
-
-    for (const [stepIndex, step] of job.steps.entries()) {
-      if (!isRecord(step) || typeof step.uses !== 'string') continue
-      if (!GITHUB_SCRIPT_ACTION_RE.test(step.uses)) continue
-
-      const withConfig = isRecord(step.with) ? step.with : null
-      const script = withConfig && typeof withConfig.script === 'string' ? withConfig.script : null
-      if (script === null) continue
-
-      for (const match of script.matchAll(GITHUB_EXPRESSION_RE)) {
-        errors.push(
-          `${normalizedPath}: jobs.${jobName}.steps[${stepIndex}] GitHub expression ` +
-            '${{ ' +
-            match[1].trim() +
-            ' }} must not be interpolated directly into actions/github-script; pass it through step env and read process.env',
-        )
+function stepRange(lines, usesIndex, header) {
+  let start = usesIndex
+  if (!header.sequenceItem) {
+    for (let cursor = usesIndex - 1; cursor >= 0; cursor -= 1) {
+      const line = lines[cursor]
+      if (!line.trim()) continue
+      if (indentation(line) < header.propertyIndent) {
+        start = cursor
+        break
       }
     }
+  }
+
+  let end = lines.length
+  for (let cursor = usesIndex + 1; cursor < lines.length; cursor += 1) {
+    const line = lines[cursor]
+    if (!line.trim()) continue
+    if (indentation(line) < header.propertyIndent) {
+      end = cursor
+      break
+    }
+  }
+
+  return { start, end }
+}
+
+function validateScriptText(text, relativePath, lineNumber, errors) {
+  for (const match of text.matchAll(GITHUB_EXPRESSION_RE)) {
+    errors.push(
+      `${relativePath}:${lineNumber}: GitHub expression ` +
+        '${{ ' +
+        match[1].trim() +
+        ' }} must not be interpolated directly into actions/github-script; pass it through step env and read process.env',
+    )
+  }
+}
+
+function validateGithubScriptStep(lines, usesIndex, header, relativePath, errors) {
+  const { start, end } = stepRange(lines, usesIndex, header)
+  const scriptIndent = header.propertyIndent + 2
+
+  for (let cursor = start; cursor < end; cursor += 1) {
+    if (indentation(lines[cursor]) !== scriptIndent) continue
+    const match = lines[cursor].trim().match(/^script:\s*(.*)$/)
+    if (!match) continue
+
+    const value = match[1]
+    if (!BLOCK_SCALAR_RE.test(value)) {
+      validateScriptText(value, relativePath, cursor + 1, errors)
+      return
+    }
+
+    for (let scriptCursor = cursor + 1; scriptCursor < end; scriptCursor += 1) {
+      const line = lines[scriptCursor]
+      if (line.trim() && indentation(line) <= scriptIndent) break
+      validateScriptText(line, relativePath, scriptCursor + 1, errors)
+    }
+    return
+  }
+}
+
+export function validateGithubScriptExpressions(source, relativePath) {
+  const normalizedPath = workflowPath(relativePath)
+  const lines = source.split(/\r?\n/)
+  const errors = []
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const header = githubScriptHeader(lines[index])
+    if (!header) continue
+    validateGithubScriptStep(lines, index, header, normalizedPath, errors)
   }
 
   return errors
