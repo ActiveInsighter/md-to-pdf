@@ -9,6 +9,8 @@ on:
       - main
     paths:
       - '.github/workflows/cleanup-supabase-pdf-jobs.yml'
+      - 'scripts/http-retry.mjs'
+      - 'scripts/test-http-retry.mjs'
       - 'scripts/cleanup-supabase-pdf-jobs.mjs'
       - 'scripts/test-cleanup-supabase-pdf-jobs.mjs'
       - 'package.json'
@@ -36,12 +38,17 @@ jobs:
         with:
           node-version: 24
 
-      - name: Validate cleanup script syntax
+      - name: Validate maintenance script syntax
         run: |
+          node --check scripts/http-retry.mjs
+          node --check scripts/test-http-retry.mjs
           node --check scripts/cleanup-supabase-pdf-jobs.mjs
           node --check scripts/test-cleanup-supabase-pdf-jobs.mjs
 
-      - name: Run Supabase cleanup HTTP partial-failure test
+      - name: Run shared HTTP retry tests
+        run: npm run test:http-retry
+
+      - name: Run Supabase cleanup HTTP tests
         run: npm run test:cleanup-supabase
 
   cleanup:
@@ -78,6 +85,8 @@ jobs:
             echo "Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY"
             exit 1
           }
+          node --check scripts/http-retry.mjs
+          node --check scripts/cleanup-supabase-pdf-jobs.mjs
 
       - name: Cleanup expired jobs
         env:
