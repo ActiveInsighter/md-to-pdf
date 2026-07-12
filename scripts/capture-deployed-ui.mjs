@@ -119,6 +119,7 @@ async function captureViewport({ name, width, height, mobile }) {
   try {
     await page.goto(targetUrl.href, { waitUntil: 'networkidle2' })
     await page.waitForSelector('#auth-panel', { visible: true })
+    await page.evaluate(() => window.scrollTo(0, 0))
     await settle(1_200)
 
     const publicFile = `public-${name}.png`
@@ -136,6 +137,7 @@ async function captureViewport({ name, width, height, mobile }) {
     })
     await page.click('#auth-panel button[type="submit"]')
     await waitForLoginResult(page, authResponses)
+    await page.evaluate(() => window.scrollTo(0, 0))
     await settle(2_500)
 
     const authenticatedFile = `authenticated-${name}.png`
@@ -148,6 +150,7 @@ async function captureViewport({ name, width, height, mobile }) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     await clearSensitiveInputs(page)
+    await page.evaluate(() => window.scrollTo(0, 0)).catch(() => undefined)
     const diagnosticFile = `diagnostic-${name}.png`
     await page.screenshot({
       path: path.join(outputDirectory, diagnosticFile),
