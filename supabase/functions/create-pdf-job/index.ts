@@ -11,12 +11,19 @@ type CreateJobBody = {
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
 const ALLOWED_THEMES = new Set(['chatgpt-light'])
 const MAX_SOURCE_FILENAME_LENGTH = 179
-const INVALID_FILENAME_RE = /[\u0000-\u001f\u007f/\\]/
+
+function hasUnsafeFilenameCharacter(sourceName: string): boolean {
+  if (sourceName.includes('/') || sourceName.includes('\\')) return true
+  return Array.from(sourceName).some((character) => {
+    const code = character.charCodeAt(0)
+    return code < 32 || code === 127
+  })
+}
 
 function validateSourceName(value: unknown): string | null {
   const sourceName = String(value || '未命名文档.md')
   if (!sourceName || sourceName.length > MAX_SOURCE_FILENAME_LENGTH) return null
-  if (INVALID_FILENAME_RE.test(sourceName)) return null
+  if (hasUnsafeFilenameCharacter(sourceName)) return null
   if (!sourceName.toLowerCase().endsWith('.md')) return null
   return sourceName
 }
