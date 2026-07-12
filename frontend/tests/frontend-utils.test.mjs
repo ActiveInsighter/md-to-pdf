@@ -122,11 +122,13 @@ test('Terminal refresh keys are stable for duplicate final updates', () => {
   )
 })
 
-test('Submission recovery only accepts reusable jobs with valid storage paths', () => {
+test('Submission recovery preserves original and output filenames', () => {
   assert.deepEqual(
     submissionRecovery.getSubmissionRecovery({
       id: 'job-created',
       status: 'created',
+      source_name: '操作系统第1章.md',
+      output_filename: '操作系统第1章.pdf',
       input_path: 'jobs/job-created/input.md',
       assets_path: 'jobs/job-created/assets.zip',
       has_assets: true,
@@ -134,6 +136,8 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
     {
       jobId: 'job-created',
       status: 'created',
+      sourceName: '操作系统第1章.md',
+      outputFilename: '操作系统第1章.pdf',
       inputPath: 'jobs/job-created/input.md',
       assetsPath: 'jobs/job-created/assets.zip',
       hasAssets: true,
@@ -144,6 +148,8 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
     submissionRecovery.getSubmissionRecovery({
       id: 'job-uploaded',
       status: 'uploaded',
+      source_name: 'notes.md',
+      output_filename: 'notes.pdf',
       input_path: 'jobs/job-uploaded/input.md',
       assets_path: null,
       has_assets: false,
@@ -151,6 +157,8 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
     {
       jobId: 'job-uploaded',
       status: 'uploaded',
+      sourceName: 'notes.md',
+      outputFilename: 'notes.pdf',
       inputPath: 'jobs/job-uploaded/input.md',
       assetsPath: null,
       hasAssets: false,
@@ -161,6 +169,8 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
     submissionRecovery.getSubmissionRecovery({
       id: 'job-invalid',
       status: 'created',
+      source_name: 'invalid.md',
+      output_filename: 'invalid.pdf',
       input_path: 'jobs/job-invalid/input.md',
       assets_path: null,
       has_assets: true,
@@ -171,12 +181,22 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
     submissionRecovery.getSubmissionRecovery({
       id: 'job-failed',
       status: 'failed',
+      source_name: 'failed.md',
+      output_filename: 'failed.pdf',
       input_path: 'jobs/job-failed/input.md',
       assets_path: null,
       has_assets: false,
     }),
     null,
   )
+})
+
+test('Page-wide drop handler accepts Markdown and ZIP files and rejects duplicates', async () => {
+  const { source } = await transpileTypeScript('../src/utils/pageDrop.ts')
+  assert.match(source, /lowerName\.endsWith\('\.md'\)/)
+  assert.match(source, /lowerName\.endsWith\('\.zip'\)/)
+  assert.match(source, /一次只能拖入一个 Markdown 文件/)
+  assert.match(source, /一次只能拖入一个资源 ZIP/)
 })
 
 test('Realtime health selects low-frequency reconciliation or fast fallback polling', () => {
