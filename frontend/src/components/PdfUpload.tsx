@@ -10,8 +10,12 @@ type Props = {
   busy: boolean
   progress: number
   phase: UploadPhase
+  autoDownload: boolean
+  notifyOnComplete: boolean
   onMarkdown: (file: File | null) => void
   onAssets: (file: File | null) => void
+  onAutoDownload: (enabled: boolean) => void
+  onNotifyOnComplete: (enabled: boolean) => void
   onStart: () => void
   onReset: () => void
 }
@@ -23,8 +27,12 @@ export function PdfUpload({
   busy,
   progress,
   phase,
+  autoDownload,
+  notifyOnComplete,
   onMarkdown,
   onAssets,
+  onAutoDownload,
+  onNotifyOnComplete,
   onStart,
   onReset,
 }: Props) {
@@ -90,7 +98,7 @@ export function PdfUpload({
         />
       </div>
 
-      <div className="options" aria-label="固定构建选项">
+      <div className="options" aria-label="构建与交付选项">
         <label>
           主题
           <select value="chatgpt-light" disabled>
@@ -99,21 +107,48 @@ export function PdfUpload({
         </label>
         <label><input type="checkbox" checked readOnly /> Markdown 软换行</label>
         <label><input type="checkbox" checked readOnly /> PDF 书签</label>
+        <label className="delivery-option">
+          <input
+            type="checkbox"
+            checked={autoDownload}
+            onChange={(event) => onAutoDownload(event.target.checked)}
+          />
+          构建完成后自动下载
+        </label>
+        <label className="delivery-option">
+          <input
+            type="checkbox"
+            checked={notifyOnComplete}
+            onChange={(event) => onNotifyOnComplete(event.target.checked)}
+          />
+          完成后发送系统通知
+        </label>
       </div>
 
-      <div className="upload-progress-row">
-        <div
-          className="progress"
-          role="progressbar"
-          aria-label="任务提交进度"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-          aria-valuetext={`${phaseLabel}，${progress}%`}
-        >
-          <span style={{ width: `${progress}%` }} />
+      <div className="upload-progress-block">
+        <div className="upload-progress-heading">
+          <strong>文件提交进度</strong>
+          <span>{submitted ? '已交给构建队列' : phaseLabel}</span>
         </div>
-        <span className="upload-progress-value">{progress}%</span>
+        <div className="upload-progress-row">
+          <div
+            className="progress"
+            role="progressbar"
+            aria-label="文件提交进度"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            aria-valuetext={`${phaseLabel}，${progress}%`}
+          >
+            <span style={{ width: `${progress}%` }} />
+          </div>
+          <span className="upload-progress-value">{progress}%</span>
+        </div>
+        <p className="muted upload-progress-note">
+          {submitted
+            ? '这里的 100% 仅表示文件已提交；PDF 实际构建进度会在下方按服务器里程碑继续更新。'
+            : '此进度只表示创建任务、上传文件与提交队列的过程。'}
+        </p>
       </div>
 
       <div className="upload-actions">
@@ -127,7 +162,9 @@ export function PdfUpload({
         )}
         <p className="muted upload-help" role="status" aria-live="polite">
           {submitted
-            ? '任务已提交，可在下方查看实时构建状态。'
+            ? autoDownload
+              ? '可以离开当前区域；完成后页面会自动开始下载。'
+              : '任务已提交，可在下方查看实时构建状态。'
             : cancelling
               ? '正在停止未启动任务并清理已上传文件。'
               : busy
