@@ -58,11 +58,13 @@ export function FileDropField({
 
   function handleDragOver(event: DragEvent<HTMLDivElement>) {
     event.preventDefault()
+    event.stopPropagation()
     if (!disabled) setDragging(true)
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault()
+    event.stopPropagation()
     setDragging(false)
     choose(event.dataTransfer.files.item(0))
   }
@@ -72,7 +74,10 @@ export function FileDropField({
       className={`file-drop-field${dragging ? ' is-dragging' : ''}${file ? ' has-file' : ''}${disabled ? ' is-disabled' : ''}`}
       onDragEnter={handleDragOver}
       onDragOver={handleDragOver}
-      onDragLeave={() => setDragging(false)}
+      onDragLeave={(event) => {
+        event.stopPropagation()
+        setDragging(false)
+      }}
       onDrop={handleDrop}
     >
       <label className="file-drop-target" htmlFor={inputId}>
@@ -85,12 +90,12 @@ export function FileDropField({
           {file ? (
             <>
               <span className="file-name">{file.name}</span>
-              <span className="file-meta">{formatFileSize(file.size)} · 点击或拖入文件可替换</span>
+              <span className="file-meta">{formatFileSize(file.size)} · 点击可替换</span>
             </>
           ) : (
             <>
               <span>{hint}</span>
-              <span className="file-meta">点击选择，或将文件拖到此处</span>
+              <span className="file-meta">点击选择，或拖到页面任意位置</span>
             </>
           )}
         </span>
