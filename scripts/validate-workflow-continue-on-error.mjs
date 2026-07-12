@@ -89,7 +89,10 @@ function collectSteps(lines) {
       const propertyIndent = itemIndent + 2
       const headerName = lines[start].match(/^\s*-\s+name:\s*(.*)$/)?.[1]
       const nestedNames = propertyEntries(lines, start + 1, end, propertyIndent, 'name')
-      const name = headerName !== undefined ? unquote(headerName.replace(/\s+#.*$/, '')) : nestedNames[0]?.value ?? null
+      const name = headerName !== undefined
+        ? unquote(headerName.replace(/\s+#.*$/, ''))
+        : nestedNames[0]?.value ?? null
+
       steps.push({
         name,
         start,
@@ -105,6 +108,11 @@ function collectSteps(lines) {
   return steps
 }
 
+function entriesFromStep(step, property) {
+  const stepLines = step.text.split(/\r?\n/)
+  return propertyEntries(stepLines, 0, stepLines.length, step.propertyIndent, property)
+}
+
 function validateFailureGate(steps, policies, relativePath, errors) {
   const transactionPolicies = policies.filter(({ policy }) => policy.kind === 'transaction')
   if (transactionPolicies.length === 0) return
@@ -116,13 +124,7 @@ function validateFailureGate(steps, policies, relativePath, errors) {
   }
 
   const gate = gates[0]
-  const conditions = propertyEntries(
-    gate.text.split(/\r?\n/),
-    0,
-    gate.text.split(/\r?\n/).length,
-    gate.propertyIndent,
-    'if',
-  )
+  const conditions = entriesFromStep(gate, 'if')
   if (conditions.length !== 1 || conditions[0].value !== 'always()') {
     errors.push(`${relativePath}:${gate.start + 1}: final transaction failure gate must use if: always()`)
   }
@@ -131,13 +133,7 @@ function validateFailureGate(steps, policies, relativePath, errors) {
   }
 
   for (const { step, policy } of transactionPolicies) {
-    const ids = propertyEntries(
-      step.text.split(/\r?\n/),
-      0,
-      step.text.split(/\r?\n/).length,
-      step.propertyIndent,
-      'id',
-    )
+    const ids = entriesFromStep(step, 'id')
     if (ids.length !== 1 || ids[0].value !== policy.id) {
       errors.push(`${relativePath}:${step.start + 1}: ${step.name} must keep id: ${policy.id} for final outcome propagation`)
     }
@@ -163,9 +159,11 @@ export function validateContinueOnError(source, relativePath) {
   const allowed = ALLOWED_STEPS.get(normalizedPath) ?? new Map()
   const errors = []
   const transactionPolicies = []
+  const scopedLines = new Set()
 
   for (const step of steps) {
     const entries = propertyEntries(lines, step.start, step.end, step.propertyIndent, 'continue-on-error')
+    for (const entry of entries) scopedLines.add(entry.lineNumber)
     if (entries.length === 0) continue
 
     if (entries.length > 1) {
@@ -199,6 +197,12 @@ export function validateContinueOnError(source, relativePath) {
 
     if (policy.kind === 'transaction') transactionPolicies.push({ step, policy })
   }
+
+  lines.forEach((line, index) => {
+    if (/^\s*continue-on-error:\s*/.test(line) && !scopedLines.has(index + 1)) {
+      errors.push(`${normalizedPath}:${index + 1}: continue-on-error must be scoped to a named approved step`)
+    }
+  })
 
   validateFailureGate(steps, transactionPolicies, normalizedPath, errors)
   return errors
