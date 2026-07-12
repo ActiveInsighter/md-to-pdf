@@ -55,13 +55,13 @@ p=\\left\\lceil\\log_k r\\right\\rceil
     ])
 
     const prepared = await readFile(path.join(work, 'input.md'), 'utf8')
-    assert.match(prepared, /行内变量 \\(N\\)、\\\(M\\\)、\\\(k\\\)/)
-    assert.match(prepared, /表达式 \\(\\frac\{N\}\{M\}\\\)/)
-    assert.match(prepared, /\\\[\np=\\left\\lceil\\log_k r\\right\\rceil\n\\\]/)
-    assert.match(prepared, /普通说明 \(这是注释\) 保持不变/)
-    assert.match(prepared, /\[链接\]\(https:\/\/example\.com\/a_\(b\)\)/)
-    assert.match(prepared, /`\(code\)`/)
-    assert.match(prepared, /```text\n\[\np=\\left\\lceil\\log_k r\\right\\rceil\n\]\n\(k\)\n```/)
+    assert.ok(prepared.includes('行内变量 \\(N\\)、\\(M\\)、\\(k\\)'))
+    assert.ok(prepared.includes('表达式 \\(\\frac{N}{M}\\)'))
+    assert.ok(prepared.includes('\\[\np=\\left\\lceil\\log_k r\\right\\rceil\n\\]'))
+    assert.ok(prepared.includes('普通说明 (这是注释) 保持不变'))
+    assert.ok(prepared.includes('[链接](https://example.com/a_(b))'))
+    assert.ok(prepared.includes('`(code)`'))
+    assert.ok(prepared.includes('```text\n[\np=\\left\\lceil\\log_k r\\right\\rceil\n]\n(k)\n```'))
   } finally {
     await rm(root, { recursive: true, force: true })
   }
