@@ -23,7 +23,7 @@ test('accepts approved best-effort and centralized transaction steps', () => {
   )
 })
 
-test('rejects unapproved and unnamed continue-on-error steps', () => {
+test('rejects unapproved, unnamed, and job-level continue-on-error settings', () => {
   const unapproved = TRANSACTION_WORKFLOW.replace('Build PDF queue', 'Ignore tests')
   assert.match(
     validateContinueOnError(unapproved, '.github/workflows/build-pdf.yml')[0],
@@ -32,6 +32,9 @@ test('rejects unapproved and unnamed continue-on-error steps', () => {
 
   const unnamed = `jobs:\n  validate:\n    steps:\n      - run: npm test\n        continue-on-error: true\n`
   assert.match(validateContinueOnError(unnamed, 'unnamed.yml')[0], /unnamed steps/)
+
+  const jobLevel = `jobs:\n  validate:\n    runs-on: ubuntu-24.04\n    continue-on-error: true\n    steps:\n      - name: Test\n        run: npm test\n`
+  assert.match(validateContinueOnError(jobLevel, 'job-level.yml')[0], /scoped to a named approved step/)
 })
 
 test('requires a single literal true value', () => {
