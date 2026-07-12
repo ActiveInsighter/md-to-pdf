@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
     const inputPath = `jobs/${jobId}/input.md`
     const assetsPath = hasAssets ? `jobs/${jobId}/assets.zip` : null
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const now = new Date().toISOString()
     const admin = createAdminClient()
     const { data, error } = await admin
       .from('pdf_jobs')
@@ -46,6 +47,10 @@ Deno.serve(async (req) => {
         has_assets: hasAssets,
         theme,
         options: { breaks: true, toc: true },
+        progress_percent: 5,
+        progress_message: '任务已创建，等待上传文件',
+        progress_updated_at: now,
+        status_changed_at: now,
         expires_at: expiresAt,
       })
       .select('id,status,input_path,assets_path,theme,options,expires_at')
