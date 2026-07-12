@@ -4,12 +4,21 @@
 from __future__ import annotations
 
 import argparse
-import os
+import re
 import shutil
 import stat
 import sys
 import zipfile
 from pathlib import Path, PurePosixPath
+
+
+FENCED_CODE_RE = re.compile(r"(```[\s\S]*?```|~~~[\s\S]*?~~~)")
+INLINE_CODE_RE = re.compile(r"(`[^`\n]*`)")
+COPIED_DISPLAY_MATH_RE = re.compile(
+    r"^[ \t]*\[[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*\][ \t]*$",
+    re.MULTILINE,
+)
+COPIED_INLINE_MATH_RE = re.compile(r"(?<![\\\]A-Za-z0-9_/:])\(([^()\n]{1,160})\)")
 
 
 def positive_int(value: str) -> int:
@@ -99,6 +108,49 @@ def extract_assets(archive: Path, destination: Path, args: argparse.Namespace) -
                 shutil.copyfileobj(source, output, length=1024 * 1024)
 
 
+def looks_like_tex(value: str, *, display: bool) -> bool:
+    candidate = value.strip()
+    if not candidate:
+        return False
+    if re.fullmatch(r"[A-Za-z](?:_[A-Za-z0-9]+)?", candidate):
+        return True
+    if re.search(r"\\[A-Za-z]+|[_^=<>]|[∑∫√∞±×÷≤≥≈≠]", candidate):
+        return True
+    if display and re.search(r"[A-Za-z0-9}\]][ \t]*[-+*/][ \t]*[A-Za-z0-9{\\]", candidate):
+        return True
+    return False
+
+
+def normalize_math_segment(segment: str) -> str:
+    def replace_display(match: re.Match[str]) -> str:
+        tex = match.group(1).strip()
+        if not looks_like_tex(tex, display=True):
+            return match.group(0)
+        return f"\\[\n{tex}\n\\]"
+
+    def replace_inline(match: re.Match[str]) -> str:
+        tex = match.group(1).strip()
+        if not looks_like_tex(tex, display=False):
+            return match.group(0)
+        return f"\\({tex}\\)"
+
+    normalized = COPIED_DISPLAY_MATH_RE.sub(replace_display, segment)
+    inline_parts = INLINE_CODE_RE.split(normalized)
+    return "".join(
+        part if part.startswith("`") else COPIED_INLINE_MATH_RE.sub(replace_inline, part)
+        for part in inline_parts
+    )
+
+
+def normalize_copied_math(markdown: str) -> str:
+    """Restore LaTeX delimiters commonly lost when rendered Markdown is copied."""
+    parts = FENCED_CODE_RE.split(markdown)
+    return "".join(
+        part if part.startswith(("```", "~~~")) else normalize_math_segment(part)
+        for part in parts
+    )
+
+
 def main() -> int:
     args = parse_args()
     ensure_regular_file(args.markdown, "input.md", args.max_markdown_bytes)
@@ -112,7 +164,11 @@ def main() -> int:
         extract_assets(args.assets, work_dir, args)
 
     output_markdown = work_dir / "input.md"
-    shutil.copyfile(args.markdown, output_markdown)
+    try:
+        markdown = args.markdown.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise ValueError("input.md must be valid UTF-8") from exc
+    output_markdown.write_text(normalize_copied_math(markdown), encoding="utf-8")
     if output_markdown.stat().st_size <= 0:
         raise ValueError("prepared Markdown is empty")
 
