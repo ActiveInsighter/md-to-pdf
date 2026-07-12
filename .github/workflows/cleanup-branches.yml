@@ -44,10 +44,15 @@ jobs:
         with:
           node-version: 24
 
-      - name: Validate cleanup script syntax
+      - name: Validate maintenance script syntax
         run: |
+          node --check scripts/http-retry.mjs
+          node --check scripts/test-http-retry.mjs
           node --check scripts/cleanup-merged-branches.mjs
           node --check scripts/test-cleanup-merged-branches.mjs
+
+      - name: Run shared HTTP retry tests
+        run: npm run test:http-retry
 
       - name: Run branch cleanup HTTP safety tests
         run: npm run test:cleanup-branches
@@ -88,6 +93,7 @@ jobs:
             echo 'max_pulls must be an integer between 1 and 500.'
             exit 1
           }
+          node --check scripts/http-retry.mjs
           node --check scripts/cleanup-merged-branches.mjs
 
       - name: Cleanup merged temporary branches
