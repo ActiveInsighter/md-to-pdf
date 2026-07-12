@@ -15,8 +15,13 @@ function workflow({
   checkout = `actions/checkout@${SHA}`,
   persist = 'false',
   trigger = 'pull_request',
+  jobPermissions = '',
 } = {}) {
-  return `name: Test\n\non:\n  ${trigger}:\n\npermissions:\n${permissions}\n\njobs:\n  validate:\n    runs-on: ubuntu-24.04\n    steps:\n      - name: Checkout\n        uses: ${checkout}\n        with:\n          persist-credentials: ${persist}\n`
+  const jobPermissionSection = jobPermissions
+    ? `    permissions:${jobPermissions}\n`
+    : ''
+
+  return `name: Test\n\non:\n  ${trigger}:\n\npermissions:\n${permissions}\n\njobs:\n  validate:\n    runs-on: ubuntu-24.04\n${jobPermissionSection}    steps:\n      - name: Checkout\n        uses: ${checkout}\n        with:\n          persist-credentials: ${persist}\n`
 }
 
 test('accepts pinned read-only workflows with explicit checkout credentials', () => {
@@ -45,7 +50,7 @@ test('rejects missing permissions, unexpected writes and pull_request_target', (
     validateWorkflowText(
       workflow({ permissions: '  contents: write' }),
       '.github/workflows/test.yml',
-    ).some((error) => error.includes('unexpected write permission')),
+    ).some((error) => error.includes('unexpected top-level write permission')),
   )
 
   assert.ok(
@@ -54,6 +59,49 @@ test('rejects missing permissions, unexpected writes and pull_request_target', (
       '.github/workflows/test.yml',
     ).some((error) => error.includes('pull_request_target')),
   )
+})
+
+test('allows job permissions that preserve or reduce top-level access', () => {
+  assert.deepEqual(
+    validateWorkflowText(
+      workflow({
+        permissions: '  contents: read\n  statuses: write',
+        jobPermissions: '\n      contents: none\n      statuses: read',
+      }),
+      '.github/workflows/smoke-supabase-service.yml',
+    ),
+    [],
+  )
+
+  assert.deepEqual(
+    validateWorkflowText(
+      workflow({ jobPermissions: ' {}' }),
+      '.github/workflows/test.yml',
+    ),
+    [],
+  )
+})
+
+test('rejects job permissions that exceed top-level access', () => {
+  const writeErrors = validateWorkflowText(
+    workflow({ jobPermissions: '\n      contents: write' }),
+    '.github/workflows/test.yml',
+  )
+  assert.ok(writeErrors.some((error) => error.includes('exceeds top-level read')))
+
+  const newScopeErrors = validateWorkflowText(
+    workflow({ jobPermissions: '\n      issues: read' }),
+    '.github/workflows/test.yml',
+  )
+  assert.ok(newScopeErrors.some((error) => error.includes('exceeds top-level none')))
+})
+
+test('rejects job permission shorthand that can hide broad access', () => {
+  const errors = validateWorkflowText(
+    workflow({ jobPermissions: ' write-all' }),
+    '.github/workflows/test.yml',
+  )
+  assert.ok(errors.some((error) => error.includes('explicit map or {}')))
 })
 
 test('only the publishing workflow may retain checkout credentials', () => {
