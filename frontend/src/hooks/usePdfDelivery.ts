@@ -38,6 +38,35 @@ function writePreference(key: string, value: boolean): void {
   }
 }
 
+function readNotificationPreference(): boolean {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return false
+  return readPreference(NOTIFY_KEY, false)
+}
+
+function readSessionMarker(key: string): boolean {
+  try {
+    return sessionStorage.getItem(key) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function writeSessionMarker(key: string): void {
+  try {
+    sessionStorage.setItem(key, 'true')
+  } catch {
+    // The in-memory result guard still prevents duplicate handling on this page.
+  }
+}
+
+function removeSessionMarker(key: string): void {
+  try {
+    sessionStorage.removeItem(key)
+  } catch {
+    // Nothing else is required when session storage is unavailable.
+  }
+}
+
 function sendBrowserNotification(title: string, body: string): void {
   if (!('Notification' in window) || Notification.permission !== 'granted') return
   try {
@@ -61,7 +90,7 @@ async function triggerDownload(jobId: string): Promise<void> {
 
 export function usePdfDelivery({ job, userId }: Options) {
   const [autoDownload, setAutoDownloadState] = useState(() => readPreference(AUTO_DOWNLOAD_KEY, false))
-  const [notifyOnComplete, setNotifyOnCompleteState] = useState(() => readPreference(NOTIFY_KEY, true))
+  const [notifyOnComplete, setNotifyOnCompleteState] = useState(readNotificationPreference)
   const [notice, setNotice] = useState<PdfDeliveryNotice | null>(null)
   const pendingArm = useRef(false)
   const handledResults = useRef(new Set<string>())
@@ -106,18 +135,28 @@ export function usePdfDelivery({ job, userId }: Options) {
       return
     }
 
-    void Notification.requestPermission().then((permission) => {
-      const allowed = permission === 'granted'
-      setNotifyOnCompleteState(allowed)
-      writePreference(NOTIFY_KEY, allowed)
-      if (!allowed) {
+    void Notification.requestPermission()
+      .then((permission) => {
+        const allowed = permission === 'granted'
+        setNotifyOnCompleteState(allowed)
+        writePreference(NOTIFY_KEY, allowed)
+        if (!allowed) {
+          setNotice({
+            kind: 'info',
+            title: '未开启系统通知',
+            message: '构建完成后仍会在页面中显示结果。',
+          })
+        }
+      })
+      .catch(() => {
+        setNotifyOnCompleteState(false)
+        writePreference(NOTIFY_KEY, false)
         setNotice({
           kind: 'info',
-          title: '未开启系统通知',
-          message: '构建完成后仍会在页面中显示结果。',
+          title: '无法请求系统通知权限',
+          message: '页面内完成提示仍会正常显示。',
         })
-      }
-    })
+      })
   }, [])
 
   const armNextJob = useCallback(() => {
@@ -173,10 +212,10 @@ export function usePdfDelivery({ job, userId }: Options) {
 
       if (autoDownload) {
         const downloadMarker = `md-to-pdf:auto-downloaded:${job.id}`
-        if (sessionStorage.getItem(downloadMarker) !== 'true') {
-          sessionStorage.setItem(downloadMarker, 'true')
+        if (!readSessionMarker(downloadMarker)) {
+          writeSessionMarker(downloadMarker)
           void triggerDownload(job.id).catch((error) => {
-            sessionStorage.removeItem(downloadMarker)
+            removeSessionMarker(downloadMarker)
             setNotice({
               kind: 'error',
               title: '自动下载未能启动',
