@@ -137,6 +137,15 @@ jobs:
           echo "Production UI did not become reachable after deployment."
           exit 1
 
+      - name: Install screenshot fonts
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          fc-cache -f
+          fc-match 'Noto Sans CJK SC'
+
       - name: Verify screenshot tooling
         working-directory: frontend
         shell: bash
@@ -173,13 +182,13 @@ jobs:
             --channel chrome \
             --color-scheme light \
             --lang zh-CN \
-            --device "iPhone 13" \
+            --viewport-size "390,844" \
             --full-page \
             --wait-for-selector "#root" \
             --wait-for-timeout 2500 \
             --timeout 30000 \
             "$TARGET_URL" \
-            "$SCREENSHOT_DIR/mobile-iphone-13.png"
+            "$SCREENSHOT_DIR/mobile-390.png"
 
           node --input-type=module <<'NODE'
           import { writeFile } from 'node:fs/promises'
@@ -193,14 +202,15 @@ jobs:
             browserChannel: 'chrome',
             screenshots: [
               { file: 'desktop-1440.png', viewport: '1440x1000', fullPage: true },
-              { file: 'mobile-iphone-13.png', device: 'iPhone 13', fullPage: true },
+              { file: 'mobile-390.png', viewport: '390x844', fullPage: true },
             ],
           }
           await writeFile('deployment-screenshots/metadata.json', `${JSON.stringify(metadata, null, 2)}\n`)
           NODE
 
           test -s "$SCREENSHOT_DIR/desktop-1440.png"
-          test -s "$SCREENSHOT_DIR/mobile-iphone-13.png"
+          test -s "$SCREENSHOT_DIR/mobile-390.png"
+          test -s "$SCREENSHOT_DIR/metadata.json"
 
       - name: Upload deployed UI screenshots
         id: upload-ui-screenshots
@@ -230,7 +240,7 @@ jobs:
             else
               echo "- Screenshots: not available"
             fi
-            echo '- Files: desktop-1440.png, mobile-iphone-13.png, metadata.json'
+            echo '- Files: desktop-1440.png, mobile-390.png, metadata.json'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Pages deployment result
