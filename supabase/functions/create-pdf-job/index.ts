@@ -5,10 +5,27 @@ type CreateJobBody = {
   theme?: string
   options?: { breaks?: boolean; toc?: boolean }
   hasAssets?: boolean
+  sourceName?: string
 }
 
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
 const ALLOWED_THEMES = new Set(['chatgpt-light'])
+const MAX_FILENAME_LENGTH = 180
+
+function normalizeSourceName(value: unknown): string | null {
+  const normalized = String(value || '未命名文档.md')
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f/\\]/g, '')
+    .trim()
+
+  if (!normalized || normalized.length > MAX_FILENAME_LENGTH) return null
+  if (!normalized.toLowerCase().endsWith('.md')) return null
+  return normalized
+}
+
+function toPdfFilename(sourceName: string): string {
+  return `${sourceName.slice(0, -3)}.pdf`
+}
 
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
@@ -29,6 +46,10 @@ Deno.serve(async (req) => {
       return json(req, { error: '当前版本仅支持启用软换行和 PDF 书签。' }, 400)
     }
 
+    const sourceName = normalizeSourceName(body.sourceName)
+    if (!sourceName) return json(req, { error: 'Markdown 文件名无效。' }, 400)
+    const outputFilename = toPdfFilename(sourceName)
+
     const hasAssets = body.hasAssets === true
     const jobId = crypto.randomUUID()
     const inputPath = `jobs/${jobId}/input.md`
@@ -46,9 +67,11 @@ Deno.serve(async (req) => {
         has_assets: hasAssets,
         theme,
         options: { breaks: true, toc: true },
+        source_name: sourceName,
+        output_filename: outputFilename,
         expires_at: expiresAt,
       })
-      .select('id,status,input_path,assets_path,theme,options,expires_at')
+      .select('id,status,input_path,assets_path,theme,options,source_name,output_filename,expires_at')
       .single()
 
     if (error) throw error
@@ -59,6 +82,8 @@ Deno.serve(async (req) => {
       assetsPath: data.assets_path,
       theme: data.theme,
       options: data.options,
+      sourceName: data.source_name,
+      outputFilename: data.output_filename,
       expiresAt: data.expires_at,
     }, 201)
   } catch (error) {
