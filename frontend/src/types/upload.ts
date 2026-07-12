@@ -8,6 +8,10 @@ export type UploadPhase =
   | 'failed'
   | 'cancelling'
 
+export type MarkdownSource =
+  | { kind: 'file'; file: File }
+  | { kind: 'text'; text: string; filename: string }
+
 export type SubmissionRecovery = {
   jobId: string
   status: 'created' | 'uploaded'
