@@ -1,9 +1,14 @@
 import { handleOptions, json } from '../_shared/cors.ts'
+import {
+  PDF_JOB_PENDING_INPUT_STATUSES,
+  PDF_JOB_START_FAILURE_STATUSES,
+  isPendingInputPdfJobStatus,
+  isStartIdempotentPdfJobStatus,
+} from '../_shared/pdf-job-status.ts'
 import { createAdminClient, requireUser, safeErrorMessage, storageBucket } from '../_shared/supabase.ts'
 
 type StartBody = { jobId?: string }
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const IDEMPOTENT_STATUSES = new Set(['queued', 'building', 'uploading', 'completed'])
 const GITHUB_OWNER = 'ActiveInsighter'
 const GITHUB_REPO = 'md-to-pdf'
 const GITHUB_WORKFLOW = 'build-pdf-api.yml'
@@ -74,8 +79,10 @@ Deno.serve(async (req) => {
     const { data: job, error: jobError } = await admin.from('pdf_jobs').select('*').eq('id', jobId).maybeSingle()
     if (jobError) throw jobError
     if (!job || job.user_id !== user.id) return json(req, { error: '任务不存在或无权访问。' }, 404)
-    if (IDEMPOTENT_STATUSES.has(job.status)) return json(req, { jobId, status: job.status, idempotent: true })
-    if (!new Set(['created', 'uploaded']).has(job.status)) {
+    if (isStartIdempotentPdfJobStatus(job.status)) {
+      return json(req, { jobId, status: job.status, idempotent: true })
+    }
+    if (!isPendingInputPdfJobStatus(job.status)) {
       return json(req, { error: '该任务不能再次启动，请创建新任务。', status: job.status }, 409)
     }
 
@@ -94,7 +101,7 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', jobId)
-      .in('status', ['created', 'uploaded'])
+      .in('status', [...PDF_JOB_PENDING_INPUT_STATUSES])
       .select('id,status')
       .maybeSingle()
     if (queueError) throw queueError
@@ -177,7 +184,7 @@ Deno.serve(async (req) => {
       await admin.from('pdf_jobs').update({
         status: 'failed', error_message: '启动 PDF 任务失败。',
         completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      }).eq('id', jobId).in('status', ['uploaded', 'queued'])
+      }).eq('id', jobId).in('status', [...PDF_JOB_START_FAILURE_STATUSES])
     }
     return json(req, { error: '启动 PDF 任务失败。' }, 500)
   }
