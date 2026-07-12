@@ -11,7 +11,8 @@ type CreateJobBody = {
 }
 
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
-const ALLOWED_THEMES = new Set(['chatgpt-light'])
+const ALLOWED_THEMES = new Set(['chatgpt-light', 'academic', 'github'])
+const RETENTION_MS = 30 * 24 * 60 * 60 * 1000
 
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
@@ -41,7 +42,7 @@ Deno.serve(async (req) => {
     const jobId = crypto.randomUUID()
     const inputPath = `jobs/${jobId}/input.md`
     const assetsPath = hasAssets ? `jobs/${jobId}/assets.zip` : null
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const expiresAt = new Date(Date.now() + RETENTION_MS).toISOString()
     const admin = createAdminClient()
     const { data, error } = await admin
       .from('pdf_jobs')
@@ -59,6 +60,7 @@ Deno.serve(async (req) => {
         theme,
         options: { breaks: true, toc: true },
         expires_at: expiresAt,
+        is_favorite: false,
       })
       .select('id,status,input_path,assets_path,source_filename,document_name,source_name,output_filename,theme,options,expires_at')
       .single()
