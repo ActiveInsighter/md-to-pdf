@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { setPendingPdfSourceFilename } from '../api/pdfJobs'
 import { AppShell } from '../components/AppShell'
 import { AuthPanel } from '../components/AuthPanel'
 import { AuthSessionState } from '../components/AuthSessionState'
@@ -15,7 +14,7 @@ function ProductIntro() {
     <section className="intro-panel">
       <p className="eyebrow">MARKDOWN TO PDF</p>
       <h1>把文档直接变成 PDF</h1>
-      <p>保留公式、代码高亮和目录书签。构建进度清楚可见，完成后可自动下载。</p>
+      <p>上传文件或粘贴 Markdown 文本，保留公式、代码高亮和目录书签。完成后可自动下载。</p>
       <div className="intro-file-example" aria-label="文件命名示例">
         <code>操作系统第5章.md</code>
         <span>→</span>
@@ -30,7 +29,7 @@ export function PdfBuilderPage() {
     session,
     authStatus,
     authError,
-    markdown,
+    markdownSource,
     assets,
     job,
     history,
@@ -42,7 +41,7 @@ export function PdfBuilderPage() {
     progress,
     uploadPhase,
     error,
-    setMarkdown,
+    setMarkdownSource,
     setAssets,
     retryAuth,
     refreshHistory,
@@ -59,9 +58,8 @@ export function PdfBuilderPage() {
   })
 
   const handleMarkdown = useCallback((file: File | null) => {
-    setPendingPdfSourceFilename(file?.name ?? null)
-    setMarkdown(file)
-  }, [setMarkdown])
+    setMarkdownSource(file ? { kind: 'file', file } : null)
+  }, [setMarkdownSource])
 
   const handleAssets = useCallback((file: File | null) => {
     setAssets(file)
@@ -104,7 +102,7 @@ export function PdfBuilderPage() {
   }
 
   const startWithDelivery = () => {
-    if (markdown || submissionRecovery) delivery.armNextJob()
+    if (markdownSource || submissionRecovery) delivery.armNextJob()
     void start()
   }
 
@@ -123,7 +121,7 @@ export function PdfBuilderPage() {
       <div className="workspace-intro">
         <div>
           <h1>生成 PDF</h1>
-          <p>拖拽文件到页面任意位置，任务和 PDF 将沿用 Markdown 文件名。</p>
+          <p>上传 Markdown 文件或直接粘贴文本，任务和 PDF 都会沿用文档名称。</p>
         </div>
         <span>私有存储 · 真实进度</span>
       </div>
@@ -143,7 +141,7 @@ export function PdfBuilderPage() {
       <div className="workspace-grid" id="workspace">
         <div className="workspace-main">
           <PdfUpload
-            markdown={markdown}
+            markdownSource={markdownSource}
             assets={assets}
             recovery={submissionRecovery}
             busy={busy}
@@ -151,7 +149,7 @@ export function PdfBuilderPage() {
             phase={uploadPhase}
             autoDownload={delivery.autoDownload}
             notifyOnComplete={delivery.notifyOnComplete}
-            onMarkdown={handleMarkdown}
+            onMarkdownSource={setMarkdownSource}
             onAssets={handleAssets}
             onAutoDownload={delivery.setAutoDownload}
             onNotifyOnComplete={delivery.setNotifyOnComplete}

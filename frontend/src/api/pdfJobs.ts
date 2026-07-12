@@ -20,19 +20,13 @@ type CreatePdfJobWireResponse = Partial<CreatePdfJobResponse> & {
   expiresAt?: string
 }
 
-let pendingSourceFilename = 'document.md'
-
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-export function setPendingPdfSourceFilename(fileName: string | null): void {
-  pendingSourceFilename = fileName?.trim() || 'document.md'
-}
-
 export async function createPdfJob(
   hasAssets: boolean,
-  sourceFilename = pendingSourceFilename,
+  sourceFilename: string,
 ): Promise<CreatePdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CreatePdfJobWireResponse>('create-pdf-job', {
     body: {
