@@ -1,5 +1,6 @@
 import { STORAGE_BUCKET, supabase } from '../lib/supabase'
 import type { CreatePdfJobResponse, PdfDownload, PdfJob } from '../types/pdfJob'
+import { documentNameFromMarkdown, pdfFilenameFromMarkdown } from '../utils/documentName'
 
 type CancelPdfJobResponse = {
   jobId: string
@@ -7,6 +8,16 @@ type CancelPdfJobResponse = {
   cancelled: true
   idempotent: boolean
   cleanupPending: boolean
+}
+
+type CreatePdfJobWireResponse = Partial<CreatePdfJobResponse> & {
+  jobId?: string
+  status?: CreatePdfJobResponse['status']
+  inputPath?: string
+  assetsPath?: string | null
+  sourceName?: string
+  outputFilename?: string
+  expiresAt?: string
 }
 
 let pendingSourceFilename = 'document.md'
@@ -23,17 +34,36 @@ export async function createPdfJob(
   hasAssets: boolean,
   sourceFilename = pendingSourceFilename,
 ): Promise<CreatePdfJobResponse> {
-  const { data, error } = await supabase.functions.invoke<CreatePdfJobResponse>('create-pdf-job', {
+  const { data, error } = await supabase.functions.invoke<CreatePdfJobWireResponse>('create-pdf-job', {
     body: {
       theme: 'chatgpt-light',
       options: { breaks: true, toc: true },
       hasAssets,
       sourceFilename,
+      sourceName: sourceFilename,
     },
   })
   if (error) throw new Error(error.message)
-  if (!data?.jobId) throw new Error('创建任务返回的数据不完整。')
-  return data
+  if (!data?.jobId || !data.inputPath || !data.status || !data.expiresAt) {
+    throw new Error('创建任务返回的数据不完整。')
+  }
+
+  const normalizedSourceFilename = data.sourceFilename || data.sourceName || sourceFilename
+  const normalizedDocumentName = data.documentName || documentNameFromMarkdown(normalizedSourceFilename)
+  const normalizedOutputFilename = data.outputFilename || pdfFilenameFromMarkdown(normalizedSourceFilename)
+
+  return {
+    jobId: data.jobId,
+    status: data.status,
+    inputPath: data.inputPath,
+    assetsPath: data.assetsPath ?? null,
+    sourceFilename: normalizedSourceFilename,
+    documentName: normalizedDocumentName,
+    outputFilename: normalizedOutputFilename,
+    theme: data.theme || 'chatgpt-light',
+    options: data.options || { breaks: true, toc: true },
+    expiresAt: data.expiresAt,
+  }
 }
 
 export async function uploadInput(path: string, file: File): Promise<void> {
@@ -84,14 +114,16 @@ export async function listPdfJobs(): Promise<PdfJob[]> {
 
 export async function getPdfDownload(jobId: string): Promise<PdfDownload> {
   const { data, error } = await supabase.functions.invoke<{
-    downloadUrl: string
-    fileName: string
+    downloadUrl?: string
+    fileName?: string
+    outputFilename?: string
   }>('get-pdf-download', {
     body: { jobId },
   })
   if (error) throw new Error(error.message)
-  if (!data?.downloadUrl || !data.fileName) throw new Error('下载地址生成失败。')
-  return { downloadUrl: data.downloadUrl, fileName: data.fileName }
+  const fileName = data?.fileName || data?.outputFilename
+  if (!data?.downloadUrl || !fileName) throw new Error('下载地址生成失败。')
+  return { downloadUrl: data.downloadUrl, fileName }
 }
 
 export async function getDownloadUrl(jobId: string): Promise<string> {
