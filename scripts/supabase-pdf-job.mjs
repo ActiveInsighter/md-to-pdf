@@ -140,6 +140,19 @@ function sanitizeMessage(value) {
   return String(value || 'PDF 构建失败。').replace(/[\r\n\t]+/g, ' ').slice(0, 500);
 }
 
+function sanitizeProgressMessage(value) {
+  return String(value || '正在处理 PDF 任务').replace(/[\r\n\t]+/g, ' ').slice(0, 180);
+}
+
+function progressFields(percent, message) {
+  const now = new Date().toISOString();
+  return {
+    progress_percent: percent,
+    progress_message: sanitizeProgressMessage(message),
+    progress_updated_at: now,
+  };
+}
+
 async function main() {
   switch (command) {
     case 'get': {
@@ -153,9 +166,32 @@ async function main() {
     case 'status': {
       const status = args[0];
       if (!new Set(['building', 'uploading']).has(status)) throw new Error('Invalid status command');
-      const body = { status, error_message: null, ...runMetadata() };
-      if (status === 'building') body.started_at = new Date().toISOString();
+      const now = new Date().toISOString();
+      const body = {
+        status,
+        error_message: null,
+        status_changed_at: now,
+        ...runMetadata(),
+        ...(status === 'building'
+          ? {
+              ...progressFields(45, '构建环境已就绪，正在读取源文件'),
+              started_at: now,
+            }
+          : {
+              ...progressFields(92, 'PDF 已生成，正在上传结果'),
+              uploading_at: now,
+            }),
+      };
       await patchJob(body);
+      break;
+    }
+    case 'progress': {
+      const percent = Number(args[0]);
+      if (!Number.isInteger(percent) || percent < 0 || percent > 100) {
+        throw new Error('Progress percent must be an integer between 0 and 100');
+      }
+      const message = option('--message', '正在处理 PDF 任务');
+      await patchJob(progressFields(percent, message));
       break;
     }
     case 'download-input': {
@@ -182,10 +218,13 @@ async function main() {
       break;
     }
     case 'complete': {
+      const now = new Date().toISOString();
       await patchJob({
         status: 'completed',
         output_path: objectPath('output.pdf'),
-        completed_at: new Date().toISOString(),
+        ...progressFields(100, 'PDF 已生成，可以下载'),
+        completed_at: now,
+        status_changed_at: now,
         error_message: null,
         ...runMetadata(),
       });
@@ -198,10 +237,15 @@ async function main() {
         console.log(`Failure update skipped because job is ${job.status}.`);
         return;
       }
+      const now = new Date().toISOString();
       await patchJob({
         status: 'failed',
         error_message: message,
-        completed_at: new Date().toISOString(),
+        progress_message: message,
+        progress_updated_at: now,
+        failed_at: now,
+        completed_at: now,
+        status_changed_at: now,
         ...runMetadata(),
       });
       break;
