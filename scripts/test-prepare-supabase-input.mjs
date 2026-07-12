@@ -23,30 +23,35 @@ function runPython(args) {
   })
 }
 
-test('source preparation restores copied math delimiters without touching code or links', async () => {
+test('source preparation preserves pasted Markdown byte-for-byte', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'md-to-pdf-prepare-'))
   try {
     const input = path.join(root, 'input.md')
     const work = path.join(root, 'work')
-    await writeFile(input, `# 复制公式测试
+    const source = `# 原文保留与公式测试
 
-行内变量 (N)、(M)、(k)，表达式 (\\frac{N}{M})。
+普通括号 (N)、(这是注释) 和链接 [示例](https://example.com/a_(b)) 必须保持原样。
 
-[
-p=\\left\\lceil\\log_k r\\right\\rceil
-]
+行内公式：\\(F'(x)=f(x)\\)。
 
-普通说明 (这是注释) 保持不变，[链接](https://example.com/a_(b)) 保持不变。
+\\[
+\\boxed{F'(x)=f\\bigl(\\beta(x)\\bigr)\\beta'(x)-f\\bigl(\\alpha(x)\\bigr)\\alpha'(x)}
+\\]
+
+$$
+\\begin{aligned}
+F'(x)&=\\sqrt{\\ln(1+x)}\\,\\mathrm e^{\\ln(1+x)}\\frac{1}{1+x}\\\\
+&\\quad-\\sqrt{2x}\\,\\mathrm e^{2x}\\cdot 2
+\\end{aligned}
+$$
 
 \`(code)\`
 
 \`\`\`text
-[
-p=\\left\\lceil\\log_k r\\right\\rceil
-]
-(k)
+F'(x) and \\(x\\)
 \`\`\`
-`, 'utf8')
+`
+    await writeFile(input, source, 'utf8')
 
     await runPython([
       '--markdown', input,
@@ -55,13 +60,9 @@ p=\\left\\lceil\\log_k r\\right\\rceil
     ])
 
     const prepared = await readFile(path.join(work, 'input.md'), 'utf8')
-    assert.ok(prepared.includes('行内变量 \\(N\\)、\\(M\\)、\\(k\\)'))
-    assert.ok(prepared.includes('表达式 \\(\\frac{N}{M}\\)'))
-    assert.ok(prepared.includes('\\[\np=\\left\\lceil\\log_k r\\right\\rceil\n\\]'))
-    assert.ok(prepared.includes('普通说明 (这是注释) 保持不变'))
-    assert.ok(prepared.includes('[链接](https://example.com/a_(b))'))
-    assert.ok(prepared.includes('`(code)`'))
-    assert.ok(prepared.includes('```text\n[\np=\\left\\lceil\\log_k r\\right\\rceil\n]\n(k)\n```'))
+    assert.equal(prepared, source)
+    assert.ok(prepared.includes("F'(x)"))
+    assert.ok(!prepared.includes("F'\\(x\\)"))
   } finally {
     await rm(root, { recursive: true, force: true })
   }
