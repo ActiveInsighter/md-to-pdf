@@ -5,7 +5,7 @@ import { discoverWorkflowFiles } from './validate-workflow-security.mjs'
 
 const WORKFLOW_DIR = '.github/workflows'
 const BLOCK_SCALAR_RE = /^[|>][+-]?(?:[1-9])?\s*(?:#.*)?$/
-const UNTRUSTED_RUN_CONTEXT_RE = /\$\{\{\s*(github\.event\.|github\.(?:head_ref|base_ref|ref_name)\b|inputs\.)/
+const RUN_EXPRESSION_RE = /\$\{\{\s*([^}]+?)\s*\}\}/
 
 function indentation(line) {
   return line.match(/^\s*/)?.[0].length ?? 0
@@ -16,11 +16,11 @@ function workflowPath(filePath) {
 }
 
 function validateRunText(text, relativePath, lineNumber, errors) {
-  const match = text.match(UNTRUSTED_RUN_CONTEXT_RE)
+  const match = text.match(RUN_EXPRESSION_RE)
   if (!match) return
 
   errors.push(
-    `${relativePath}:${lineNumber}: untrusted GitHub context ${match[1]} must not be interpolated directly into run; pass it through env and quote the shell variable`,
+    `${relativePath}:${lineNumber}: GitHub expression ${{ ${match[1].trim()} }} must not be interpolated directly into run; pass it through env and quote the shell variable`,
   )
 }
 
