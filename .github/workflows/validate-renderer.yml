@@ -5,23 +5,33 @@ on:
     branches:
       - main
     paths:
-      - 'scripts/**'
+      - 'scripts/test-render.mjs'
+      - 'scripts/build-pdf.mjs'
+      - 'scripts/postprocess-pdfs.mjs'
+      - 'scripts/lib/render-preflight.mjs'
+      - 'scripts/lib/path-utils.mjs'
       - 'themes/**'
       - 'style.css'
       - 'fixtures/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/build-pdf.yml'
+      - '.github/workflows/build-pdf-api.yml'
       - '.github/workflows/validate-renderer.yml'
   pull_request:
     paths:
-      - 'scripts/**'
+      - 'scripts/test-render.mjs'
+      - 'scripts/build-pdf.mjs'
+      - 'scripts/postprocess-pdfs.mjs'
+      - 'scripts/lib/render-preflight.mjs'
+      - 'scripts/lib/path-utils.mjs'
       - 'themes/**'
       - 'style.css'
       - 'fixtures/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/build-pdf.yml'
+      - '.github/workflows/build-pdf-api.yml'
       - '.github/workflows/validate-renderer.yml'
   workflow_dispatch:
 
