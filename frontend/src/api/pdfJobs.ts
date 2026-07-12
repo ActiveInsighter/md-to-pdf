@@ -1,5 +1,5 @@
 import { STORAGE_BUCKET, supabase } from '../lib/supabase'
-import type { CreatePdfJobResponse, PdfJob } from '../types/pdfJob'
+import type { CreatePdfJobResponse, PdfDownload, PdfJob } from '../types/pdfJob'
 
 type CancelPdfJobResponse = {
   jobId: string
@@ -13,9 +13,14 @@ function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-export async function createPdfJob(hasAssets: boolean): Promise<CreatePdfJobResponse> {
+export async function createPdfJob(hasAssets: boolean, sourceFilename: string): Promise<CreatePdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CreatePdfJobResponse>('create-pdf-job', {
-    body: { theme: 'chatgpt-light', options: { breaks: true, toc: true }, hasAssets },
+    body: {
+      theme: 'chatgpt-light',
+      options: { breaks: true, toc: true },
+      hasAssets,
+      sourceFilename,
+    },
   })
   if (error) throw new Error(error.message)
   if (!data?.jobId) throw new Error('创建任务返回的数据不完整。')
@@ -68,13 +73,20 @@ export async function listPdfJobs(): Promise<PdfJob[]> {
   return (data || []) as PdfJob[]
 }
 
-export async function getDownloadUrl(jobId: string): Promise<string> {
-  const { data, error } = await supabase.functions.invoke<{ downloadUrl: string }>('get-pdf-download', {
+export async function getPdfDownload(jobId: string): Promise<PdfDownload> {
+  const { data, error } = await supabase.functions.invoke<{
+    downloadUrl: string
+    fileName: string
+  }>('get-pdf-download', {
     body: { jobId },
   })
   if (error) throw new Error(error.message)
-  if (!data?.downloadUrl) throw new Error('下载地址生成失败。')
-  return data.downloadUrl
+  if (!data?.downloadUrl || !data.fileName) throw new Error('下载地址生成失败。')
+  return { downloadUrl: data.downloadUrl, fileName: data.fileName }
+}
+
+export async function getDownloadUrl(jobId: string): Promise<string> {
+  return (await getPdfDownload(jobId)).downloadUrl
 }
 
 export function readableError(error: unknown): string {
