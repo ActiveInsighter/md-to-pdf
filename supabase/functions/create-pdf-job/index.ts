@@ -7,6 +7,7 @@ type CreateJobBody = {
   options?: { breaks?: boolean; toc?: boolean }
   hasAssets?: boolean
   sourceFilename?: string
+  sourceName?: string
 }
 
 const THEME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
@@ -25,7 +26,9 @@ Deno.serve(async (req) => {
       return json(req, { error: '不支持的 PDF 主题。' }, 400)
     }
 
-    const document = normalizeDocumentName(body.sourceFilename || 'document.md')
+    const document = normalizeDocumentName(
+      body.sourceFilename || body.sourceName || 'document.md',
+    )
     if (!document) return json(req, { error: '源文件名必须是有效的 Markdown 文件名。' }, 400)
 
     const breaks = body.options?.breaks ?? true
@@ -51,11 +54,13 @@ Deno.serve(async (req) => {
         has_assets: hasAssets,
         source_filename: document.sourceFilename,
         document_name: document.documentName,
+        source_name: document.sourceFilename,
+        output_filename: document.outputFilename,
         theme,
         options: { breaks: true, toc: true },
         expires_at: expiresAt,
       })
-      .select('id,status,input_path,assets_path,source_filename,document_name,theme,options,expires_at')
+      .select('id,status,input_path,assets_path,source_filename,document_name,source_name,output_filename,theme,options,expires_at')
       .single()
 
     if (error) throw error
@@ -65,15 +70,17 @@ Deno.serve(async (req) => {
       inputPath: data.input_path,
       assetsPath: data.assets_path,
       sourceFilename: data.source_filename,
+      sourceName: data.source_name,
       documentName: data.document_name,
-      outputFilename: document.outputFilename,
+      outputFilename: data.output_filename,
       theme: data.theme,
       options: data.options,
       expiresAt: data.expires_at,
     }, 201)
   } catch (error) {
-    if (safeErrorMessage(error) === 'UNAUTHORIZED') return json(req, { error: '请先登录。' }, 401)
-    console.error('create-pdf-job failed')
+    const message = safeErrorMessage(error)
+    if (message === 'UNAUTHORIZED') return json(req, { error: '请先登录。' }, 401)
+    console.error('create-pdf-job failed', message)
     return json(req, { error: '创建 PDF 任务失败。' }, 500)
   }
 })
