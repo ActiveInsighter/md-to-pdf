@@ -11,6 +11,8 @@ export type UploadPhase =
 export type SubmissionRecovery = {
   jobId: string
   status: 'created' | 'uploaded'
+  sourceName: string
+  outputFilename: string
   inputPath: string
   assetsPath: string | null
   hasAssets: boolean
