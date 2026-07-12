@@ -9,6 +9,7 @@ import {
   markdownSourceToFile,
   markdownTextByteLength,
 } from '../utils/markdownSource'
+import { PDF_THEMES, getPdfTheme, setPdfTheme, type PdfThemeId } from '../utils/pdfThemes'
 import {
   formatFileSize,
   MAX_MARKDOWN_BYTES,
@@ -50,6 +51,8 @@ export function PdfUpload({
   onReset,
 }: Props) {
   const [nameEdited, setNameEdited] = useState(false)
+  const [theme, setTheme] = useState<PdfThemeId>(() => getPdfTheme())
+  const [clipboardState, setClipboardState] = useState('')
   const submitted = phase === 'submitted'
   const cancelling = phase === 'cancelling'
   const locked = busy || submitted
@@ -84,6 +87,7 @@ export function PdfUpload({
   const selectInputMode = (mode: 'file' | 'text') => {
     if (filesLocked || mode === inputMode) return
     setNameEdited(false)
+    setClipboardState('')
     if (mode === 'file') {
       onMarkdownSource(null)
       return
@@ -112,6 +116,27 @@ export function PdfUpload({
         value || inferMarkdownDocumentName(textSource?.text || ''),
       ),
     })
+  }
+
+  const pasteClipboard = async () => {
+    if (filesLocked) return
+    setClipboardState('正在读取剪切板…')
+    try {
+      const text = await navigator.clipboard.readText()
+      if (!text.trim()) {
+        setClipboardState('剪切板中没有文本。')
+        return
+      }
+      setNameEdited(false)
+      onMarkdownSource({
+        kind: 'text',
+        text,
+        filename: markdownFilenameFromDocumentName(inferMarkdownDocumentName(text)),
+      })
+      setClipboardState('已粘贴剪切板内容。')
+    } catch {
+      setClipboardState('浏览器未授权读取剪切板，请手动粘贴。')
+    }
   }
 
   return (
@@ -145,7 +170,16 @@ export function PdfUpload({
         >
           粘贴文本
         </button>
+        <button
+          type="button"
+          className="clipboard-paste-button"
+          disabled={filesLocked}
+          onClick={() => void pasteClipboard()}
+        >
+          粘贴剪切板
+        </button>
       </div>
+      {clipboardState && <p className="clipboard-state" role="status">{clipboardState}</p>}
 
       {documentName && (
         <div className="document-name-preview" aria-label="任务与导出文件名称">
@@ -247,7 +281,23 @@ export function PdfUpload({
           />
           浏览器通知
         </label>
-        <span>浅色主题 · 软换行 · PDF 书签</span>
+        <label className="theme-select-label">
+          <span>PDF 主题</span>
+          <select
+            value={theme}
+            disabled={filesLocked}
+            onChange={(event) => {
+              const nextTheme = event.target.value as PdfThemeId
+              setTheme(nextTheme)
+              setPdfTheme(nextTheme)
+            }}
+          >
+            {PDF_THEMES.map((item) => (
+              <option value={item.id} key={item.id}>{item.name}</option>
+            ))}
+          </select>
+        </label>
+        <span>{PDF_THEMES.find((item) => item.id === theme)?.description}</span>
       </div>
 
       {(progress > 0 || phase !== 'idle') && (
@@ -282,7 +332,7 @@ export function PdfUpload({
         <p className="muted upload-help" role="status" aria-live="polite">
           {submitted
             ? autoDownload
-              ? '保持页面打开，完成后会自动下载。'
+              ? '保持页面打开，完成后会自动下载；也可以继续创建新任务。'
               : '任务已提交，可在下方查看构建状态。'
             : busy
               ? `${phaseLabel}，请勿关闭页面。`
