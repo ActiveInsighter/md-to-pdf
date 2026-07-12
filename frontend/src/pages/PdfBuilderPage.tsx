@@ -1,69 +1,26 @@
 import { AppShell } from '../components/AppShell'
 import { AuthPanel } from '../components/AuthPanel'
 import { AuthSessionState } from '../components/AuthSessionState'
+import { PageDropOverlay } from '../components/PageDropOverlay'
 import { PdfJobHistory } from '../components/PdfJobHistory'
 import { PdfJobStatus } from '../components/PdfJobStatus'
 import { PdfUpload } from '../components/PdfUpload'
 import { usePdfBuilder } from '../hooks/usePdfBuilder'
 import { usePdfDelivery } from '../hooks/usePdfDelivery'
 
-const capabilities = [
-  ['KaTeX', '数学公式'],
-  ['Shiki', '代码高亮'],
-  ['Private', '私有存储'],
-  ['Auto', '完成后自动下载'],
-]
-
-const workflow = [
-  ['01', '上传源文件', 'Markdown 与可选资源包'],
-  ['02', '查看真实进度', '构建里程碑和耗时持续同步'],
-  ['03', '自动交付', '完成后通知并按设置自动下载'],
-]
-
 function ProductIntro() {
   return (
-    <section className="intro-panel surface-panel hero-panel" aria-labelledby="hero-title">
-      <div className="hero-content">
-        <p className="hero-kicker"><span aria-hidden="true" />RELIABLE DOCUMENT PIPELINE</p>
-        <h2 id="hero-title">
-          <span className="hero-gradient">Markdown</span>
-          <br />生成清晰 PDF
-        </h2>
-        <p className="hero-description">
-          将结构化内容、数学公式和代码高亮送入稳定的 Chromium 渲染链路，实时查看构建阶段，完成后自动交付文件。
-        </p>
-
-        <div className="command-strip" aria-label="构建流程摘要">
-          <span aria-hidden="true">›</span>
-          <code>source.md → tracked build → document.pdf</code>
-        </div>
-
-        <div className="hero-actions">
-          <a className="button-link" href="#auth-panel">开始使用</a>
-          <a className="secondary-link" href="#workflow">查看流程</a>
-        </div>
+    <section className="intro-panel card" aria-labelledby="hero-title">
+      <span className="intro-label">Markdown → PDF</span>
+      <h1 id="hero-title">把文档交给稳定的构建流程</h1>
+      <p>
+        支持数学公式、代码高亮和本地资源。上传后可查看真实构建进度，并在完成时自动下载同名 PDF。
+      </p>
+      <div className="intro-points" aria-label="主要功能">
+        <span>私有文件存储</span>
+        <span>真实构建进度</span>
+        <span>同名自动下载</span>
       </div>
-
-      <div className="hero-metrics" aria-label="渲染能力">
-        {capabilities.map(([value, label]) => (
-          <div className="metric-card" key={value}>
-            <strong>{value}</strong>
-            <span>{label}</span>
-          </div>
-        ))}
-      </div>
-
-      <ol className="hero-workflow" id="workflow">
-        {workflow.map(([number, title, description]) => (
-          <li key={number}>
-            <span>{number}</span>
-            <div>
-              <strong>{title}</strong>
-              <p>{description}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
     </section>
   )
 }
@@ -85,8 +42,10 @@ export function PdfBuilderPage() {
     progress,
     uploadPhase,
     error,
+    pageDropDisabled,
     setMarkdown,
     setAssets,
+    acceptDroppedFiles,
     retryAuth,
     refreshHistory,
     start,
@@ -134,6 +93,16 @@ export function PdfBuilderPage() {
 
   return (
     <AppShell authenticated onSignOut={() => void signOut()}>
+      <PageDropOverlay disabled={pageDropDisabled} onFiles={acceptDroppedFiles} />
+
+      <div className="workspace-intro" id="workspace">
+        <div>
+          <h1>Markdown 转 PDF</h1>
+          <p>拖入文件即可开始。任务名称和下载文件名会自动沿用 Markdown 文件名。</p>
+        </div>
+        <span className="workspace-drop-hint">可拖到页面任意位置</span>
+      </div>
+
       {delivery.notice && (
         <div className={`job-notice notice-${delivery.notice.kind}`} role="status" aria-live="assertive">
           <div>
@@ -144,7 +113,8 @@ export function PdfBuilderPage() {
         </div>
       )}
       {error && <div className="alert" role="alert">{error}</div>}
-      <div className="workspace-grid" id="workspace">
+
+      <div className="workspace-grid">
         <div className="workspace-main">
           <PdfUpload
             markdown={markdown}
