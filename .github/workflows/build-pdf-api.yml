@@ -88,12 +88,14 @@ jobs:
           key: noto-cjk-${{ runner.os }}-${{ runner.arch }}-ubuntu-24.04-v1
 
       - name: Install renderer system dependencies
+        env:
+          CJK_FONT_CACHE_HIT: ${{ steps.cjk-font-cache.outputs.cache-hit }}
         shell: bash
         run: |
           set -euo pipefail
 
           packages=()
-          if [[ "${{ steps.cjk-font-cache.outputs.cache-hit }}" != "true" ]]; then
+          if [[ "$CJK_FONT_CACHE_HIT" != "true" ]]; then
             packages+=(fonts-noto-cjk)
           fi
           if ! command -v pdfinfo >/dev/null 2>&1; then
@@ -105,7 +107,7 @@ jobs:
             sudo apt-get install -y --no-install-recommends "${packages[@]}"
           fi
 
-          if [[ "${{ steps.cjk-font-cache.outputs.cache-hit }}" != "true" ]]; then
+          if [[ "$CJK_FONT_CACHE_HIT" != "true" ]]; then
             SYSTEM_FONT_DIR=/usr/share/fonts/opentype/noto
             LOCAL_FONT_DIR="$HOME/.local/share/fonts/noto-cjk"
 
@@ -180,6 +182,8 @@ jobs:
             2>&1 | tee work/logs/download-assets.log
 
       - name: Prepare source safely
+        env:
+          HAS_ASSETS: ${{ steps.download.outputs.has_assets }}
         shell: bash
         run: |
           set -euo pipefail
@@ -193,7 +197,7 @@ jobs:
             --max-file-bytes "$PDF_MAX_EXTRACTED_FILE_BYTES"
             --max-path-length "$PDF_MAX_PATH_LENGTH"
           )
-          if [[ "${{ steps.download.outputs.has_assets }}" == "true" ]]; then
+          if [[ "$HAS_ASSETS" == "true" ]]; then
             ARGS+=(--assets work/input/assets.zip)
           fi
           python3 scripts/prepare-supabase-input.py "${ARGS[@]}"
