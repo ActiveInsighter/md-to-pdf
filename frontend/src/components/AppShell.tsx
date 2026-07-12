@@ -10,8 +10,8 @@ type AssuranceIcon = 'lock' | 'spark' | 'link'
 
 const assurances: Array<{ title: string; description: string; icon: AssuranceIcon }> = [
   { title: '私有存储', description: '源文件只进入 Supabase 私有桶', icon: 'lock' },
-  { title: '隔离构建', description: 'GitHub Actions 异步生成 PDF', icon: 'spark' },
-  { title: '安全下载', description: '短期签名链接完成交付', icon: 'link' },
+  { title: '真实进度', description: '构建里程碑由 Actions 写回', icon: 'spark' },
+  { title: '自动交付', description: '完成后通知并可自动下载', icon: 'link' },
 ]
 
 function FeatureIcon({ name }: { name: AssuranceIcon }) {
@@ -46,13 +46,8 @@ function FeatureIcon({ name }: { name: AssuranceIcon }) {
 export function AppShell({ authenticated, children, onSignOut }: Props) {
   return (
     <div className="app-shell" id="top">
-      <div className="liquid-grid" aria-hidden="true" />
-      <div className="ambient ambient-primary" aria-hidden="true" />
-      <div className="ambient ambient-secondary" aria-hidden="true" />
-      <div className="ambient ambient-tertiary" aria-hidden="true" />
-
       <main className="page">
-        <header className="app-header glass-panel">
+        <header className="app-header surface-panel">
           <a className="brand-lockup" href="#top" aria-label="返回 Markdown 转 PDF 页面顶部">
             <span className="brand-mark" aria-hidden="true">
               <svg viewBox="0 0 32 32" fill="none">
@@ -63,7 +58,7 @@ export function AppShell({ authenticated, children, onSignOut }: Props) {
               </svg>
             </span>
             <span className="brand-copy">
-              <span className="eyebrow">LIQUID GLASS PDF STUDIO</span>
+              <span className="eyebrow">CLEAN PDF STUDIO</span>
               <span className="brand-title">Markdown 转 PDF</span>
             </span>
           </a>
@@ -91,7 +86,7 @@ export function AppShell({ authenticated, children, onSignOut }: Props) {
           </div>
         </header>
 
-        <section className="assurance-bar glass-panel" id="features" aria-label="服务特性">
+        <section className="assurance-bar surface-panel" id="features" aria-label="服务特性">
           {assurances.map(({ title, description, icon }) => (
             <div className="assurance-item" key={title}>
               <span className="assurance-icon" aria-hidden="true"><FeatureIcon name={icon} /></span>
