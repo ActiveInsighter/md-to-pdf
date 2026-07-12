@@ -23,6 +23,8 @@ export function createSubmissionRecovery(
   return {
     jobId: created.jobId,
     status: 'created',
+    sourceName: created.sourceName,
+    outputFilename: created.outputFilename,
     inputPath: created.inputPath,
     assetsPath: created.assetsPath,
     hasAssets,
@@ -37,6 +39,8 @@ export function getSubmissionRecovery(job: PdfJob): SubmissionRecovery | null {
   return {
     jobId: job.id,
     status: job.status,
+    sourceName: job.source_name,
+    outputFilename: job.output_filename,
     inputPath: job.input_path,
     assetsPath: job.assets_path,
     hasAssets: job.has_assets,
