@@ -11,7 +11,7 @@ export const REQUIRED_PATHS = [
   'README.md',
   'docs/cloudflare-pages-actions-deploy.md',
   'docs/supabase-pdf-service.md',
-  'fixtures/inline-image.svg',
+  'fixtures/render-regression.svg',
   'fixtures/render-regression.md',
   'frontend/package-lock.json',
   'frontend/package.json',
