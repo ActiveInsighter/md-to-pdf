@@ -20,7 +20,10 @@ function validateRunText(text, relativePath, lineNumber, errors) {
   if (!match) return
 
   errors.push(
-    `${relativePath}:${lineNumber}: GitHub expression ${{ ${match[1].trim()} }} must not be interpolated directly into run; pass it through env and quote the shell variable`,
+    `${relativePath}:${lineNumber}: GitHub expression ` +
+      '${{ ' +
+      match[1].trim() +
+      ' }} must not be interpolated directly into run; pass it through env and quote the shell variable',
   )
 }
 
