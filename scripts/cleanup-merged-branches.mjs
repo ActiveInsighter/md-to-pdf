@@ -10,6 +10,12 @@ const maxPullsRaw = process.env.MAX_PULLS || '100';
 const maxPulls = Number(maxPullsRaw);
 const requestTimeoutRaw = process.env.REQUEST_TIMEOUT_MS || '15000';
 const requestTimeoutMs = Number(requestTimeoutRaw);
+const requestMaxAttemptsRaw = process.env.REQUEST_MAX_ATTEMPTS || '3';
+const requestMaxAttempts = Number(requestMaxAttemptsRaw);
+const retryBaseDelayRaw = process.env.RETRY_BASE_DELAY_MS || '250';
+const retryBaseDelayMs = Number(retryBaseDelayRaw);
+const retryMaxDelayRaw = process.env.RETRY_MAX_DELAY_MS || '5000';
+const retryMaxDelayMs = Number(retryMaxDelayRaw);
 
 if (!token) {
   throw new Error('GITHUB_TOKEN or GH_TOKEN is required.');
@@ -27,7 +33,22 @@ if (!Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 100 || requestTime
   throw new Error(`REQUEST_TIMEOUT_MS must be an integer between 100 and 120000; received ${requestTimeoutRaw}.`);
 }
 
+if (!Number.isInteger(requestMaxAttempts) || requestMaxAttempts < 1 || requestMaxAttempts > 5) {
+  throw new Error(`REQUEST_MAX_ATTEMPTS must be an integer between 1 and 5; received ${requestMaxAttemptsRaw}.`);
+}
+
+if (!Number.isInteger(retryBaseDelayMs) || retryBaseDelayMs < 1 || retryBaseDelayMs > 10000) {
+  throw new Error(`RETRY_BASE_DELAY_MS must be an integer between 1 and 10000; received ${retryBaseDelayRaw}.`);
+}
+
+if (!Number.isInteger(retryMaxDelayMs) || retryMaxDelayMs < retryBaseDelayMs || retryMaxDelayMs > 30000) {
+  throw new Error(
+    `RETRY_MAX_DELAY_MS must be an integer between RETRY_BASE_DELAY_MS and 30000; received ${retryMaxDelayRaw}.`,
+  );
+}
+
 const protectedBranches = new Set(['main', 'master', 'output', 'gh-pages']);
+const retryableStatuses = new Set([429, 502, 503, 504]);
 
 const cleanupPatterns = [
   /^feature\//,
@@ -49,37 +70,87 @@ function isTimeoutError(error) {
   return error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
 }
 
-async function request(method, path, body = null, allow404 = false) {
-  let response;
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
 
-  try {
-    response = await fetch(apiPath(path), {
-      method,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(requestTimeoutMs),
-    });
-  } catch (error) {
-    if (isTimeoutError(error)) {
+function parseRetryAfter(value) {
+  if (!value) return null;
+
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.min(Math.round(seconds * 1000), retryMaxDelayMs);
+  }
+
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return null;
+  return Math.min(Math.max(0, timestamp - Date.now()), retryMaxDelayMs);
+}
+
+function retryDelay(response, attempt) {
+  const retryAfter = parseRetryAfter(response?.headers?.get('retry-after'));
+  if (retryAfter !== null) return retryAfter;
+  return Math.min(retryBaseDelayMs * 2 ** (attempt - 1), retryMaxDelayMs);
+}
+
+function retryReason(error, response) {
+  if (response) return `HTTP ${response.status}`;
+  if (isTimeoutError(error)) return `request timeout after ${requestTimeoutMs}ms`;
+  return `network error: ${error instanceof Error ? error.message : String(error)}`;
+}
+
+async function request(method, path, body = null, allow404 = false) {
+  for (let attempt = 1; attempt <= requestMaxAttempts; attempt += 1) {
+    let response = null;
+    let requestError = null;
+
+    try {
+      response = await fetch(apiPath(path), {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          ...(body ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(requestTimeoutMs),
+      });
+    } catch (error) {
+      requestError = error;
+    }
+
+    if (response && allow404 && response.status === 404) return null;
+    if (response?.ok) {
+      if (response.status === 204) return null;
+      return response.json();
+    }
+
+    const retryable = response ? retryableStatuses.has(response.status) : true;
+    if (retryable && attempt < requestMaxAttempts) {
+      const delayMs = retryDelay(response, attempt);
+      await response?.body?.cancel().catch(() => {});
+      console.warn(
+        `Retrying ${method} ${path} in ${delayMs}ms (attempt ${attempt + 1}/${requestMaxAttempts}): ${retryReason(requestError, response)}`,
+      );
+      await sleep(delayMs);
+      continue;
+    }
+
+    if (response) {
+      const text = await response.text().catch(() => '');
+      throw new Error(`${method} ${path} failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`);
+    }
+
+    if (isTimeoutError(requestError)) {
       throw new Error(`${method} ${path} timed out after ${requestTimeoutMs}ms`);
     }
-    throw error;
+    throw new Error(
+      `${method} ${path} network error: ${requestError instanceof Error ? requestError.message : String(requestError)}`,
+    );
   }
 
-  if (allow404 && response.status === 404) return null;
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`${method} ${path} failed: ${response.status} ${response.statusText}${text ? `\n${text}` : ''}`);
-  }
-
-  if (response.status === 204) return null;
-  return response.json();
+  throw new Error(`${method} ${path} failed after ${requestMaxAttempts} attempts.`);
 }
 
 function encodeBranchRef(branch) {
@@ -121,7 +192,7 @@ async function deleteBranch(branch, expectedSha, reason) {
     return { branch, status: 'dry-run', reason };
   }
 
-  await request('DELETE', `/repos/${repository}/git/refs/heads/${encoded}`);
+  await request('DELETE', `/repos/${repository}/git/refs/heads/${encoded}`, null, true);
   console.log(`Deleted ${branch} at ${currentSha} (${reason})`);
   return { branch, status: 'deleted', reason };
 }
@@ -212,6 +283,8 @@ async function main() {
   console.log(`Dry run: ${dryRun}`);
   console.log(`Max closed pull requests: ${maxPulls}`);
   console.log(`Request timeout: ${requestTimeoutMs}ms`);
+  console.log(`Request attempts: ${requestMaxAttempts}`);
+  console.log(`Retry delay range: ${retryBaseDelayMs}-${retryMaxDelayMs}ms`);
   console.log(`Protected branches: ${[...protectedBranches].join(', ')}`);
 
   const results =
