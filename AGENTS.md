@@ -1,121 +1,154 @@
 # AGENTS.md
 
-本文件适用于整个仓库，是 AI、自动化代理和代码代理处理 PDF 导出任务时的最高优先级操作说明。
+本文件适用于整个仓库，是 AI、自动化代理和代码代理修改 md-to-pdf 项目时的最高优先级操作说明。
 
-## 1. 先判断任务类型
+## 1. 架构边界
 
-### A. 纯 PDF 导出任务
-
-同时满足以下条件时走快速路径：
-
-- 只新增一个临时 `inbox/**` 任务；
-- 不修改 `scripts/**`、`themes/**`、`style.css`、工作流、依赖或项目文档；
-- 用户只要求生成、合并或导出 Markdown PDF。
-
-纯导出任务允许把一次性队列提交直接原子写入 `main`，无需创建临时分支和 PR。
-
-### B. 项目修改任务
-
-只要涉及下面任意内容，就必须走分支与 PR：
-
-- 渲染脚本、主题、样式或依赖；
-- GitHub Actions 工作流；
-- 队列格式、校验逻辑、发布逻辑；
-- README、`docs/**`、测试样例；
-- 同一次提交既包含 `inbox/**`，又包含项目源码或文档修改。
-
-## 2. 纯导出任务的快速路径
-
-按顺序执行，不要额外扫描整个仓库：
-
-1. 读取本文件；常规导出不要重复阅读完整 README、渲染脚本和历史 PR。
-2. 在内存中一次性完成 Markdown、`manifest.yml` 和图片等全部内容。
-3. 默认主题使用 `chatgpt-light`，除非用户明确指定其他主题。
-4. 目标目录使用 `inbox/YYYY/MM/YYYY-MM-DD/`，文件名必须兼容 Windows。
-5. 提交前只做必要检查：日期一致、输入文件存在、图片路径正确、公式分隔符正确、输出名以 `.pdf` 结尾。
-6. 检查目标日期目录是否已有未消费的 `manifest.yml`、`manifest.yaml` 或 `manifest.json`。若存在，先根据 `.github/latest-run.json` 判断是否有构建正在运行，禁止覆盖现有任务。
-7. 把本次所有文件作为一个 Git 提交写入：`create_blob × N -> create_tree -> create_commit -> update_ref(force=false)`。
-8. 禁止对同一导出任务连续调用多次 `create_file`，禁止先提交占位文件再补内容。
-9. 记录提交到 `main` 的导出提交 SHA，后续状态必须与该 SHA 对应。
-10. 若 `main` 在更新前发生移动，重新读取最新 `main` 后只重建一次提交；若仍被拒绝或分支受保护，回退到 `export/*` 分支与 PR。
-
-建议提交信息：
+线上 PDF 任务只有一条入口：
 
 ```text
-export: <文档标题>
+前端网站
+→ Supabase Edge Functions
+→ GitHub Actions build-pdf-api.yml
+→ Supabase 私有 Storage
 ```
 
-## 3. 高效等待构建
+必须遵守：
 
-导出提交进入 `main` 后：
+- 不得通过提交 Markdown、ZIP、图片或 manifest 到 Git 仓库来触发 PDF 构建；
+- 不得重新引入 `inbox/**` 队列、manifest 队列解析或 `output` 分支发布逻辑；
+- 用户输入文件不得写入仓库、commit、PR 或长期 Artifact；
+- GitHub Actions 只能根据网站创建的任务 ID 获取私有输入并回写任务状态；
+- Cloudflare Pages 只托管前端，不处理 PDF 文件。
 
-1. 只轮询 `.github/latest-run.json`，不要通过搜索提交记录猜测状态。
-2. 仅当其中的 `head_sha` 等于本次导出提交 SHA 时，才把记录视为本次任务。
-3. 终态包括：`success`、`failure`、`artifact_failed`、`publish_failed`、`consume_failed`、`skipped`。
-4. 建议每隔 5 至 10 秒检查一次，不要高频重复请求。
-5. 状态未完成时，不读取完整日志、不搜索 Artifact、不读取 `output` 分支。
+## 2. 项目修改流程
 
-成功后按下面顺序读取：
+涉及源码、主题、样式、工作流、依赖、数据库、Edge Functions、README 或 `docs/**` 时：
 
 ```text
-.github/latest-run.json
--> .github/latest-output.json
--> 对应 run_id 的 obsidian-style-pdf Artifact
--> 下载一次 ZIP
--> 按 latest-output.json 解出目标文件
+agent/*、feature/*、fix/*、style/*、docs/* 或 test/* 分支
+→ 有边界的提交
+→ PR
+→ 对应验证
+→ 合并 main
 ```
 
-失败后才读取：
+禁止为了测试线上构建而把用户文档提交到仓库。需要验证渲染器时，使用 `fixtures/` 中的受控测试内容或在 `.tmp/` 中生成临时文件。
+
+## 3. 网站任务生命周期
+
+标准状态流转为：
 
 ```text
-.github/latest-build-log.txt
-.github/last-build-summary.json
+created
+→ uploaded
+→ queued
+→ building
+→ uploading
+→ completed
 ```
 
-只排查日志指出的文件或阶段，不重新扫描整个项目。
+失败进入 `failed`，尚未启动且允许取消的任务可以进入 `cancelled`。
 
-## 4. 验收规则
+修改任务流程时必须保证：
 
-成功交付前至少满足：
+- 状态推进单向且可重试；
+- 同一任务不会重复触发并行构建；
+- 用户只能访问自己的任务；
+- 输入上传完成后才能触发工作流；
+- 构建成功后再删除输入对象；
+- 失败时保留足够的诊断信息，但不得泄露密钥或用户文件内容；
+- 前端以 Realtime 为主、轮询为兜底；
+- 自动下载失败不能改变服务端已完成状态。
 
-- `.github/latest-run.json` 的状态为 `success`；
-- `build_outcome`、`artifact_outcome`、`publish_outcome`、`consume_outcome` 均成功；
-- `.github/latest-output.json` 能定位 PDF、HTML、预览图和质量报告；
-- 质量状态为 `success`，或仅包含已经说明的非致命 `warning`；
-- PDF 文件头、页数、图片加载和 KaTeX 检查通过；
-- 只查看自动生成的一张合成预览图，不重复渲染全部页面。
+## 4. GitHub Actions 规则
 
-不要在构建完成前声称 PDF 已生成。
+网站构建工作流是：
 
-## 5. 交付规则
+```text
+.github/workflows/build-pdf-api.yml
+```
 
-默认只向用户提供：
+修改时必须保持：
 
-1. PDF；
-2. Markdown 源文件；
-3. 合成预览图，可选。
+- 仅使用 `workflow_dispatch` 和必填的 `job_id`；
+- `permissions.contents` 保持只读；
+- checkout 不持久化 Git 凭据；
+- 不向仓库提交运行状态、日志或生成产物；
+- 不把输入 Markdown、资源 ZIP 或 PDF 长期保存在 Artifact；
+- Debug Artifact 只能短期保留，并且不能包含服务端密钥；
+- 每一步失败都能把任务标记为 `failed`；
+- 输入与 ZIP 安全限制不得放宽。
 
-除非用户明确要求，否则不要把完整 Artifact ZIP 作为主要下载项。最终回复应说明页数、主题和质量状态，但不要堆叠内部 SHA、run id 或冗长日志。
+前端部署工作流与 PDF 构建工作流相互独立。修改后端、文档或渲染器不应无条件触发 Pages 部署。
 
-## 6. Markdown 生成约束
+## 5. 渲染器开发规则
 
-- 一级标题只作为文档标题，正文从二级标题组织。
-- 数学公式统一使用 `\(...\)` 和 `\[...\]`。
-- 多行公式使用 `aligned`。
-- 代码块必须标明语言；未知语言使用 `text`。
-- 表格控制列数和单元格长度，长推导放在表格外。
-- 图片优先使用本地 PNG 或 SVG，并从 `md/` 目录以 `../img/...` 引用。
-- 不依赖远程图片、远程 CSS、iframe 或脚本。
-- Mermaid、PlantUML、Excalidraw 等内容先转换为 PNG 或 SVG。
-- 不为了测试而人为塞入用户未要求的复杂结构。
+核心渲染器：
 
-## 7. 失败回退
+```text
+scripts/build-pdf.mjs
+scripts/lib/render-preflight.mjs
+scripts/postprocess-pdfs.mjs
+```
 
-只允许针对明确错误修复：
+默认主题为 `chatgpt-light`，除非产品逻辑明确选择其他已存在主题。
 
-- Markdown 或图片问题：修复同一任务并重新提交一个完整原子提交；
-- manifest 问题：只修改 manifest 与受影响输入；
-- 渲染器或主题问题：切换到 `fix/*` 或 `style/*` 分支，提交 PR，并运行渲染回归测试；
-- GitHub API 或分支保护拒绝直接更新 `main`：使用 `export/*` 分支与 PR，不强制更新引用。
+渲染器修改至少执行：
 
-每次失败最多先做一次针对性重试；仍失败时应明确报告错误位置和日志结论。
+```bash
+npm ci --prefer-offline --no-audit --no-fund
+npm test
+npm run validate:workflows
+npm run test:workflows
+```
+
+测试输出必须进入 `dist/` 或 `.tmp/`，不得提交生成的 PDF、HTML、预览图、质量报告或运行日志。
+
+## 6. 前端与 Edge Functions 规则
+
+前端只能使用：
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
+
+任何服务端密钥都不得使用 `VITE_*` 前缀。
+
+涉及前端时至少执行：
+
+```bash
+cd frontend
+npm ci --prefer-offline --no-audit --no-fund
+npm run typecheck
+npm test
+npm run build
+```
+
+涉及 Edge Functions 时至少执行对应的 Deno 检查和共享测试。CORS、鉴权、RLS、Storage 路径、任务所有权与签名下载逻辑属于安全边界，不能通过前端校验代替服务端校验。
+
+## 7. Markdown 与资源约束
+
+- 数学公式统一支持 `\(...\)` 和 `\[...\]`；
+- 多行公式使用 `aligned`；
+- 代码块应标明语言，未知语言使用 `text`；
+- 图片使用相对路径并随资源 ZIP 上传；
+- 不依赖远程 CSS、iframe 或远程脚本；
+- Mermaid、PlantUML、Excalidraw 等内容应先转换为 PNG 或 SVG；
+- ZIP 内路径必须兼容 Windows；
+- 禁止绝对路径、Windows 盘符、`..`、符号链接和 Zip Slip。
+
+## 8. 验收与交付
+
+完成修改前需要确认：
+
+- 网站创建任务的入口仍可用；
+- `start-pdf-job` 仍只触发 `build-pdf-api.yml`；
+- 工作流仍能下载输入、生成 PDF、上传输出并更新状态；
+- 前端仍能显示真实进度和生命周期时间；
+- 下载使用短期签名 URL；
+- 仓库内不存在通过 Git 文件提交触发 PDF 构建的入口；
+- 文档、脚本和工作流不存在已删除队列的残留引用。
+
+不要在验证完成前声称功能可用，也不要把内部 token、service role key、用户文件内容或签名 URL 写入日志、issue、PR 描述或最终回复。
