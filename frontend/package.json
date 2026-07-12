@@ -9,6 +9,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "node --test tests/*.test.mjs",
     "preview": "vite preview",
+    "smoke:cors": "node scripts/smoke-function-cors.mjs",
     "smoke:supabase": "node scripts/smoke-supabase-service.mjs"
   },
   "dependencies": {
