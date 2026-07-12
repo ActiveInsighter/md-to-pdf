@@ -1,6 +1,7 @@
 import { STORAGE_BUCKET, supabase } from '../lib/supabase'
 import type { CreatePdfJobResponse, PdfDownload, PdfJob } from '../types/pdfJob'
 import { documentNameFromMarkdown, pdfFilenameFromMarkdown } from '../utils/documentName'
+import { getPdfTheme, type PdfThemeId } from '../utils/pdfThemes'
 
 type CancelPdfJobResponse = {
   jobId: string
@@ -20,6 +21,18 @@ type CreatePdfJobWireResponse = Partial<CreatePdfJobResponse> & {
   expiresAt?: string
 }
 
+type RebuildPdfJobResponse = {
+  jobId: string
+  status: PdfJob['status']
+  sourceJobId: string
+}
+
+type FavoritePdfJobResponse = {
+  jobId: string
+  isFavorite: boolean
+  expiresAt: string
+}
+
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
@@ -27,10 +40,11 @@ function message(error: unknown): string {
 export async function createPdfJob(
   hasAssets: boolean,
   sourceFilename: string,
+  theme: PdfThemeId = getPdfTheme(),
 ): Promise<CreatePdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CreatePdfJobWireResponse>('create-pdf-job', {
     body: {
-      theme: 'chatgpt-light',
+      theme,
       options: { breaks: true, toc: true },
       hasAssets,
       sourceFilename,
@@ -54,7 +68,7 @@ export async function createPdfJob(
     sourceFilename: normalizedSourceFilename,
     documentName: normalizedDocumentName,
     outputFilename: normalizedOutputFilename,
-    theme: data.theme || 'chatgpt-light',
+    theme: data.theme || theme,
     options: data.options || { breaks: true, toc: true },
     expiresAt: data.expiresAt,
   }
@@ -81,6 +95,24 @@ export async function startPdfJob(jobId: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+export async function rebuildPdfJob(jobId: string): Promise<RebuildPdfJobResponse> {
+  const { data, error } = await supabase.functions.invoke<RebuildPdfJobResponse>('rebuild-pdf-job', {
+    body: { jobId },
+  })
+  if (error) throw new Error(error.message)
+  if (!data?.jobId || data.sourceJobId !== jobId) throw new Error('重复构建返回的数据不完整。')
+  return data
+}
+
+export async function setPdfJobFavorite(jobId: string, isFavorite: boolean): Promise<FavoritePdfJobResponse> {
+  const { data, error } = await supabase.functions.invoke<FavoritePdfJobResponse>('favorite-pdf-job', {
+    body: { jobId, isFavorite },
+  })
+  if (error) throw new Error(error.message)
+  if (!data?.jobId || data.jobId !== jobId) throw new Error('收藏状态更新失败。')
+  return data
+}
+
 export async function cancelPdfJob(jobId: string): Promise<CancelPdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CancelPdfJobResponse>('cancel-pdf-job', {
     body: { jobId },
@@ -101,7 +133,7 @@ export async function listPdfJobs(): Promise<PdfJob[]> {
     .from('pdf_jobs')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(20)
+    .limit(200)
   if (error) throw new Error(error.message)
   return (data || []) as PdfJob[]
 }
