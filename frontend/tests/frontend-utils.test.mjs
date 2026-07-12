@@ -30,6 +30,7 @@ async function importTypeScriptModule(relativePath) {
 
 const uploadFiles = await importTypeScriptModule('../src/utils/uploadFiles.ts')
 const pdfJobStatus = await importTypeScriptModule('../src/utils/pdfJobStatus.ts')
+const pdfJobProgress = await importTypeScriptModule('../src/utils/pdfJobProgress.ts')
 const realtimePolling = await importTypeScriptModule('../src/utils/realtimePolling.ts')
 const submissionRecovery = await importTypeScriptModule('../src/utils/submissionRecovery.ts')
 const uploadTypes = await importTypeScriptModule('../src/types/upload.ts')
@@ -122,6 +123,52 @@ test('Terminal refresh keys are stable for duplicate final updates', () => {
   )
 })
 
+test('Stored PDF progress is clamped and failed jobs prefer their error message', () => {
+  assert.deepEqual(
+    pdfJobProgress.getPdfJobProgress({
+      status: 'building',
+      progress_percent: 68,
+      progress_message: '源文件已通过安全检查',
+      error_message: null,
+    }),
+    { percent: 68, message: '源文件已通过安全检查' },
+  )
+
+  assert.deepEqual(
+    pdfJobProgress.getPdfJobProgress({
+      status: 'completed',
+      progress_percent: 140,
+      progress_message: '',
+      error_message: null,
+    }),
+    { percent: 100, message: 'PDF 已生成，可以下载' },
+  )
+
+  assert.deepEqual(
+    pdfJobProgress.getPdfJobProgress({
+      status: 'failed',
+      progress_percent: 72,
+      progress_message: '正在渲染 PDF',
+      error_message: '渲染失败',
+    }),
+    { percent: 72, message: '渲染失败' },
+  )
+})
+
+test('PDF job duration helpers distinguish total and build time', () => {
+  const job = {
+    created_at: '2026-07-12T10:00:00.000Z',
+    queued_at: '2026-07-12T10:00:10.000Z',
+    started_at: '2026-07-12T10:00:20.000Z',
+    completed_at: '2026-07-12T10:02:25.000Z',
+    failed_at: null,
+  }
+
+  assert.equal(pdfJobProgress.getPdfJobElapsedMs(job), 145_000)
+  assert.equal(pdfJobProgress.getPdfJobBuildElapsedMs(job), 125_000)
+  assert.equal(pdfJobProgress.formatDuration(125_000), '2 分 5 秒')
+})
+
 test('Submission recovery only accepts reusable jobs with valid storage paths', () => {
   assert.deepEqual(
     submissionRecovery.getSubmissionRecovery({
@@ -205,6 +252,7 @@ test('Pending job cancellation has UI feedback, tested helper wiring and JWT pro
   assert.match(source, /\.eq\('user_id', user\.id\)/)
   assert.match(source, /PDF_JOB_PENDING_INPUT_STATUSES/)
   assert.match(source, /\.in\('status', \[\.\.\.PDF_JOB_PENDING_INPUT_STATUSES\]\)/)
+  assert.match(source, /failed_at: now/)
 
   const config = await readFile(new URL('../../supabase/config.toml', import.meta.url), 'utf8')
   assert.match(config, /\[functions\.cancel-pdf-job\]\s+verify_jwt = true/)
