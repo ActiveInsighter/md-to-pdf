@@ -9,11 +9,20 @@ type CancelPdfJobResponse = {
   cleanupPending: boolean
 }
 
+let pendingSourceFilename = 'document.md'
+
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-export async function createPdfJob(hasAssets: boolean, sourceFilename: string): Promise<CreatePdfJobResponse> {
+export function setPendingPdfSourceFilename(fileName: string | null): void {
+  pendingSourceFilename = fileName?.trim() || 'document.md'
+}
+
+export async function createPdfJob(
+  hasAssets: boolean,
+  sourceFilename = pendingSourceFilename,
+): Promise<CreatePdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CreatePdfJobResponse>('create-pdf-job', {
     body: {
       theme: 'chatgpt-light',
