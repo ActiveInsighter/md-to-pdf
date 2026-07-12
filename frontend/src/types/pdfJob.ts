@@ -20,12 +20,17 @@ export type PdfJob = {
   output_path: string | null
   source_filename: string
   document_name: string
+  output_filename?: string | null
   has_assets: boolean
   theme: string
   options: { breaks?: boolean; toc?: boolean }
   github_run_id: number | null
   github_run_url: string | null
+  github_commit?: string | null
   error_message: string | null
+  attempt_count?: number
+  is_favorite: boolean
+  source_job_id?: string | null
   progress_percent?: number | null
   progress_stage?: string | null
   created_at: string
