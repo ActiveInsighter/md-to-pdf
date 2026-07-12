@@ -95,18 +95,18 @@ async function cleanup() {
     }
   }
 
-  if (cleanupErrors.length > 0) {
-    console.warn(cleanupErrors.join('; '))
-  }
+  if (cleanupErrors.length > 0) console.warn(cleanupErrors.join('; '))
   return cleanupErrors
 }
 
-async function createPdfJob() {
+async function createPdfJob(sourceName) {
+  const outputFilename = `${sourceName.slice(0, -3)}.pdf`
   const { data, error } = await client.functions.invoke('create-pdf-job', {
     body: {
       theme: 'chatgpt-light',
       options: { breaks: true, toc: true },
       hasAssets: false,
+      sourceName,
     },
   })
   if (error) throw new Error(await functionErrorMessage('create-pdf-job', error))
@@ -114,6 +114,8 @@ async function createPdfJob() {
   const jobId = String(data?.jobId || '')
   assert(/^[0-9a-f-]{36}$/i.test(jobId), 'create-pdf-job returned an invalid job ID')
   assert(data?.inputPath === `jobs/${jobId}/input.md`, 'create-pdf-job returned an unexpected input path')
+  assert(data?.sourceName === sourceName, 'create-pdf-job did not preserve the source filename')
+  assert(data?.outputFilename === outputFilename, 'create-pdf-job did not derive the PDF filename')
   jobIds.add(jobId)
   return { ...data, jobId }
 }
@@ -199,7 +201,7 @@ async function main() {
   console.log('2/10 Password login succeeded')
 
   stage = 'create-cancellation-probe'
-  const cancellationJob = await createPdfJob()
+  const cancellationJob = await createPdfJob('Cancellation probe.md')
   cancelJobId = cancellationJob.jobId
   console.log('3/10 Cancellation probe job created')
 
@@ -212,9 +214,11 @@ async function main() {
   console.log('5/10 Cancellation, cleanup, idempotency and restart rejection verified')
 
   stage = 'create-pdf-job'
-  const createdJob = await createPdfJob()
+  const sourceName = 'Supabase PDF smoke test.md'
+  const expectedOutputFilename = 'Supabase PDF smoke test.pdf'
+  const createdJob = await createPdfJob(sourceName)
   buildJobId = createdJob.jobId
-  console.log('6/10 PDF build job created')
+  console.log('6/10 PDF build job created with source-derived name')
 
   stage = 'upload-markdown'
   const markdown = [
@@ -265,7 +269,9 @@ async function main() {
     await sleep(5000)
   }
   assert(job?.status === 'completed', 'Timed out waiting for PDF job completion')
-  console.log('9/10 PDF build completed')
+  assert(job.source_name === sourceName, 'completed job lost the source filename')
+  assert(job.output_filename === expectedOutputFilename, 'completed job lost the output filename')
+  console.log('9/10 PDF build completed with persisted filenames')
 
   stage = 'download-pdf'
   const { data: download, error: downloadError } = await client.functions.invoke('get-pdf-download', {
@@ -273,16 +279,17 @@ async function main() {
   })
   if (downloadError) throw new Error(await functionErrorMessage('get-pdf-download', downloadError))
   assert(download?.downloadUrl, 'get-pdf-download returned no signed URL')
+  assert(download?.filename === expectedOutputFilename, 'get-pdf-download returned the wrong filename')
 
   const response = await fetch(download.downloadUrl)
   assert(response.ok, `Signed PDF download failed with HTTP ${response.status}`)
   const bytes = new Uint8Array(await response.arrayBuffer())
   assert(bytes.length > 4, 'Downloaded PDF is empty')
   assert(new TextDecoder().decode(bytes.slice(0, 4)) === '%PDF', 'Downloaded file does not have a PDF header')
-  console.log(`10/10 Signed PDF download succeeded (${bytes.length} bytes)`)
+  console.log(`10/10 Signed PDF download succeeded as ${download.filename} (${bytes.length} bytes)`)
 
   stage = 'completed'
-  return { pdfBytes: bytes.length, cancellation: cancellationResult }
+  return { pdfBytes: bytes.length, filename: download.filename, cancellation: cancellationResult }
 }
 
 let failure = null
@@ -304,6 +311,8 @@ try {
     cancellation: cancellationResult,
     buildRun: lastJob ? {
       status: lastJob.status || null,
+      sourceName: lastJob.source_name || null,
+      outputFilename: lastJob.output_filename || null,
       errorMessage: lastJob.error_message || null,
       githubRunId: lastJob.github_run_id || null,
       githubRunUrl: lastJob.github_run_url || null,
