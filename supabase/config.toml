@@ -42,3 +42,9 @@ verify_jwt = true
 
 [functions.get-pdf-download]
 verify_jwt = true
+
+[functions.favorite-pdf-job]
+verify_jwt = true
+
+[functions.rebuild-pdf-job]
+verify_jwt = true

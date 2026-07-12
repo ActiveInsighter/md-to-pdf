@@ -121,16 +121,6 @@ async function uploadObject(filename, source, contentType) {
   await parseResponse(response);
 }
 
-async function deleteObjects(filenames) {
-  const prefixes = filenames.map(objectPath);
-  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`, {
-    method: 'DELETE',
-    headers: headers({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ prefixes }),
-  });
-  await parseResponse(response);
-}
-
 function runMetadata() {
   const runId = Number(process.env.GITHUB_RUN_ID || 0) || null;
   const repository = process.env.GITHUB_REPOSITORY || '';
@@ -240,7 +230,7 @@ async function main() {
       break;
     }
     case 'delete-inputs': {
-      await deleteObjects(['input.md', 'assets.zip']);
+      console.log('Source files retained for repeat builds and will be removed by the 30-day cleanup job.');
       break;
     }
     default:
