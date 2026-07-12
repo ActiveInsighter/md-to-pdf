@@ -7,7 +7,7 @@ import {
   PDF_JOB_STATUS_LABELS,
 } from '../utils/pdfJobStatus'
 
-type Props = {
+ type Props = {
   job: PdfJob | null
   autoDownload: boolean
   notifyOnComplete: boolean
@@ -82,7 +82,7 @@ export function PdfJobStatus({ job, autoDownload, notifyOnComplete, onDownload, 
           <h2 title={job.document_name}>{job.document_name}</h2>
           <p>{getPdfJobStageLabel(job)}</p>
         </div>
-        <code title={job.source_filename}>{job.source_filename.replace(/\.md$/i, '.pdf')}</code>
+        <code title={job.output_filename || job.source_filename}>{job.output_filename || job.source_filename.replace(/\.md$/i, '.pdf')}</code>
       </div>
 
       <div className={`build-progress-panel${job.status === 'failed' ? ' is-failed' : ''}`}>
@@ -110,7 +110,13 @@ export function PdfJobStatus({ job, autoDownload, notifyOnComplete, onDownload, 
       </div>
 
       <details className="timeline-details">
-        <summary>查看时间线</summary>
+        <summary>查看任务与 Action 详情</summary>
+        <dl className="job-detail-grid">
+          <div><dt>主题</dt><dd>{job.theme}</dd></div>
+          <div><dt>Action Run</dt><dd>{job.github_run_id || '等待关联'}</dd></div>
+          <div><dt>尝试次数</dt><dd>{job.attempt_count || 0}</dd></div>
+          <div><dt>保留到</dt><dd>{job.is_favorite ? '已收藏，长期保留' : formatTime(job.expires_at)}</dd></div>
+        </dl>
         <ol className="job-timeline">
           {timeline.map(([label, value]) => (
             <li className={value ? 'is-complete' : ''} key={label}>
@@ -127,14 +133,16 @@ export function PdfJobStatus({ job, autoDownload, notifyOnComplete, onDownload, 
       <div className="status-footer">
         <span>{autoDownload ? '完成后自动下载' : '手动下载'}{notifyOnComplete ? ' · 浏览器通知' : ''}</span>
         {job.github_run_url && (
-          <a href={job.github_run_url} target="_blank" rel="noreferrer">构建日志</a>
+          <a href={job.github_run_url} target="_blank" rel="noreferrer">查看 Action 构建日志</a>
         )}
       </div>
 
       {job.error_message && <p className="error-text status-error">{job.error_message}</p>}
       <div className="status-actions">
         {job.status === 'completed' && <button onClick={onDownload}>下载 {job.document_name}.pdf</button>}
-        {terminal && <button className="secondary" onClick={onNew}>新建任务</button>}
+        <button className="secondary" onClick={onNew}>
+          {terminal ? '新建任务' : '继续上传新任务'}
+        </button>
       </div>
     </section>
   )
