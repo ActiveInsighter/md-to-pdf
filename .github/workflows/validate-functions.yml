@@ -7,7 +7,11 @@ on:
     paths:
       - '.github/workflows/validate-functions.yml'
       - 'package.json'
+      - 'frontend/src/types/pdfJob.ts'
+      - 'frontend/src/utils/pdfJobStatus.ts'
+      - 'frontend/src/utils/submissionRecovery.ts'
       - 'supabase/functions/**'
+      - 'supabase/migrations/20260711123000_create_pdf_jobs.sql'
   workflow_dispatch:
 
 permissions:
@@ -36,12 +40,14 @@ jobs:
       - name: Test shared Edge Function modules
         run: npm run test:functions
 
-      - name: Validate CORS wiring
+      - name: Validate shared function wiring
         shell: bash
         run: |
           set -euo pipefail
 
           test -s supabase/functions/_shared/cors.test.ts
+          test -s supabase/functions/_shared/pdf-job-status.ts
+          test -s supabase/functions/_shared/pdf-job-status.test.ts
           if grep -RFn "'Access-Control-Allow-Origin': '*'" supabase/functions; then
             echo 'Supabase Functions must not allow every browser origin.'
             exit 1
@@ -59,3 +65,8 @@ jobs:
             grep -q "handleOptions(req)" "$file"
             grep -q "json(req," "$file"
           done
+
+          grep -q 'isStartIdempotentPdfJobStatus' supabase/functions/start-pdf-job/index.ts
+          grep -q 'PDF_JOB_PENDING_INPUT_STATUSES' supabase/functions/start-pdf-job/index.ts
+          grep -q 'PDF_JOB_PENDING_INPUT_STATUSES' supabase/functions/cancel-pdf-job/index.ts
+          grep -q 'isPendingInputPdfJobStatus' supabase/functions/cancel-pdf-job/logic.ts
