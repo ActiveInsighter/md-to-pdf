@@ -15,7 +15,6 @@ on:
       - 'fixtures/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/build-pdf.yml'
       - '.github/workflows/build-pdf-api.yml'
       - '.github/workflows/validate-renderer.yml'
   pull_request:
@@ -30,7 +29,6 @@ on:
       - 'fixtures/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/build-pdf.yml'
       - '.github/workflows/build-pdf-api.yml'
       - '.github/workflows/validate-renderer.yml'
   workflow_dispatch:

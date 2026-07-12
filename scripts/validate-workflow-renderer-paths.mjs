@@ -14,7 +14,6 @@ const STATIC_TRIGGER_PATHS = [
   'fixtures/**',
   'package.json',
   'package-lock.json',
-  '.github/workflows/build-pdf.yml',
   '.github/workflows/build-pdf-api.yml',
   WORKFLOW_PATH,
 ]

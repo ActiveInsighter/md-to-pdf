@@ -1,6 +1,6 @@
 # Supabase 异步 PDF 构建服务
 
-本功能在不改变现有 Markdown 渲染器的前提下，提供网页异步构建路径：
+本功能通过网页提供唯一的线上异步 PDF 构建路径：
 
 ```text
 Cloudflare Pages React 前端
@@ -14,7 +14,7 @@ Cloudflare Pages React 前端
 → Edge Function 返回短期签名下载 URL
 ```
 
-原有的 `inbox/** → main → build-pdf.yml → output` 队列流程保持独立，不受网页服务影响。
+用户文件不会提交到 Git 仓库。仓库提交仅用于代码、主题、配置和文档维护，不会直接触发 PDF 构建。
 
 ## 目录与对象路径
 

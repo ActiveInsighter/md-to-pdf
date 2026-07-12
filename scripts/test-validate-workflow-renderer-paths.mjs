@@ -22,7 +22,6 @@ const STATIC_PATHS = [
   'fixtures/**',
   'package.json',
   'package-lock.json',
-  '.github/workflows/build-pdf.yml',
   '.github/workflows/build-pdf-api.yml',
   '.github/workflows/validate-renderer.yml',
 ]
