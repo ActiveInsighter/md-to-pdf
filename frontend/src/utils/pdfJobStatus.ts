@@ -11,14 +11,16 @@ export const PDF_JOB_STATUS_LABELS: Record<PdfJobStatus, string> = {
   expired: '已过期',
 }
 
-const TERMINAL_PDF_JOB_STATUSES: readonly PdfJobStatus[] = [
+export const PDF_JOB_TERMINAL_STATUSES = [
   'completed',
   'failed',
   'expired',
-]
+] as const satisfies readonly PdfJobStatus[]
+
+const terminalPdfJobStatuses = new Set<PdfJobStatus>(PDF_JOB_TERMINAL_STATUSES)
 
 export function isTerminalPdfJobStatus(status: PdfJobStatus): boolean {
-  return TERMINAL_PDF_JOB_STATUSES.includes(status)
+  return terminalPdfJobStatuses.has(status)
 }
 
 export function getTerminalPdfJobRefreshKey(
