@@ -1,5 +1,12 @@
-import type { CreatePdfJobResponse, PdfJob } from '../types/pdfJob'
+import type { CreatePdfJobResponse, PdfJob, PdfJobStatus } from '../types/pdfJob'
 import type { SubmissionRecovery } from '../types/upload'
+
+export const PDF_JOB_PENDING_INPUT_STATUSES = [
+  'created',
+  'uploaded',
+] as const satisfies readonly PdfJobStatus[]
+
+const pendingInputStatuses = new Set<PdfJobStatus>(PDF_JOB_PENDING_INPUT_STATUSES)
 
 export function createSubmissionRecovery(
   created: CreatePdfJobResponse,
@@ -15,7 +22,7 @@ export function createSubmissionRecovery(
 }
 
 export function getSubmissionRecovery(job: PdfJob): SubmissionRecovery | null {
-  if (job.status !== 'created' && job.status !== 'uploaded') return null
+  if (!pendingInputStatuses.has(job.status)) return null
   if (!job.input_path) return null
   if (job.has_assets && !job.assets_path) return null
 
