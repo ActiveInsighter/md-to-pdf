@@ -101,24 +101,34 @@ export function PdfUpload({
         <label><input type="checkbox" checked readOnly /> PDF 书签</label>
       </div>
 
-      <div className="upload-progress-row">
-        <div
-          className="progress"
-          role="progressbar"
-          aria-label="任务提交进度"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-          aria-valuetext={`${phaseLabel}，${progress}%`}
-        >
-          <span style={{ width: `${progress}%` }} />
+      {submitted ? (
+        <div className="submission-complete" role="status">
+          <strong>文件提交完成</strong>
+          <span>下方“任务进度”会继续显示服务端真实构建阶段和完成时间。</span>
         </div>
-        <span className="upload-progress-value">{progress}%</span>
-      </div>
+      ) : (
+        <div className="submission-progress-block">
+          <div className="submission-progress-label">
+            <span>文件提交进度</span>
+            <strong>{progress}%</strong>
+          </div>
+          <div
+            className="progress"
+            role="progressbar"
+            aria-label="文件提交进度"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+            aria-valuetext={`${phaseLabel}，${progress}%`}
+          >
+            <span style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+      )}
 
       <div className="upload-actions">
         <button disabled={locked || !canStart} onClick={onStart}>
-          {submitted ? '已提交，等待构建' : busy ? phaseLabel : actionLabel}
+          {submitted ? '已提交，正在构建' : busy ? phaseLabel : actionLabel}
         </button>
         {recovery && (
           <button className="secondary recovery-reset-button" disabled={busy} onClick={onReset}>
@@ -127,7 +137,7 @@ export function PdfUpload({
         )}
         <p className="muted upload-help" role="status" aria-live="polite">
           {submitted
-            ? '任务已提交，可在下方查看实时构建状态。'
+            ? '任务已进入服务端流程，可离开上传区域并查看实时进度。'
             : cancelling
               ? '正在停止未启动任务并清理已上传文件。'
               : busy
