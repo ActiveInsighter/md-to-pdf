@@ -14,7 +14,11 @@
     "test:render": "node scripts/test-render.mjs",
     "test:functions": "node --test supabase/functions/_shared/*.test.ts",
     "test:repository": "node --test scripts/test-validate-repository-integrity.mjs scripts/test-prepare-supabase-input.mjs",
-    "test:workflows": "node --test scripts/test-validate-workflow-*.mjs"
+    "test:workflows": "node --test scripts/test-validate-workflow-*.mjs",
+    "test:repository-validator": "npm run test:repository",
+    "test:workflow-security-validator": "npm run test:workflows",
+    "test:github-tool-adapter": "node --test scripts/test-validate-workflow-github-script.mjs",
+    "test:cleanup-branches": "node --check scripts/cleanup-merged-branches.mjs"
   },
   "devDependencies": {
     "js-yaml": "^4.1.0",
