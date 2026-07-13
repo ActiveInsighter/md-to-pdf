@@ -12,6 +12,8 @@ function cleanDocumentNameCandidate(value: string): string {
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]+>/g, '')
     .replace(/[`*_~]/g, '')
+    .replace(/^\s{0,3}>+\s*/, '')
+    .replace(/^\s*[-+*]\s+/, '')
     .replace(/\s+#+\s*$/, '')
     .replace(/\s+/g, ' ')
     .trim()
