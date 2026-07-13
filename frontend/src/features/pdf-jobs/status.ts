@@ -26,15 +26,15 @@ const LABELS: Record<JobDisplayStatus, string> = {
 }
 
 const STAGES: Record<JobDisplayStatus, string> = {
-  created: '任务已创建，等待上传源文件',
-  uploaded: '源文件已上传，等待生成 PDF',
-  queued: '已进入 GitHub Actions 队列',
-  running: '正在渲染文档与生成 PDF',
-  uploading: 'PDF 已生成，正在安全交付',
-  completed: 'PDF 已生成，可以下载',
-  failed: '构建未完成，请查看错误原因',
-  cancelled: '任务在启动前已取消',
-  expired: '产物已过期，需要重新构建',
+  created: '等待上传源文件',
+  uploaded: '源文件已保存，等待生成',
+  queued: '已进入构建队列',
+  running: '正在排版并生成 PDF',
+  uploading: '正在保存 PDF',
+  completed: 'PDF 与 Markdown 源稿已保存',
+  failed: '可使用保留源稿重新构建',
+  cancelled: '任务已取消',
+  expired: '文件已超过保留期限',
 }
 
 const MACHINE_STAGE_TOKENS = new Set([
@@ -90,8 +90,12 @@ export function canCancelJob(job: Pick<PdfJob, 'status'>): boolean {
   return job.status === 'created' || job.status === 'uploaded'
 }
 
-export function canRetryJob(job: Pick<PdfJob, 'status'>): boolean {
-  return job.status === 'failed' || job.status === 'expired'
+export function canRetryJob(job: Pick<PdfJob, 'status' | 'input_path'>): boolean {
+  return Boolean(job.input_path) && (job.status === 'completed' || job.status === 'failed')
+}
+
+export function canDownloadSource(job: Pick<PdfJob, 'status' | 'input_path'>): boolean {
+  return Boolean(job.input_path) && job.status !== 'cancelled' && job.status !== 'expired'
 }
 
 export function canDownloadJob(job: Pick<PdfJob, 'status' | 'expires_at'>): boolean {

@@ -77,4 +77,5 @@ export type CreatePdfJobResponse = {
   expiresAt: string
 }
 
-export type PdfDownload = { downloadUrl: string; fileName: string }
+export type PdfDownloadKind = 'pdf' | 'source'
+export type PdfDownload = { downloadUrl: string; fileName: string; kind: PdfDownloadKind }
