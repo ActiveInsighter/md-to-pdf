@@ -25,7 +25,10 @@ export function usePdfJobs(filters: JobFilters = { status: 'all', search: '' }) 
   return useQuery<PdfJob[], Error, PdfJob[]>({
     queryKey: pdfJobKeys.list(filters),
     queryFn: listPdfJobs,
-    structuralSharing: (oldData, newData) => mergePdfJobHistory(oldData, newData),
+    structuralSharing: (oldData, newData) => mergePdfJobHistory(
+      oldData as PdfJob[] | undefined,
+      newData as PdfJob[],
+    ),
     select: (jobs) => filterPdfJobs(jobs, filters),
     refetchInterval: (query) => {
       const jobs = query.state.data
