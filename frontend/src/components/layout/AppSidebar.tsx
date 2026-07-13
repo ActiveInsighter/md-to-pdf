@@ -24,7 +24,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
     all: jobs.length,
     active: jobs.filter((job) => !isTerminalJob(job)).length,
     completed: jobs.filter((job) => job.status === 'completed').length,
-    failed: jobs.filter((job) => job.status === 'failed' || job.status === 'expired' || job.status === 'cancelled').length,
+    failed: jobs.filter((job) => job.status === 'failed' || job.status === 'expired').length,
     favorite: jobs.filter((job) => job.is_favorite).length,
   }
 

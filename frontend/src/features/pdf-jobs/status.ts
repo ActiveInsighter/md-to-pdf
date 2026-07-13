@@ -1,5 +1,5 @@
 import type { BadgeProps } from '@/components/ui/badge'
-import type { JobDisplayStatus, PdfJob } from './types'
+import { PDF_JOB_TERMINAL_STATUSES, type JobDisplayStatus, type PdfJob, type PdfJobStatus } from './types'
 
 const DEFAULT_PROGRESS: Record<JobDisplayStatus, number> = {
   created: 5,
@@ -42,7 +42,7 @@ export function getJobDisplayStatus(job: Pick<PdfJob, 'status' | 'error_message'
 }
 
 export function isTerminalJob(job: Pick<PdfJob, 'status'>): boolean {
-  return ['completed', 'failed', 'expired', 'cancelled'].includes(job.status)
+  return (PDF_JOB_TERMINAL_STATUSES as readonly PdfJobStatus[]).includes(job.status)
 }
 
 export function getJobStatusLabel(job: Pick<PdfJob, 'status' | 'error_message'>): string {
@@ -73,7 +73,7 @@ export function canCancelJob(job: Pick<PdfJob, 'status'>): boolean {
 }
 
 export function canRetryJob(job: Pick<PdfJob, 'status'>): boolean {
-  return job.status === 'failed' || job.status === 'expired' || job.status === 'cancelled'
+  return job.status === 'failed' || job.status === 'expired'
 }
 
 export function canDownloadJob(job: Pick<PdfJob, 'status' | 'expires_at'>): boolean {
