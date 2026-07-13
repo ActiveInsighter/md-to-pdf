@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { AppHeader } from './AppHeader'
 import { AppSidebar } from './AppSidebar'
+import { MobileNavigation } from './MobileNavigation'
 import { RouteLoading } from './RouteLoading'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { PdfJobsRealtimeBridge } from '@/features/pdf-jobs/hooks/PdfJobsRealtimeBridge'
@@ -31,6 +31,7 @@ export function ProtectedLayout() {
     )
   }
   if (!auth.session) return <Navigate to="/login" replace state={{ from: location }} />
+
   return (
     <PdfJobsRealtimeBridge>
       <a href="#main-content" className="fixed left-4 top-3 z-[100] -translate-y-20 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lifted transition-transform focus:translate-y-0">
@@ -41,8 +42,10 @@ export function ProtectedLayout() {
         <div className="fixed inset-y-0 left-0 hidden w-72 border-r bg-card/90 backdrop-blur-xl lg:block">
           <AppSidebar />
         </div>
-        <div className="lg:pl-72">
-          <AppHeader />
+        <div className="fixed left-3 top-3 z-50 rounded-xl border bg-card/95 shadow-panel backdrop-blur lg:hidden">
+          <MobileNavigation />
+        </div>
+        <div className="pt-14 lg:pl-72 lg:pt-0">
           <Outlet />
         </div>
       </div>
