@@ -1,6 +1,6 @@
 import { STORAGE_BUCKET, supabase } from '@/lib/supabase'
 import { toUserMessage } from '@/lib/errors'
-import type { CreatePdfJobResponse, PdfDownload, PdfJob } from '../types'
+import type { CreatePdfJobResponse, PdfDownload, PdfDownloadKind, PdfJob } from '../types'
 import type { PdfThemeId } from '@/features/pdf-builder/types'
 import { documentNameFromMarkdown, pdfFilenameFromMarkdown } from '@/features/pdf-builder/lib/files'
 
@@ -20,8 +20,21 @@ type CreatePdfJobWireResponse = Partial<CreatePdfJobResponse> & {
   expiresAt?: string
 }
 
-type RebuildPdfJobResponse = { jobId: string; status: PdfJob['status']; sourceJobId: string }
+type RebuildPdfJobResponse = {
+  jobId: string
+  status: PdfJob['status']
+  sourceJobId: string
+  theme: PdfThemeId
+  sourceFilename?: string
+}
 type FavoritePdfJobResponse = { jobId: string; isFavorite: boolean; expiresAt: string }
+type DownloadWireResponse = {
+  downloadUrl?: string
+  fileName?: string
+  outputFilename?: string
+  sourceFilename?: string
+  kind?: PdfDownloadKind
+}
 
 export async function createPdfJob(hasAssets: boolean, sourceFilename: string, theme: PdfThemeId): Promise<CreatePdfJobResponse> {
   const { data, error } = await supabase.functions.invoke<CreatePdfJobWireResponse>('create-pdf-job', {
@@ -80,10 +93,14 @@ export async function cancelPdfJob(jobId: string): Promise<CancelPdfJobResponse>
   return data
 }
 
-export async function rebuildPdfJob(jobId: string): Promise<RebuildPdfJobResponse> {
-  const { data, error } = await supabase.functions.invoke<RebuildPdfJobResponse>('rebuild-pdf-job', { body: { jobId } })
+export async function rebuildPdfJob(input: { jobId: string; theme: PdfThemeId }): Promise<RebuildPdfJobResponse> {
+  const { data, error } = await supabase.functions.invoke<RebuildPdfJobResponse>('rebuild-pdf-job', {
+    body: input,
+  })
   if (error) throw new Error(error.message)
-  if (!data?.jobId || data.sourceJobId !== jobId) throw new Error('重复构建返回的数据不完整。')
+  if (!data?.jobId || data.sourceJobId !== input.jobId || data.theme !== input.theme) {
+    throw new Error('重新构建返回的数据不完整。')
+  }
   await startPdfJob(data.jobId)
   return { ...data, status: 'queued' }
 }
@@ -109,12 +126,22 @@ export async function listPdfJobs(): Promise<PdfJob[]> {
   return (data || []) as PdfJob[]
 }
 
-export async function getPdfDownload(jobId: string): Promise<PdfDownload> {
-  const { data, error } = await supabase.functions.invoke<{ downloadUrl?: string; fileName?: string; outputFilename?: string }>('get-pdf-download', { body: { jobId } })
+async function getJobDownload(jobId: string, kind: PdfDownloadKind): Promise<PdfDownload> {
+  const { data, error } = await supabase.functions.invoke<DownloadWireResponse>('get-pdf-download', {
+    body: { jobId, kind },
+  })
   if (error) throw new Error(error.message)
-  const fileName = data?.fileName || data?.outputFilename
+  const fileName = data?.fileName || (kind === 'source' ? data?.sourceFilename : data?.outputFilename)
   if (!data?.downloadUrl || !fileName) throw new Error('下载地址生成失败。')
-  return { downloadUrl: data.downloadUrl, fileName }
+  return { downloadUrl: data.downloadUrl, fileName, kind }
+}
+
+export function getPdfDownload(jobId: string): Promise<PdfDownload> {
+  return getJobDownload(jobId, 'pdf')
+}
+
+export function getSourceDownload(jobId: string): Promise<PdfDownload> {
+  return getJobDownload(jobId, 'source')
 }
 
 export function readablePdfError(error: unknown): string {
