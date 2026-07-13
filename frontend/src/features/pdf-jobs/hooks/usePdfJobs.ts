@@ -22,7 +22,7 @@ export function filterPdfJobs(jobs: PdfJob[], filters: JobFilters): PdfJob[] {
 
 export function usePdfJobs(filters: JobFilters = { status: 'all', search: '' }) {
   const realtimeConnection = useWorkspaceStore((state) => state.realtimeConnection)
-  return useQuery({
+  return useQuery<PdfJob[], Error, PdfJob[]>({
     queryKey: pdfJobKeys.list(filters),
     queryFn: listPdfJobs,
     structuralSharing: (oldData, newData) => mergePdfJobHistory(oldData, newData),
