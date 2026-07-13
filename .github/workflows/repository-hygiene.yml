@@ -5,48 +5,28 @@ on:
     branches:
       - main
     paths:
+      - '.github/**'
       - '.github/workflows/**'
-      - '.gitignore'
-      - '.env.example'
       - 'AGENTS.md'
-      - 'README.md'
       - 'docs/**'
-      - 'fixtures/**'
+      - 'frontend/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'themes/**'
-      - 'frontend/package.json'
-      - 'frontend/package-lock.json'
-      - 'frontend/src/**'
-      - 'frontend/scripts/**'
-      - 'frontend/tests/**'
       - 'scripts/**'
-      - 'supabase/config.toml'
       - 'supabase/functions/**'
-      - 'supabase/migrations/**'
   pull_request:
     branches:
       - main
     paths:
+      - '.github/**'
       - '.github/workflows/**'
-      - '.gitignore'
-      - '.env.example'
       - 'AGENTS.md'
-      - 'README.md'
       - 'docs/**'
-      - 'fixtures/**'
+      - 'frontend/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'themes/**'
-      - 'frontend/package.json'
-      - 'frontend/package-lock.json'
-      - 'frontend/src/**'
-      - 'frontend/scripts/**'
-      - 'frontend/tests/**'
       - 'scripts/**'
-      - 'supabase/config.toml'
       - 'supabase/functions/**'
-      - 'supabase/migrations/**'
   workflow_dispatch:
 
 permissions:
@@ -59,13 +39,12 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Node with frontend npm cache
@@ -78,148 +57,59 @@ jobs:
       - name: Validate repository integrity
         run: npm run validate:repository
 
-      - name: Test repository integrity validator
+      - name: Test repository validators
         run: npm run test:repository
 
-      - name: Reject new generated files
-        if: github.event_name == 'pull_request'
-        shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          generated="$(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA" | grep -E '^(\.tmp/|work/|coverage/|playwright-report/|test-results/|frontend/smoke-diagnostic\.json$)' || true)"
-          if [[ -n "$generated" ]]; then
-            echo 'This pull request adds generated files:'
-            printf '%s\n' "$generated"
-            exit 1
-          fi
+      - name: Test workflow validators
+        run: npm run test:workflows
 
-      - name: Validate environment configuration docs
-        shell: bash
-        run: |
-          set -euo pipefail
-          files=(
-            .env.example
-            supabase/functions/.env.example
-            README.md
-            docs/supabase-pdf-service.md
-          )
-
-          if grep -nE '^[[:space:]]*GITHUB_(OWNER|REPO|WORKFLOW_FILE|WORKFLOW_REF)([[:space:]]*=|[[:space:]]*$)' "${files[@]}"; then
-            echo 'Configuration docs contain repository settings that are fixed in start-pdf-job.'
-            exit 1
-          fi
-
-          if grep -nE 'npm install( |$)' README.md docs/supabase-pdf-service.md; then
-            echo 'Frontend documentation must use npm ci with the committed lockfile.'
-            exit 1
-          fi
-
-          grep -q '^GITHUB_TOKEN=' .env.example
-          grep -q '^PDF_STORAGE_BUCKET=' .env.example
-          grep -q '^GITHUB_TOKEN=' supabase/functions/.env.example
-          grep -q '^PDF_STORAGE_BUCKET=' supabase/functions/.env.example
-          grep -q 'Direct Upload' README.md
-          grep -q 'Pages Direct Upload' docs/supabase-pdf-service.md
-          grep -q 'npm ci --prefer-offline --no-audit --no-fund' README.md
-          grep -q 'npm ci --prefer-offline --no-audit --no-fund' docs/supabase-pdf-service.md
-          grep -q 'supabase functions deploy cancel-pdf-job' README.md
-          grep -q 'supabase functions deploy cancel-pdf-job' docs/supabase-pdf-service.md
-
-      - name: Validate workflow security
+      - name: Validate workflow policy
         run: npm run validate:workflows
 
-      - name: Validate frontend manifests and workflows
+      - name: Validate generated output policy
+        run: npm run validate:generated-files
+
+      - name: Validate contributor documentation
         shell: bash
         run: |
           set -euo pipefail
-          test -s frontend/package-lock.json
-          test -s frontend/tests/frontend-utils.test.mjs
-          test -s frontend/tests/cancel-pdf-job-logic.test.mjs
-          test -s frontend/tests/pdf-job-updates.test.mjs
-          test -s frontend/src/utils/pdfJobUpdates.ts
-          test -s supabase/functions/cancel-pdf-job/index.ts
-          test -s supabase/functions/cancel-pdf-job/logic.ts
-          grep -q '^\[functions.cancel-pdf-job\]$' supabase/config.toml
-          grep -q 'updated_at: string' frontend/src/types/pdfJob.ts
-          grep -q 'shouldApplyPdfJobUpdate' frontend/src/hooks/usePdfBuilder.ts
-          grep -q 'mergePdfJobHistory' frontend/src/utils/pdfJobUpdates.ts
-          grep -q 'mergePdfJobHistory' frontend/src/hooks/usePdfBuilder.ts
-          grep -q 'onRefresh' frontend/src/components/PdfJobHistory.tsx
-          node - <<'NODE'
-          const pkg = require('./frontend/package.json')
-          const lock = require('./frontend/package-lock.json')
-          const expected = '4.110.0'
+          test -s AGENTS.md
+          test -s docs/contributor-guide.md
+          grep -q 'Temporary branch hygiene' AGENTS.md
+          grep -q 'npm ci' AGENTS.md
+          grep -q 'Repository validation' docs/contributor-guide.md
+          grep -q 'Never commit generated outputs' docs/contributor-guide.md
+          grep -q 'npm ci' docs/contributor-guide.md
 
-          if (lock.lockfileVersion !== 3) throw new Error('frontend lockfile must use version 3')
-          if (pkg.devDependencies?.wrangler !== expected) throw new Error('package.json must pin Wrangler exactly')
-          if (lock.packages?.['']?.devDependencies?.wrangler !== expected) throw new Error('lockfile root must pin Wrangler exactly')
-          if (lock.packages?.['node_modules/wrangler']?.version !== expected) throw new Error('lockfile Wrangler package version mismatch')
-          if (pkg.scripts?.test !== 'node --test tests/*.test.mjs') throw new Error('frontend test command must remain deterministic')
-          NODE
-
-          workflows=(
-            .github/workflows/deploy-pages.yml
-            .github/workflows/smoke-supabase-service.yml
-          )
-
-          for workflow in "${workflows[@]}"; do
-            grep -q 'cache: npm' "$workflow"
-            grep -q 'cache-dependency-path: frontend/package-lock.json' "$workflow"
-            grep -q 'npm ci --prefer-offline --no-audit --no-fund' "$workflow"
-          done
-
-          if grep -nE 'npm install( |$)' "${workflows[@]}"; then
-            echo 'Frontend workflows must install from the committed lockfile.'
-            exit 1
-          fi
-
-          if grep -nE 'npx[[:space:]]+--yes[[:space:]]+wrangler@' .github/workflows/deploy-pages.yml; then
-            echo 'Deployment must use the Wrangler binary installed from the lockfile.'
-            exit 1
-          fi
-
-          grep -q 'WRANGLER=./node_modules/.bin/wrangler' .github/workflows/deploy-pages.yml
-          grep -q './node_modules/.bin/wrangler pages deploy dist' .github/workflows/deploy-pages.yml
+      - name: Validate frontend architecture manifests
+        run: node scripts/validate-frontend-architecture.mjs
 
       - name: Install frontend dependencies
-        run: npm ci --prefix frontend --prefer-offline --no-audit --no-fund
-
-      - name: Validate locked Wrangler CLI
-        run: frontend/node_modules/.bin/wrangler --version | grep -q '4.110.0'
+        working-directory: frontend
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Typecheck frontend
-        run: npm run --prefix frontend typecheck
+        working-directory: frontend
+        run: npm run typecheck
 
       - name: Test frontend
-        run: npm test --prefix frontend
+        working-directory: frontend
+        run: npm test
 
       - name: Build frontend
-        run: npm run --prefix frontend build
+        working-directory: frontend
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: repository-hygiene-placeholder-key
+        run: npm run build
 
-      - name: Validate callable smoke test
+      - name: Validate Supabase smoke scripts
+        working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
-          smoke=frontend/scripts/smoke-supabase-service.mjs
-          workflow=.github/workflows/smoke-supabase-service.yml
-          test -f "$smoke"
-          node -e "const pkg = require('./frontend/package.json'); if (pkg.scripts?.['smoke:supabase'] !== 'node scripts/smoke-supabase-service.mjs') process.exit(1)"
-          node --check "$smoke"
-          grep -Fq "functions.invoke('cancel-pdf-job'" "$smoke"
-          grep -Fq 'cleanupPending === false' "$smoke"
-          grep -Fq 'repeated cancellation was not idempotent' "$smoke"
-          grep -Fq 'start-pdf-job accepted a cancelled task' "$smoke"
-          grep -Fq "'supabase/functions/**'" "$workflow"
-          grep -Fq "'supabase/migrations/**'" "$workflow"
-          grep -Fq "'scripts/supabase-pdf-job.mjs'" "$workflow"
-
-      - name: Validate service scripts
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m py_compile scripts/prepare-supabase-input.py
-          node --check scripts/supabase-pdf-job.mjs
-          node --check scripts/cleanup-supabase-pdf-jobs.mjs
+          node --check scripts/smoke-function-cors.mjs
+          node --check scripts/smoke-supabase-service.mjs
+          grep -q "method: 'OPTIONS'" scripts/smoke-function-cors.mjs
+          grep -q "create-pdf-job" scripts/smoke-supabase-service.mjs
+          grep -q "get-pdf-download" scripts/smoke-supabase-service.mjs

@@ -7,9 +7,8 @@ on:
     paths:
       - '.github/workflows/validate-functions.yml'
       - 'package.json'
-      - 'frontend/src/types/pdfJob.ts'
-      - 'frontend/src/utils/pdfJobStatus.ts'
-      - 'frontend/src/utils/submissionRecovery.ts'
+      - 'frontend/src/features/pdf-jobs/types.ts'
+      - 'frontend/src/features/pdf-jobs/status.ts'
       - 'supabase/functions/**'
       - 'supabase/migrations/20260711123000_create_pdf_jobs.sql'
   workflow_dispatch:

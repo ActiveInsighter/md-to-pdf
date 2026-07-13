@@ -152,3 +152,13 @@ npm run build
 - 文档、脚本和工作流不存在已删除队列的残留引用。
 
 不要在验证完成前声称功能可用，也不要把内部 token、service role key、用户文件内容或签名 URL 写入日志、issue、PR 描述或最终回复。
+
+## 9. Temporary branch hygiene
+
+Pull Request 合并后，应删除已经合并且不再使用的临时分支。自动清理必须同时满足：
+
+- 分支来自当前仓库；
+- 对应 Pull Request 已合并；
+- 分支名称符合允许的临时前缀；
+- `main`、`master`、`output`、`gh-pages` 等受保护分支永不删除；
+- 清理过程保留可审计日志，并支持 dry-run 验证。

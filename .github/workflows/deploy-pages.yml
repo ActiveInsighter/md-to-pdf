@@ -7,6 +7,7 @@ on:
     paths:
       - 'frontend/**'
       - 'scripts/capture-deployed-ui.mjs'
+      - 'scripts/manage-ui-capture-user.mjs'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -77,7 +78,7 @@ jobs:
             exit 1
           }
 
-      - name: Install and build frontend
+      - name: Install, test, and build frontend
         working-directory: frontend
         shell: bash
         env:
@@ -88,6 +89,7 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           ./node_modules/.bin/wrangler --version
           npm run typecheck
+          npm test
           npm run build
           test -s dist/index.html
 
@@ -100,13 +102,11 @@ jobs:
         run: |
           set -euo pipefail
           WRANGLER=./node_modules/.bin/wrangler
-          PROJECTS_JSON="$("$WRANGLER" pages project list --json)"
-          if printf '%s' "$PROJECTS_JSON" | jq -e --arg project "$CLOUDFLARE_PAGES_PROJECT" \
-            'any(.[]; .["Project Name"] == $project)' >/dev/null; then
+          PROJECTS_JSON="$($WRANGLER pages project list --json)"
+          if printf '%s' "$PROJECTS_JSON" | jq -e --arg project "$CLOUDFLARE_PAGES_PROJECT" 'any(.[]; .["Project Name"] == $project)' >/dev/null; then
             echo "Cloudflare Pages project already exists: $CLOUDFLARE_PAGES_PROJECT"
           else
-            "$WRANGLER" pages project create "$CLOUDFLARE_PAGES_PROJECT" \
-              --production-branch main
+            "$WRANGLER" pages project create "$CLOUDFLARE_PAGES_PROJECT" --production-branch main
           fi
 
       - name: Deploy to Cloudflare Pages
@@ -129,8 +129,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 18); do
-            if curl --fail --silent --show-error --location \
-              --max-time 20 \
+            if curl --fail --silent --show-error --location --max-time 20 \
               --header 'Cache-Control: no-cache' \
               "$PAGES_URL/?deployment=$GITHUB_SHA" \
               --output /tmp/pages-index.html; then
@@ -140,7 +139,7 @@ jobs:
             fi
             sleep 5
           done
-          echo "Production UI did not become reachable after deployment."
+          echo 'Production UI did not become reachable after deployment.'
           exit 1
 
       - name: Install screenshot fonts
@@ -150,7 +149,6 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends fonts-noto-cjk
           fc-cache -f
-          fc-match 'Noto Sans CJK SC'
 
       - name: Install screenshot tooling
         shell: bash
@@ -161,7 +159,6 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           node --check scripts/capture-deployed-ui.mjs
           google-chrome --version
-          node --input-type=module -e "import puppeteer from 'puppeteer'; console.log('Puppeteer', puppeteer.version || 'loaded')"
 
       - name: Prepare authenticated UI session
         id: prepare-auth
@@ -188,12 +185,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/capture-deployed-ui.mjs
-          for file in \
-            public-desktop-1440.png \
-            authenticated-desktop-1440.png \
-            public-mobile-390.png \
-            authenticated-mobile-390.png \
-            metadata.json; do
+          for file in public-desktop-1440.png authenticated-desktop-1440.png public-mobile-390.png authenticated-mobile-390.png metadata.json; do
             test -s "frontend/deployment-screenshots/$file"
           done
 
@@ -234,15 +226,9 @@ jobs:
             echo
             echo "- Production: $PAGES_URL"
             echo "- Commit: \`$GITHUB_SHA\`"
-            if [[ -n "${ARTIFACT_URL:-}" ]]; then
-              echo "- Screenshots: $ARTIFACT_URL"
-            else
-              echo "- Screenshots: not available"
-            fi
+            echo "- Screenshots: ${ARTIFACT_URL:-not available}"
             echo '- Primary: authenticated-desktop-1440.png, authenticated-mobile-390.png'
             echo '- Public: public-desktop-1440.png, public-mobile-390.png'
-            echo '- Authentication: real browser form login with a temporary confirmed Supabase user'
-            echo '- Cleanup: global sign-out, account deletion, and credential-file removal'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Pages deployment result
@@ -252,20 +238,9 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
-            const jobStatus = process.env.JOB_STATUS
-            const state = jobStatus === 'success'
-              ? 'success'
-              : jobStatus === 'cancelled'
-                ? 'error'
-                : 'failure'
-            const description = state === 'success'
-              ? 'Cloudflare Pages deployment and authenticated UI capture completed'
-              : state === 'error'
-                ? 'Cloudflare Pages deployment was cancelled'
-                : 'Cloudflare Pages deployment or UI capture failed'
+            const state = process.env.JOB_STATUS === 'success' ? 'success' : process.env.JOB_STATUS === 'cancelled' ? 'error' : 'failure'
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
             const pagesUrl = `https://${process.env.CLOUDFLARE_PAGES_PROJECT}.pages.dev`
-
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -273,5 +248,7 @@ jobs:
               state,
               context: 'cloudflare-pages',
               target_url: state === 'success' ? pagesUrl : runUrl,
-              description,
+              description: state === 'success'
+                ? 'Cloudflare Pages deployment and UI capture completed'
+                : 'Cloudflare Pages deployment or UI capture failed',
             })

@@ -3,13 +3,9 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import {
   PDF_JOB_PENDING_INPUT_STATUSES as FRONTEND_PENDING_INPUT_STATUSES,
-} from '../../../frontend/src/utils/submissionRecovery.ts'
-import {
-  PDF_JOB_TERMINAL_STATUSES as FRONTEND_TERMINAL_STATUSES,
-} from '../../../frontend/src/utils/pdfJobStatus.ts'
-import {
   PDF_JOB_STATUSES as FRONTEND_STATUSES,
-} from '../../../frontend/src/types/pdfJob.ts'
+  PDF_JOB_TERMINAL_STATUSES as FRONTEND_TERMINAL_STATUSES,
+} from '../../../frontend/src/features/pdf-jobs/types.ts'
 import {
   PDF_JOB_ACTIVE_STATUSES,
   PDF_JOB_PENDING_INPUT_STATUSES,

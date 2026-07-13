@@ -8,13 +8,18 @@
     "build:html": "node scripts/build-pdf.mjs notes.md dist/notes.pdf --html-only",
     "postprocess:pdf": "node scripts/postprocess-pdfs.mjs",
     "validate:repository": "node scripts/validate-repository-integrity.mjs",
+    "validate:generated-files": "node scripts/validate-generated-files.mjs",
     "validate:workflows": "node scripts/validate-workflow-security.mjs && node scripts/validate-workflow-run-contexts.mjs && node scripts/validate-workflow-github-script.mjs && node scripts/validate-workflow-timeouts.mjs && node scripts/validate-workflow-concurrency.mjs && node scripts/validate-workflow-continue-on-error.mjs && node scripts/validate-workflow-renderer-paths.mjs",
     "cleanup:branches": "node scripts/cleanup-merged-branches.mjs",
     "test": "node scripts/test-render.mjs",
     "test:render": "node scripts/test-render.mjs",
     "test:functions": "node --test supabase/functions/_shared/*.test.ts",
     "test:repository": "node --test scripts/test-validate-repository-integrity.mjs scripts/test-prepare-supabase-input.mjs",
-    "test:workflows": "node --test scripts/test-validate-workflow-*.mjs"
+    "test:workflows": "node --test scripts/test-validate-workflow-*.mjs",
+    "test:repository-validator": "npm run test:repository",
+    "test:workflow-security-validator": "npm run test:workflows",
+    "test:github-tool-adapter": "node --test scripts/test-validate-workflow-github-script.mjs",
+    "test:cleanup-branches": "node --check scripts/cleanup-merged-branches.mjs"
   },
   "devDependencies": {
     "js-yaml": "^4.1.0",
