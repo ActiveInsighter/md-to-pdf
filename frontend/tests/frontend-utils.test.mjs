@@ -4,7 +4,9 @@ import test from 'node:test'
 import {
   MAX_ASSETS_BYTES,
   MAX_MARKDOWN_BYTES,
+  documentNameFromMarkdown,
   getSubmissionRecovery,
+  inferMarkdownDocumentName,
   validateAssetsFile,
   validateMarkdownFile,
 } from '../src/features/pdf-builder/lib/files.ts'
@@ -53,6 +55,24 @@ test('Assets validation accepts ZIP files and enforces boundary conditions', () 
   assert.equal(validateAssetsFile(file('empty.zip', 0)), '资源压缩包不能为空。')
   assert.equal(validateAssetsFile(file('large.zip', MAX_ASSETS_BYTES + 1)), '资源压缩包不能超过 50 MiB。')
   assert.equal(validateAssetsFile(file('assets.tar', 1024)), '请选择扩展名为 .zip 的资源压缩包。')
+})
+
+test('PDF names default to the Markdown filename', () => {
+  assert.equal(documentNameFromMarkdown('操作系统复习.md'), '操作系统复习')
+})
+
+test('Pasted Markdown uses the first heading at the highest level', () => {
+  const markdown = '### 开场提示\n\n## 第二级标题\n\n# 最终文档标题\n\n# 后续标题'
+  assert.equal(inferMarkdownDocumentName(markdown), '最终文档标题')
+})
+
+test('Pasted Markdown ignores headings inside fenced code and supports Setext headings', () => {
+  const markdown = '```md\n# 代码里的标题\n```\n\n真实标题\n========\n\n正文'
+  assert.equal(inferMarkdownDocumentName(markdown), '真实标题')
+})
+
+test('Pasted Markdown falls back to the first meaningful line', () => {
+  assert.equal(inferMarkdownDocumentName('\n\n第一段正文\n第二段'), '第一段正文')
 })
 
 test('File sizes are formatted consistently at unit boundaries', () => {
