@@ -6,6 +6,7 @@ import {
   createPdfJob,
   getPdfDownload,
   getPdfJob,
+  getSourceDownload,
   rebuildPdfJob,
   setPdfJobFavorite,
   startPdfJob,
@@ -49,7 +50,7 @@ export function usePdfJobActions() {
     mutationFn: rebuildPdfJob,
     onSuccess: async (result) => {
       if (userId) await queryClient.invalidateQueries({ queryKey: pdfJobKeys.list(userId) })
-      toast.success('已创建新的构建任务。')
+      toast.success('已使用保留源稿创建新的构建任务。')
       return result
     },
     onError: (error) => toast.error(toUserMessage(error)),
@@ -77,7 +78,8 @@ export function usePdfJobActions() {
       await queryClient.invalidateQueries({ queryKey: pdfJobKeys.list(userId) })
     },
   })
-  const download = useMutation({ mutationFn: getPdfDownload, onError: (error) => toast.error(toUserMessage(error, '下载地址生成失败。')) })
+  const download = useMutation({ mutationFn: getPdfDownload, onError: (error) => toast.error(toUserMessage(error, 'PDF 下载地址生成失败。')) })
+  const downloadSource = useMutation({ mutationFn: getSourceDownload, onError: (error) => toast.error(toUserMessage(error, 'Markdown 下载地址生成失败。')) })
 
-  return { create, uploadMarkdown, uploadResources, start, cancel, rebuild, favorite, download }
+  return { create, uploadMarkdown, uploadResources, start, cancel, rebuild, favorite, download, downloadSource }
 }
