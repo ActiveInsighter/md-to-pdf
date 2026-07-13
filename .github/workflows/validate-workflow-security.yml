@@ -38,4 +38,16 @@ jobs:
         run: npm run test:workflows
 
       - name: Validate every workflow
-        run: npm run validate:workflows
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run validate:workflows 2>&1 | tee workflow-validation.log
+
+      - name: Upload workflow validation diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: workflow-validation-${{ github.run_id }}
+          path: workflow-validation.log
+          if-no-files-found: error
+          retention-days: 3
