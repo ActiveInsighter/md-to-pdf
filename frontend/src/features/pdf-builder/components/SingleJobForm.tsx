@@ -201,6 +201,8 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
   }
 
   const documentNameField = form.register('documentName')
+  const markdownTextField = form.register('markdownText')
+  const markdownText = form.watch('markdownText')
   const progress = getSubmissionProgress(submission.state)
   const message = fileError || globalDrop.error || (submission.state.status === 'failed' ? submission.state.message : '')
   const prepared = Boolean(submission.recovery) && !submission.busy
@@ -308,8 +310,11 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                       disabled={sourceLocked}
                       aria-invalid={Boolean(form.formState.errors.markdownText)}
                       aria-describedby="markdown-text-error"
-                      {...form.register('markdownText')}
-                      onBlur={(event) => { if (event.currentTarget.value.trim()) void prepareMarkdownText(event.currentTarget.value) }}
+                      {...markdownTextField}
+                      onBlur={(event) => {
+                        void markdownTextField.onBlur(event)
+                        if (event.currentTarget.value.trim()) void prepareMarkdownText(event.currentTarget.value)
+                      }}
                       onPaste={(event) => {
                         const pasted = event.clipboardData.getData('text')
                         if (!pasted) return
@@ -347,7 +352,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
 
             <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" disabled={submission.busy} onClick={() => void clearTask()}><RotateCcw />{submission.recovery ? '清除已上传文件' : '清空'}</Button>
-              <Button type="submit" size="lg" disabled={submission.busy || (!submission.recovery && !markdownFile && !form.watch('markdownText').trim())}>
+              <Button type="submit" size="lg" disabled={submission.busy || (!submission.recovery && !markdownFile && !markdownText.trim())}>
                 {submission.state.status === 'starting' ? <LoaderCircle className="animate-spin" /> : <Play />}
                 生成 PDF
               </Button>
