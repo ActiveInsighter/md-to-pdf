@@ -26,16 +26,31 @@ const LABELS: Record<JobDisplayStatus, string> = {
 }
 
 const STAGES: Record<JobDisplayStatus, string> = {
-  created: '任务已创建，等待上传源文件。',
-  uploaded: '输入文件已上传，等待启动构建。',
-  queued: '文件已上传，等待 GitHub Actions 执行。',
-  running: '正在渲染文档、处理公式和生成 PDF。',
-  uploading: 'PDF 已生成，正在上传到私有存储。',
-  completed: 'PDF 已生成，可下载或再次打开。',
-  failed: '构建未完成，请查看错误原因后重试。',
-  cancelled: '任务在启动前已取消。',
-  expired: '产物已超过保留期限，需要重新构建。',
+  created: '任务已创建，等待上传源文件',
+  uploaded: '源文件已上传，等待生成 PDF',
+  queued: '已进入 GitHub Actions 队列',
+  running: '正在渲染文档与生成 PDF',
+  uploading: 'PDF 已生成，正在安全交付',
+  completed: 'PDF 已生成，可以下载',
+  failed: '构建未完成，请查看错误原因',
+  cancelled: '任务在启动前已取消',
+  expired: '产物已过期，需要重新构建',
 }
+
+const MACHINE_STAGE_TOKENS = new Set([
+  'created',
+  'uploaded',
+  'queued',
+  'building',
+  'running',
+  'rendering',
+  'uploading',
+  'uploading_output',
+  'completed',
+  'failed',
+  'cancelled',
+  'expired',
+])
 
 export function getJobDisplayStatus(job: Pick<PdfJob, 'status'>): JobDisplayStatus {
   if (job.status === 'building') return 'running'
@@ -66,7 +81,9 @@ export function getJobProgress(job: Pick<PdfJob, 'status' | 'error_message' | 'p
 }
 
 export function getJobStageDescription(job: Pick<PdfJob, 'status' | 'error_message' | 'progress_stage'>): string {
-  return job.progress_stage?.trim() || STAGES[getJobDisplayStatus(job)]
+  const stage = job.progress_stage?.trim()
+  if (stage && !MACHINE_STAGE_TOKENS.has(stage.toLowerCase())) return stage
+  return STAGES[getJobDisplayStatus(job)]
 }
 
 export function canCancelJob(job: Pick<PdfJob, 'status'>): boolean {
