@@ -117,12 +117,7 @@ https://md-to-pdf-web.pages.dev
 
 ## 手动重新部署
 
-在 GitHub Actions 页面选择 `Deploy frontend to Cloudflare Pages` 并运行 `workflow_dispatch`。手动运行适用于：
-
-- 自动运行因临时网络或平台故障失败；
-- 需要重新验证当前 `main` 的生产截图；
-- 回滚或修复后需要立即重新发布；
-- 生产 Pages 项目首次初始化。
+在 GitHub Actions 页面选择 `Deploy frontend to Cloudflare Pages` 并运行 `workflow_dispatch`。手动运行适用于自动运行因临时网络或平台故障失败、需要重新验证当前 `main` 的生产截图、回滚后重新发布，或首次初始化 Pages 项目。
 
 手动触发前仍应确认所选 ref 是已审查的 `main`，并确认它依赖的数据库迁移和 Edge Functions 已经部署。
 
@@ -161,13 +156,13 @@ npm run build
 部署工作流成功不等于整个 PDF 服务已验证。发布完成后确认：
 
 1. Pages production deployment 指向预期的 `main` commit，首页与登录深链可访问；
-2. 桌面和移动截图生成成功，临时测试用户已删除；截图 Artifact 只短期保留且不包含用户文件或密钥；
+2. 桌面和移动截图生成成功，临时测试用户已删除；
 3. 登录后只能看到当前用户任务，切换账号不会显示上一账号缓存；
 4. 创建任务会先上传源文件，只有用户点击生成后才进入构建队列；
 5. 取消待启动任务会进入真实 `cancelled`，重复启动不会产生并行构建；
 6. 前端状态以 Realtime 更新，断开 Realtime 时轮询能够兜底；
 7. 完成任务通过短期签名 URL 下载，自动下载失败不会改变服务端 `completed`；
-8. 浏览器网络与静态资源中不存在 `SUPABASE_SECRET_KEY`、`SUPABASE_SERVICE_ROLE_KEY` 或 `GITHUB_TOKEN`；
+8. 浏览器网络与静态资源中不存在服务端密钥；
 9. Cloudflare 没有接收或代理任何用户 Markdown、ZIP 与 PDF。
 
 受控端到端验证应使用 `fixtures/` 或 smoke 脚本创建的临时内容，不得把用户文档提交到仓库。
@@ -178,10 +173,8 @@ npm run build
 
 1. 在 Cloudflare Pages deployment 历史中选择上一已验证 production deployment 回滚，或通过 PR revert 前端 commit；revert 合并到 `main` 后会自动重新发布；
 2. 确认生产域名指向回滚版本，登录回调、任务列表、状态展示和签名下载仍正常；
-3. 不要因为前端回滚而重置数据库或删除迁移。兼容的迁移和 Edge Functions 可以继续运行；
-4. 如果问题来自 API 契约，先回滚前端对新行为的依赖，再从已验证 commit 重新部署函数；数据库通过新的前向迁移修复；
+3. 不要因为前端回滚而重置数据库或删除迁移；
+4. 如果问题来自 API 契约，先回滚前端对新行为的依赖，再从已验证 commit 重新部署函数；
 5. 记录失败 deployment、回滚目标 commit、验证结果与后续修复 PR，但不要记录密钥、签名 URL 或用户内容。
-
-回滚后不得把服务端已完成任务改为失败。若某次自动下载没有发生，用户仍可从已完成任务重新请求签名下载。
 
 Supabase 的完整发布、smoke test 与数据库回滚策略见 [Supabase 服务文档](supabase-pdf-service.md)。
