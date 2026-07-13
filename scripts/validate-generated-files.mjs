@@ -1,19 +1,10 @@
 import { execFileSync, spawnSync } from 'node:child_process'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const forbiddenPattern = /(^|\/)(node_modules\/|dist\/|\.tmp\/|work\/|coverage\/|playwright-report\/|test-results\/|__pycache__\/|[^/]+\.py[co]$|[^/]+\.tsbuildinfo$|smoke-diagnostic\.json$|lint-output\.txt$)/
+export const FORBIDDEN_TRACKED_PATH = /(^|\/)(node_modules\/|dist\/|\.tmp\/|work\/|coverage\/|playwright-report\/|test-results\/|__pycache__\/|ui-ux-pro-max\/|[^/]+\.py[co]$|[^/]+\.tsbuildinfo$|smoke-diagnostic\.json$|lint-output\.txt$)/
 
-const trackedFiles = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
-  .split(/\r?\n/)
-  .filter(Boolean)
-
-const forbiddenFiles = trackedFiles.filter((file) => forbiddenPattern.test(file))
-if (forbiddenFiles.length > 0) {
-  console.error('Generated files must not be tracked:')
-  for (const file of forbiddenFiles) console.error(file)
-  process.exit(1)
-}
-
-const ignoredPaths = [
+export const IGNORED_PATH_PROBES = [
   'node_modules/example.txt',
   'dist/example.txt',
   '.tmp/example.txt',
@@ -24,15 +15,55 @@ const ignoredPaths = [
   'frontend/tsconfig.tsbuildinfo',
   'frontend/smoke-diagnostic.json',
   'frontend/lint-output.txt',
-  'ui-ux-pro-max/scripts/__pycache__/example.pyc',
 ]
 
-for (const path of ignoredPaths) {
-  const result = spawnSync('git', ['check-ignore', '--quiet', path])
-  if (result.status !== 0) {
-    console.error(`Expected path to be ignored: ${path}`)
-    process.exit(1)
-  }
+export function findForbiddenTrackedFiles(trackedFiles) {
+  return trackedFiles.filter((file) => FORBIDDEN_TRACKED_PATH.test(file))
 }
 
-console.log(`Validated generated output policy for ${trackedFiles.length} tracked files.`)
+function listTrackedFiles() {
+  return execFileSync('git', ['ls-files'], { encoding: 'utf8' })
+    .split(/\r?\n/)
+    .filter(Boolean)
+}
+
+function isIgnored(target) {
+  return spawnSync('git', ['check-ignore', '--quiet', target]).status === 0
+}
+
+export function validateGeneratedFiles({
+  trackedFiles = listTrackedFiles(),
+  ignoredPaths = IGNORED_PATH_PROBES,
+  checkIgnored = isIgnored,
+} = {}) {
+  const errors = []
+  const forbiddenFiles = findForbiddenTrackedFiles(trackedFiles)
+
+  for (const file of forbiddenFiles) {
+    errors.push(`Generated or repository-external file must not be tracked: ${file}`)
+  }
+
+  for (const target of ignoredPaths) {
+    if (!checkIgnored(target)) errors.push(`Expected path to be ignored: ${target}`)
+  }
+
+  return errors
+}
+
+function main() {
+  const trackedFiles = listTrackedFiles()
+  const errors = validateGeneratedFiles({ trackedFiles })
+
+  if (errors.length > 0) {
+    console.error('Generated file and repository hygiene validation failed:')
+    for (const error of errors) console.error(`- ${error}`)
+    process.exitCode = 1
+    return
+  }
+
+  console.log(`Validated generated output policy for ${trackedFiles.length} tracked files.`)
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main()
+}

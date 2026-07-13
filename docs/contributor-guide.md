@@ -19,8 +19,9 @@ npm run validate:repository
 npm run test:repository
 npm run test:workflows
 npm run validate:workflows
-npm run validate:generated-files
 ```
+
+`validate:repository` 会统一检查必需文件与文档链接、生成文件策略，以及前端架构清单；无需分别重复执行这些子校验。
 
 不得删除、跳过或降低测试来使检查通过。所有失败都应根据真实日志修复。
 
@@ -28,7 +29,7 @@ npm run validate:generated-files
 
 Never commit generated outputs。`node_modules/`、`dist/`、`.tmp/`、`work/`、覆盖率文件、测试报告、截图诊断、PDF、HTML 和运行日志只能作为本地或短期 CI 产物，并应由 `.gitignore` 排除。
 
-用户上传的 Markdown、ZIP、图片和生成的 PDF 不得写入仓库、提交、Pull Request 或长期 Artifact。
+用户上传的 Markdown、ZIP、图片和生成的 PDF 不得写入仓库、提交、Pull Request 或长期 Artifact。与产品无关的外部工具包、设计资料库和技能数据集也不得直接复制到仓库；应使用文档链接或独立仓库维护。
 
 ## Pull requests
 

@@ -54,7 +54,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Validate repository integrity
+      - name: Validate repository structure and hygiene
         run: npm run validate:repository
 
       - name: Test repository validators
@@ -65,9 +65,6 @@ jobs:
 
       - name: Validate workflow policy
         run: npm run validate:workflows
-
-      - name: Validate generated output policy
-        run: npm run validate:generated-files
 
       - name: Validate contributor documentation
         shell: bash
@@ -80,9 +77,6 @@ jobs:
           grep -q 'Repository validation' docs/contributor-guide.md
           grep -q 'Never commit generated outputs' docs/contributor-guide.md
           grep -q 'npm ci' docs/contributor-guide.md
-
-      - name: Validate frontend architecture manifests
-        run: node scripts/validate-frontend-architecture.mjs
 
       - name: Install frontend dependencies
         working-directory: frontend
