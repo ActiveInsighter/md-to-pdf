@@ -71,8 +71,8 @@ test('Pasted Markdown ignores headings inside fenced code and supports Setext he
   assert.equal(inferMarkdownDocumentName(markdown), '真实标题')
 })
 
-test('Pasted Markdown falls back to the first meaningful line', () => {
-  assert.equal(inferMarkdownDocumentName('\n\n第一段正文\n第二段'), '第一段正文')
+test('Pasted Markdown falls back to a cleaned first meaningful line', () => {
+  assert.equal(inferMarkdownDocumentName('\n\n> 第一段正文\n第二段'), '第一段正文')
 })
 
 test('File sizes are formatted consistently at unit boundaries', () => {
