@@ -74,9 +74,18 @@ jobs:
           test -s docs/contributor-guide.md
           grep -q 'Temporary branch hygiene' AGENTS.md
           grep -q 'npm ci' AGENTS.md
-          grep -q 'Repository validation' docs/contributor-guide.md
-          grep -q 'Never commit generated outputs' docs/contributor-guide.md
+          grep -Fq '<!-- ci:repository-validation -->' docs/contributor-guide.md
+          grep -Fq '<!-- ci:never-commit-generated-outputs -->' docs/contributor-guide.md
           grep -q 'npm ci' docs/contributor-guide.md
+
+      - name: Validate deployed UI capture contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/capture-deployed-ui.mjs
+          grep -Fq 'data-ui-capture="authenticated-workspace"' frontend/src/routes/WorkspacePage.tsx
+          grep -Fq 'AUTHENTICATED_WORKSPACE_SELECTOR' scripts/capture-deployed-ui.mjs
+          grep -Fq '[data-ui-capture="authenticated-workspace"]' scripts/capture-deployed-ui.mjs
 
       - name: Install frontend dependencies
         working-directory: frontend
