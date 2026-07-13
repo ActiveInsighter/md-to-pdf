@@ -8,11 +8,11 @@ import { shouldApplyPdfJobUpdate } from './cache'
 
 export function usePdfJob(jobId: string | null | undefined) {
   const realtimeConnection = useWorkspaceStore((state) => state.realtimeConnection)
-  return useQuery({
+  return useQuery<PdfJob>({
     queryKey: pdfJobKeys.detail(jobId || 'none'),
     queryFn: () => getPdfJob(jobId!),
     enabled: Boolean(jobId),
-    structuralSharing: (oldData: PdfJob | undefined, newData: PdfJob) =>
+    structuralSharing: (oldData, newData) =>
       shouldApplyPdfJobUpdate(oldData, newData) ? newData : oldData || newData,
     refetchInterval: (query) => {
       const job = query.state.data
