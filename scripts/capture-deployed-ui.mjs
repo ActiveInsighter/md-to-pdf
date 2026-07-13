@@ -18,6 +18,7 @@ const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'))
 const AUTH_PANEL_SELECTOR = '#auth-panel'
 const AUTHENTICATED_WORKSPACE_SELECTOR = '[data-ui-capture="authenticated-workspace"]'
 const OVERVIEW_FILE = 'ui-overview.png'
+const PUBLIC_PAGE_ATTEMPTS = 6
 
 if (!credentials.email || !credentials.password) {
   throw new Error('Temporary UI capture credentials are incomplete.')
@@ -65,6 +66,60 @@ async function clearSensitiveInputs(page) {
   }, AUTH_PANEL_SELECTOR).catch(() => undefined)
 }
 
+async function inspectPublicPage(page) {
+  return page.evaluate(({ authPanelSelector, workspaceSelector }) => {
+    if (document.querySelector(authPanelSelector)) return { kind: 'ready', detail: '' }
+    if (document.querySelector(workspaceSelector)) return { kind: 'workspace', detail: '' }
+
+    const text = document.body?.innerText?.replace(/\s+/g, ' ').trim() || ''
+    if (/Failed to fetch dynamically imported module|这个页面暂时打不开/i.test(text)) {
+      return { kind: 'asset-propagation', detail: text.slice(0, 500) }
+    }
+    return { kind: 'waiting', detail: text.slice(0, 300) }
+  }, {
+    authPanelSelector: AUTH_PANEL_SELECTOR,
+    workspaceSelector: AUTHENTICATED_WORKSPACE_SELECTOR,
+  })
+}
+
+async function openPublicPage(page) {
+  const attempts = []
+
+  for (let attempt = 1; attempt <= PUBLIC_PAGE_ATTEMPTS; attempt += 1) {
+    const attemptUrl = new URL(targetUrl)
+    attemptUrl.searchParams.set('captureAttempt', `${attempt}-${Date.now()}`)
+
+    try {
+      await page.goto(attemptUrl.href, { waitUntil: 'networkidle2' })
+    } catch (error) {
+      attempts.push(`attempt ${attempt}: navigation failed: ${error instanceof Error ? error.message : String(error)}`)
+      await settle(attempt * 2_000)
+      continue
+    }
+
+    const deadline = Date.now() + 12_000
+    let lastResult = { kind: 'waiting', detail: '' }
+    while (Date.now() < deadline) {
+      lastResult = await inspectPublicPage(page)
+      if (lastResult.kind === 'ready') return attempt
+      if (lastResult.kind === 'asset-propagation') break
+      if (lastResult.kind === 'workspace') {
+        await page.evaluate(() => {
+          window.localStorage.clear()
+          window.sessionStorage.clear()
+        }).catch(() => undefined)
+        break
+      }
+      await settle(400)
+    }
+
+    attempts.push(`attempt ${attempt}: ${lastResult.kind}${lastResult.detail ? `: ${lastResult.detail}` : ''}`)
+    await settle(attempt * 2_500)
+  }
+
+  throw new Error(`Public login page did not stabilize after ${PUBLIC_PAGE_ATTEMPTS} attempts. ${attempts.join(' | ')}`)
+}
+
 async function waitForLoginResult(page, authResponses) {
   const deadline = Date.now() + 35_000
   while (Date.now() < deadline) {
@@ -75,6 +130,11 @@ async function waitForLoginResult(page, authResponses) {
       const message = document.querySelector(`${authPanelSelector} .auth-message, ${authPanelSelector} .error-text`)
       const text = message?.textContent?.trim() || ''
       if (text) return { kind: 'error', text }
+
+      const bodyText = document.body?.innerText || ''
+      if (/Failed to fetch dynamically imported module|这个页面暂时打不开/i.test(bodyText)) {
+        return { kind: 'error', text: 'Pages assets changed while the authenticated route was loading.' }
+      }
 
       return { kind: 'waiting' }
     }, {
@@ -101,11 +161,12 @@ async function captureViewport({ name, width, height, mobile }) {
 
   page.setDefaultTimeout(30_000)
   page.setDefaultNavigationTimeout(30_000)
+  await page.setCacheEnabled(false)
   page.on('pageerror', (error) => browserErrors.push(error.message.slice(0, 500)))
   page.on('requestfailed', (request) => {
     const url = request.url()
-    if (url.includes('/auth/v1/')) {
-      browserErrors.push(`Auth request failed: ${request.failure()?.errorText || 'unknown failure'}`)
+    if (url.includes('/auth/v1/') || url.includes('/assets/')) {
+      browserErrors.push(`${url.includes('/assets/') ? 'Asset' : 'Auth'} request failed: ${request.failure()?.errorText || 'unknown failure'} (${url.slice(0, 240)})`)
     }
   })
   page.on('response', (response) => {
@@ -120,11 +181,14 @@ async function captureViewport({ name, width, height, mobile }) {
     hasTouch: mobile,
   })
   await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'light' }])
-  await page.setExtraHTTPHeaders({ 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.7' })
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.7',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Pragma: 'no-cache',
+  })
 
   try {
-    await page.goto(targetUrl.href, { waitUntil: 'networkidle2' })
-    await page.waitForSelector(AUTH_PANEL_SELECTOR, { visible: true })
+    const publicAttempt = await openPublicPage(page)
     await page.evaluate(() => window.scrollTo(0, 0))
     await settle(1_200)
 
@@ -152,7 +216,7 @@ async function captureViewport({ name, width, height, mobile }) {
       fullPage: true,
     })
     captured.push({ file: authenticatedFile, viewport: `${width}x${height}`, fullPage: true, authenticated: true })
-    diagnostics.push({ viewport: name, login: 'success', authResponseStatuses: authResponses, browserErrors })
+    diagnostics.push({ viewport: name, login: 'success', publicAttempt, authResponseStatuses: authResponses, browserErrors })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     await clearSensitiveInputs(page)
@@ -165,7 +229,7 @@ async function captureViewport({ name, width, height, mobile }) {
     diagnostics.push({
       viewport: name,
       login: 'failed',
-      error: message.slice(0, 1000),
+      error: message.slice(0, 2000),
       authResponseStatuses: authResponses,
       browserErrors,
       screenshot: diagnosticFile,
