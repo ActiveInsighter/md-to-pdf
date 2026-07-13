@@ -47,7 +47,7 @@ export function WorkspacePage() {
         <TabsContent value="batch"><BatchQueue /></TabsContent>
       </Tabs>
 
-      {selectedJob.data && (
+      {selectedJob.data && selectedJob.data.status !== 'created' && selectedJob.data.status !== 'uploaded' && (
         <Card>
           <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0"><span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">当前任务</span><CardTitle className="mt-1 break-words">{selectedJob.data.document_name}</CardTitle><CardDescription>这里会持续显示服务端确认的最新阶段与耗时。</CardDescription></div>
