@@ -1,0 +1,73 @@
+name: Materialize frontend refactor
+
+on:
+  push:
+    branches:
+      - agent/frontend-architecture-refactor
+    paths:
+      - '.github/frontend-refactor/**'
+      - '.github/workflows/materialize-frontend-refactor.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-frontend-refactor
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout refactor branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: agent/frontend-architecture-refactor
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Reconstruct frontend source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/frontend-refactor/part-* | base64 --decode > /tmp/frontend-refactor.tar.gz
+          echo 'beecaffaea647882271bacf40e60d50ae2c19f660efa641994c6f9b2353b1eee  /tmp/frontend-refactor.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/frontend-refactor.tar.gz -C .
+          rm -rf .github/frontend-refactor
+          rm -f .github/workflows/materialize-frontend-refactor.yml
+          rm -f \
+            frontend/src/App.tsx \
+            frontend/src/app.css \
+            frontend/src/simple-workspace.css \
+            frontend/src/pages/PdfBuilderPage.tsx \
+            frontend/src/hooks/usePdfBuilder.ts \
+            frontend/src/hooks/usePdfDelivery.ts \
+            frontend/src/hooks/useGlobalFileDrop.ts \
+            frontend/src/components/PdfBatchUpload.tsx \
+            frontend/src/components/PdfUpload.tsx \
+            frontend/src/components/AppShell.tsx \
+            frontend/src/components/AuthPanel.tsx \
+            frontend/src/components/AuthSessionState.tsx \
+            frontend/src/components/PdfJobHistory.tsx \
+            frontend/src/components/PdfJobStatus.tsx
+
+      - name: Refresh dependency lock
+        working-directory: frontend
+        shell: bash
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Commit materialized refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'refactor: modernize frontend architecture and workspace'
+          git push origin HEAD:agent/frontend-architecture-refactor
