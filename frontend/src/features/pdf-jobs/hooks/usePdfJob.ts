@@ -12,8 +12,11 @@ export function usePdfJob(jobId: string | null | undefined) {
     queryKey: pdfJobKeys.detail(jobId || 'none'),
     queryFn: () => getPdfJob(jobId!),
     enabled: Boolean(jobId),
-    structuralSharing: (oldData, newData) =>
-      shouldApplyPdfJobUpdate(oldData, newData) ? newData : oldData || newData,
+    structuralSharing: (oldData, newData) => {
+      const current = oldData as PdfJob | undefined
+      const incoming = newData as PdfJob
+      return shouldApplyPdfJobUpdate(current, incoming) ? incoming : current || incoming
+    },
     refetchInterval: (query) => {
       const job = query.state.data
       if (!job || isTerminalJob(job)) return false
