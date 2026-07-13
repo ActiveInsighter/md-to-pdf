@@ -15,6 +15,8 @@ const credentialsPath = path.resolve(requiredEnv('UI_CAPTURE_CREDENTIALS_PATH'))
 const outputDirectory = path.resolve(requiredEnv('UI_CAPTURE_OUTPUT_DIR'))
 const chromeExecutable = process.env.CHROME_EXECUTABLE_PATH?.trim() || '/usr/bin/google-chrome'
 const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'))
+const AUTH_PANEL_SELECTOR = '#auth-panel'
+const AUTHENTICATED_WORKSPACE_SELECTOR = '[data-ui-capture="authenticated-workspace"]'
 
 if (!credentials.email || !credentials.password) {
   throw new Error('Temporary UI capture credentials are incomplete.')
@@ -52,28 +54,31 @@ async function setInputValue(page, selector, value) {
 }
 
 async function clearSensitiveInputs(page) {
-  await page.evaluate(() => {
-    for (const input of document.querySelectorAll('#auth-panel input')) {
+  await page.evaluate((authPanelSelector) => {
+    for (const input of document.querySelectorAll(`${authPanelSelector} input`)) {
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
       setter?.call(input, '')
       input.dispatchEvent(new Event('input', { bubbles: true }))
       input.dispatchEvent(new Event('change', { bubbles: true }))
     }
-  }).catch(() => undefined)
+  }, AUTH_PANEL_SELECTOR).catch(() => undefined)
 }
 
 async function waitForLoginResult(page, authResponses) {
   const deadline = Date.now() + 35_000
   while (Date.now() < deadline) {
-    const result = await page.evaluate(() => {
-      const workspace = document.querySelector('.workspace-hero')
+    const result = await page.evaluate(({ authPanelSelector, workspaceSelector }) => {
+      const workspace = document.querySelector(workspaceSelector)
       if (workspace) return { kind: 'workspace' }
 
-      const message = document.querySelector('#auth-panel .auth-message, #auth-panel .error-text')
+      const message = document.querySelector(`${authPanelSelector} .auth-message, ${authPanelSelector} .error-text`)
       const text = message?.textContent?.trim() || ''
       if (text) return { kind: 'error', text }
 
       return { kind: 'waiting' }
+    }, {
+      authPanelSelector: AUTH_PANEL_SELECTOR,
+      workspaceSelector: AUTHENTICATED_WORKSPACE_SELECTOR,
     })
 
     if (result.kind === 'workspace') return
@@ -84,7 +89,7 @@ async function waitForLoginResult(page, authResponses) {
   }
 
   const statuses = authResponses.length > 0 ? authResponses.join(', ') : 'none observed'
-  throw new Error(`Authenticated workspace did not appear. Auth response statuses: ${statuses}.`)
+  throw new Error(`Authenticated workspace marker did not appear. Auth response statuses: ${statuses}.`)
 }
 
 async function captureViewport({ name, width, height, mobile }) {
@@ -118,7 +123,7 @@ async function captureViewport({ name, width, height, mobile }) {
 
   try {
     await page.goto(targetUrl.href, { waitUntil: 'networkidle2' })
-    await page.waitForSelector('#auth-panel', { visible: true })
+    await page.waitForSelector(AUTH_PANEL_SELECTOR, { visible: true })
     await page.evaluate(() => window.scrollTo(0, 0))
     await settle(1_200)
 
@@ -129,13 +134,13 @@ async function captureViewport({ name, width, height, mobile }) {
     })
     captured.push({ file: publicFile, viewport: `${width}x${height}`, fullPage: true, authenticated: false })
 
-    await setInputValue(page, '#auth-panel input[type="email"]', credentials.email)
-    await setInputValue(page, '#auth-panel input[type="password"]', credentials.password)
-    await page.waitForFunction(() => {
-      const button = document.querySelector('#auth-panel button[type="submit"]')
+    await setInputValue(page, `${AUTH_PANEL_SELECTOR} input[type="email"]`, credentials.email)
+    await setInputValue(page, `${AUTH_PANEL_SELECTOR} input[type="password"]`, credentials.password)
+    await page.waitForFunction((authPanelSelector) => {
+      const button = document.querySelector(`${authPanelSelector} button[type="submit"]`)
       return button instanceof HTMLButtonElement && !button.disabled
-    })
-    await page.click('#auth-panel button[type="submit"]')
+    }, {}, AUTH_PANEL_SELECTOR)
+    await page.click(`${AUTH_PANEL_SELECTOR} button[type="submit"]`)
     await waitForLoginResult(page, authResponses)
     await page.evaluate(() => window.scrollTo(0, 0))
     await settle(2_500)
