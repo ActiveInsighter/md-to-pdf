@@ -10,12 +10,12 @@ export function MobileNavigation() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="打开导航">
+        <Button variant="ghost" size="icon" aria-label="打开导航">
           <Menu />
         </Button>
       </SheetTrigger>
       <SheetContent className="p-0">
-        <SheetHeader className="sr-only"><SheetTitle>主导航</SheetTitle></SheetHeader>
+        <SheetHeader className="sr-only"><SheetTitle>主导航与账号</SheetTitle></SheetHeader>
         <AppSidebar onNavigate={() => setOpen(false)} />
       </SheetContent>
     </Sheet>

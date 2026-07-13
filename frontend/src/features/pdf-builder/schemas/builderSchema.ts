@@ -4,7 +4,7 @@ import { PDF_THEMES } from '../types'
 const themeIds = PDF_THEMES.map((theme) => theme.id) as [string, ...string[]]
 
 export const builderSchema = z.object({
-  documentName: z.string().trim().min(1, '请输入文档名称。').max(120, '文档名称不能超过 120 个字符。'),
+  documentName: z.string().trim().min(1, '请选择 Markdown 或粘贴文本以生成输出名称。').max(120, '文档名称不能超过 120 个字符。'),
   sourceMode: z.enum(['file', 'text']),
   markdownText: z.string().max(10 * 1024 * 1024, 'Markdown 文本不能超过 10 MiB。'),
   theme: z.enum(themeIds),

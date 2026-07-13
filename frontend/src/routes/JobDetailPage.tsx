@@ -3,13 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { JobActions } from '@/features/pdf-jobs/components/JobActions'
 import { JobProgress } from '@/features/pdf-jobs/components/JobProgress'
 import { JobStatusBadge } from '@/features/pdf-jobs/components/JobStatusBadge'
-import { JobTimeline } from '@/features/pdf-jobs/components/JobTimeline'
 import { usePdfJob } from '@/features/pdf-jobs/hooks/usePdfJob'
 import { canCancelJob } from '@/features/pdf-jobs/status'
 import { formatDateTime } from '@/lib/utils'
@@ -22,7 +21,7 @@ export function JobDetailPage() {
   const setSelectedJobId = useWorkspaceStore((state) => state.setSelectedJobId)
 
   if (job.isLoading) {
-    return <PageContainer aria-busy="true" aria-label="正在加载任务" className="flex flex-col gap-4"><span className="sr-only">正在加载任务…</span><Skeleton className="h-12 w-full max-w-md" /><Skeleton className="h-56 w-full" /><Skeleton className="h-64 w-full" /></PageContainer>
+    return <PageContainer aria-busy="true" aria-label="正在加载任务" className="flex flex-col gap-4"><span className="sr-only">正在加载任务…</span><Skeleton className="h-12 w-full max-w-md" /><Skeleton className="h-72 w-full" /><Skeleton className="h-64 w-full" /></PageContainer>
   }
 
   if (job.error || !job.data) {
@@ -59,13 +58,20 @@ export function JobDetailPage() {
       {item.status === 'expired' && <Alert variant="warning"><AlertDescription>任务产物已经过期，原下载地址不可用。请重新上传源稿创建任务。</AlertDescription></Alert>}
       {canCancelJob(item) && <Alert variant="warning"><AlertTitle>可以继续这次上传</AlertTitle><AlertDescription>任务信息仍在服务端，但浏览器无法恢复本地文件。返回工作台重新选择源稿后即可继续。</AlertDescription><Button className="mt-3" onClick={() => { setSelectedJobId(item.id); navigate('/workspace') }}>返回工作台恢复</Button></Alert>}
 
-      <Card><CardHeader><CardTitle>构建进度</CardTitle><CardDescription>进度来自服务端确认的构建阶段，不会因自动下载失败而回退。</CardDescription></CardHeader><CardContent className="flex flex-col gap-5"><JobProgress job={item} /><JobActions job={item} /></CardContent></Card>
-      <Card><CardHeader><CardTitle>任务时间线</CardTitle><CardDescription>从输入就绪到成品交付的关键时间点。</CardDescription></CardHeader><CardContent><JobTimeline job={item} /></CardContent></Card>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b bg-muted/20">
+          <CardTitle>构建进度</CardTitle>
+          <CardDescription>节点沿同一条流程线展示，并标出从任务创建开始经过的分钟和秒数。</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6"><JobProgress job={item} /></CardContent>
+        <CardFooter className="border-t bg-muted/10 pt-5"><JobActions job={item} /></CardFooter>
+      </Card>
+
       <Card>
-        <CardHeader><CardTitle>文档与交付</CardTitle><CardDescription>用于确认成品名称、主题和保留时间。</CardDescription></CardHeader>
+        <CardHeader><CardTitle>文档与交付</CardTitle><CardDescription>确认成品名称、主题、保留时间和构建来源。</CardDescription></CardHeader>
         <CardContent>
           <dl className="grid gap-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            {details.map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt><dd className="mt-1 break-all font-medium">{value}</dd></div>)}
+            {details.map(([label, value]) => <div key={label} className="min-w-0 rounded-lg border bg-muted/15 p-4"><dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt><dd className="mt-1 break-all font-medium">{value}</dd></div>)}
           </dl>
           <details className="mt-6 rounded-lg border bg-muted/20 p-4 text-sm">
             <summary className="cursor-pointer font-semibold">技术详情</summary>

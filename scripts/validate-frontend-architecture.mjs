@@ -55,6 +55,7 @@ const removedFiles = [
   'frontend/src/components/PdfJobHistory.tsx',
   'frontend/src/components/PdfJobStatus.tsx',
   'frontend/src/components/FileDropField.tsx',
+  'frontend/src/components/layout/AppHeader.tsx',
   'frontend/src/api/pdfJobs.ts',
   'frontend/src/types/pdfJob.ts',
   'frontend/src/types/upload.ts',
@@ -73,9 +74,11 @@ const requiredText = new Map([
   ['frontend/src/features/pdf-jobs/hooks/cache.ts', ['setQueryData', 'shouldApplyPdfJobUpdate']],
   ['frontend/src/features/pdf-jobs/hooks/PdfJobsRealtimeBridge.tsx', ['postgres_changes']],
   ['frontend/src/features/pdf-jobs/hooks/usePdfJob.ts', ['refetchInterval']],
-  ['frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts', ['submissionReducer']],
+  ['frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts', ['submissionReducer', 'async function prepare', 'async function submit']],
   ['frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts', ['Math.min(3']],
+  ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置']],
   ['frontend/src/styles/globals.css', ['@tailwind base']],
+  ['.github/workflows/deploy-pages.yml', ["push:", "branches:", "- main", "workflow_dispatch:"]],
 ])
 
 const errors = []

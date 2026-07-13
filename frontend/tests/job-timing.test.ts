@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { formatDuration, getJobElapsedMilliseconds, getJobTimingSummary, getJobTimeline } from '../src/features/pdf-jobs/timing'
+import { formatDuration, formatElapsedClock, getJobElapsedMilliseconds, getJobFlowSteps, getJobTimingSummary } from '../src/features/pdf-jobs/timing'
 import type { PdfJob } from '../src/features/pdf-jobs/types'
 
 function job(status: PdfJob['status'], patch: Partial<PdfJob> = {}): PdfJob {
@@ -35,6 +35,9 @@ test('duration formatting is stable across time units', () => {
   assert.equal(formatDuration(188_000), '3 分 08 秒')
   assert.equal(formatDuration(3_720_000), '1 小时 02 分')
   assert.equal(formatDuration(97_200_000), '1 天 3 小时')
+  assert.equal(formatElapsedClock(0), '+00:00')
+  assert.equal(formatElapsedClock(188_000), '+03:08')
+  assert.equal(formatElapsedClock(null), '--:--')
 })
 
 test('active jobs use the current time and terminal jobs use their terminal timestamp', () => {
@@ -53,13 +56,13 @@ test('active jobs use the current time and terminal jobs use their terminal time
   assert.deepEqual(getJobTimingSummary(completed), { label: '总耗时', value: '4 分 10 秒' })
 })
 
-test('timeline exposes every supported task milestone', () => {
-  const steps = getJobTimeline(job('uploading', {
+test('flow exposes every milestone with elapsed timestamps and states', () => {
+  const steps = getJobFlowSteps(job('uploading', {
     uploaded_at: '2026-07-13T00:00:30.000Z',
     queued_at: '2026-07-13T00:00:40.000Z',
     rendering_at: '2026-07-13T00:02:00.000Z',
     uploading_at: '2026-07-13T00:03:00.000Z',
-  }))
+  }), Date.parse('2026-07-13T00:03:30.000Z'))
 
   assert.deepEqual(steps.map((step) => step.key), [
     'created',
@@ -70,19 +73,24 @@ test('timeline exposes every supported task milestone', () => {
     'uploading',
     'completed',
   ])
-  assert.equal(steps.find((step) => step.key === 'uploading')?.at, '2026-07-13T00:03:00.000Z')
+  assert.equal(steps.find((step) => step.key === 'uploaded')?.elapsedMilliseconds, 30_000)
+  assert.equal(steps.find((step) => step.key === 'uploading')?.elapsedMilliseconds, 180_000)
+  assert.equal(steps.find((step) => step.key === 'uploading')?.state, 'active')
+  assert.equal(steps.at(-1)?.state, 'pending')
 })
 
-test('cancelled jobs use their terminal update for timing and timeline', () => {
+test('cancelled jobs use their terminal update for timing and flow', () => {
   const cancelled = job('cancelled', {
     started_at: null,
     updated_at: '2026-07-13T00:02:00.000Z',
   })
   assert.equal(getJobElapsedMilliseconds(cancelled), 120_000)
   assert.deepEqual(getJobTimingSummary(cancelled), { label: '总耗时', value: '2 分 00 秒' })
-  assert.deepEqual(getJobTimeline(cancelled).at(-1), {
+  assert.deepEqual(getJobFlowSteps(cancelled).at(-1), {
     key: 'cancelled',
-    label: '任务已取消',
+    label: '任务取消',
     at: '2026-07-13T00:02:00.000Z',
+    elapsedMilliseconds: 120_000,
+    state: 'error',
   })
 })

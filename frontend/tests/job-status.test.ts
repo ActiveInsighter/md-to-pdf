@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { canCancelJob, canDownloadJob, getJobDisplayStatus, getJobProgress, getJobStatusLabel, isTerminalJob } from '../src/features/pdf-jobs/status'
+import { canCancelJob, canDownloadJob, getJobDisplayStatus, getJobProgress, getJobStageDescription, getJobStatusLabel, isTerminalJob } from '../src/features/pdf-jobs/status'
 import type { PdfJob } from '../src/features/pdf-jobs/types'
 
 function job(status: PdfJob['status'], patch: Partial<PdfJob> = {}): PdfJob {
@@ -22,6 +22,12 @@ test('server statuses map to distinct UI lifecycle stages', () => {
   assert.equal(getJobStatusLabel(job('uploading')), '上传 PDF 中')
   assert.equal(getJobStatusLabel(job('cancelled')), '已取消')
   assert.equal(getJobStatusLabel(job('completed')), '已完成')
+})
+
+test('machine progress tokens fall back to readable Chinese descriptions', () => {
+  assert.equal(getJobStageDescription(job('completed', { progress_stage: 'completed' })), 'PDF 已生成，可以下载')
+  assert.equal(getJobStageDescription(job('building', { progress_stage: 'rendering' })), '正在渲染文档与生成 PDF')
+  assert.equal(getJobStageDescription(job('building', { progress_stage: '正在处理第 4 页' })), '正在处理第 4 页')
 })
 
 test('status capabilities are centralized', () => {
