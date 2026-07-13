@@ -32,6 +32,7 @@ PR 必须说明：
 
 不要为了通过 CI 删除、跳过或降低测试。不要把用户文档提交到临时分支来试跑线上构建；渲染回归使用 `fixtures/`，临时内容使用 `.tmp/`。
 
+<!-- ci:repository-validation -->
 ## 验证矩阵
 
 按改动范围运行所有适用检查；多个范围同时变化时取并集。
@@ -91,6 +92,7 @@ npm run check:functions
 
 两个生产工作流都只允许 `workflow_dispatch`；合并或推送 `main` 不会自动运行。依赖新后端行为的前端使用分阶段 PR：先发布兼容后端并通过手动 smoke，再合并和手动部署前端。生产迁移只做前向修复；不要用 `db reset` 或删除已应用迁移回滚。详细操作见 [Supabase 服务文档](supabase-pdf-service.md) 与 [Pages 部署文档](cloudflare-pages-actions-deploy.md)。
 
+<!-- ci:never-commit-generated-outputs -->
 ## 禁止提交生成物
 
 `node_modules/`、`dist/`、`.tmp/`、`work/`、覆盖率文件、测试报告、UI 截图、PDF、HTML 和运行日志只能作为本地或短期 CI 产物，并应由 `.gitignore` 排除。
