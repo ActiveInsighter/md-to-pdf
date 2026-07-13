@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { pdfJobKeys } from '../queryKeys'
-import type { PdfJob, PdfJobStatus } from '../types'
+import { PDF_JOB_TERMINAL_STATUSES, type PdfJob, type PdfJobStatus } from '../types'
 
 const STATUS_ORDER: Record<PdfJobStatus, number> = {
   created: 0,
@@ -13,11 +13,13 @@ const STATUS_ORDER: Record<PdfJobStatus, number> = {
   expired: 5,
 }
 
-const TERMINAL_STATUSES = new Set<PdfJobStatus>(['completed', 'failed', 'expired'])
-
 function timestamp(value: string): number | null {
   const parsed = Date.parse(value)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+function isTerminal(status: PdfJobStatus): boolean {
+  return (PDF_JOB_TERMINAL_STATUSES as readonly PdfJobStatus[]).includes(status)
 }
 
 export function shouldApplyPdfJobUpdate(
@@ -26,6 +28,8 @@ export function shouldApplyPdfJobUpdate(
 ): boolean {
   if (!current) return true
   if (current.id !== incoming.id) return false
+
+  if (isTerminal(current.status) && incoming.status !== current.status) return false
 
   const currentTime = timestamp(current.updated_at)
   const incomingTime = timestamp(incoming.updated_at)
@@ -39,17 +43,14 @@ export function shouldApplyPdfJobUpdate(
     return false
   }
 
-  if (TERMINAL_STATUSES.has(current.status)) {
-    return incoming.status === current.status
-  }
-
+  if (isTerminal(current.status)) return incoming.status === current.status
   return STATUS_ORDER[incoming.status] >= STATUS_ORDER[current.status]
 }
 
 export function mergePdfJobHistory(
   current: PdfJob[] | null | undefined,
   incoming: PdfJob[],
-  limit = Number.POSITIVE_INFINITY,
+  limit = 200,
 ): PdfJob[] {
   if (limit <= 0) return []
 
@@ -60,7 +61,11 @@ export function mergePdfJobHistory(
   }
 
   return [...merged.values()]
-    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+    .sort((left, right) => {
+      const leftTime = timestamp(left.created_at) ?? 0
+      const rightTime = timestamp(right.created_at) ?? 0
+      return rightTime - leftTime || right.id.localeCompare(left.id)
+    })
     .slice(0, limit)
 }
 

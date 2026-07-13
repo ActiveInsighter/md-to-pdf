@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '.github/**'
+      - '.github/workflows/**'
       - 'AGENTS.md'
       - 'docs/**'
       - 'frontend/**'
@@ -18,6 +19,7 @@ on:
       - main
     paths:
       - '.github/**'
+      - '.github/workflows/**'
       - 'AGENTS.md'
       - 'docs/**'
       - 'frontend/**'
@@ -56,16 +58,10 @@ jobs:
         run: npm run validate:repository
 
       - name: Test repository validator
-        run: npm run test:repository-validator
+        run: npm run test:repository
 
-      - name: Test workflow security validator
-        run: npm run test:workflow-security-validator
-
-      - name: Test GitHub tool adapter
-        run: npm run test:github-tool-adapter
-
-      - name: Test branch cleanup helper
-        run: npm run test:cleanup-branches
+      - name: Test workflow security validators
+        run: npm run test:workflows
 
       - name: Validate workflow security policy
         run: npm run validate:workflows
@@ -105,6 +101,7 @@ jobs:
             frontend/src/features/pdf-jobs/types.ts
             frontend/src/features/pdf-jobs/queryKeys.ts
             frontend/src/features/pdf-jobs/status.ts
+            frontend/src/features/pdf-jobs/hooks/cache.ts
             frontend/src/features/pdf-jobs/hooks/PdfJobsRealtimeBridge.tsx
             frontend/src/features/pdf-jobs/hooks/usePdfJob.ts
             frontend/src/features/pdf-jobs/hooks/usePdfJobs.ts
@@ -120,9 +117,8 @@ jobs:
             frontend/src/routes/SettingsPage.tsx
             frontend/src/styles/globals.css
             frontend/tests/frontend-utils.test.mjs
-            frontend/tests/cancel-pdf-job.test.mjs
+            frontend/tests/cancel-pdf-job-logic.test.mjs
             frontend/tests/pdf-job-updates.test.mjs
-            frontend/tests/submission-recovery.test.mjs
             frontend/tests/job-status.test.ts
             frontend/tests/submission-reducer.test.ts
             frontend/tests/upload-files.test.ts
@@ -153,6 +149,8 @@ jobs:
             frontend/src/utils/pdfThemes.ts
             frontend/src/utils/submissionRecovery.ts
             frontend/src/utils/uploadFiles.ts
+            frontend/src/utils/pdfJobStatus.ts
+            frontend/src/utils/pdfJobUpdates.ts
           )
 
           for file in "${removed_files[@]}"; do
@@ -183,6 +181,7 @@ jobs:
           grep -q "QueryClientProvider" frontend/src/app/providers.tsx
           grep -q "persist(" frontend/src/stores/workspaceStore.ts
           grep -q "setQueryData" frontend/src/features/pdf-jobs/hooks/cache.ts
+          grep -q "shouldApplyPdfJobUpdate" frontend/src/features/pdf-jobs/hooks/cache.ts
           grep -q "postgres_changes" frontend/src/features/pdf-jobs/hooks/PdfJobsRealtimeBridge.tsx
           grep -q "refetchInterval" frontend/src/features/pdf-jobs/hooks/usePdfJob.ts
           grep -q "submissionReducer" frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
