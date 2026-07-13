@@ -86,6 +86,17 @@ jobs:
           grep -Fq 'data-ui-capture="authenticated-workspace"' frontend/src/routes/WorkspacePage.tsx
           grep -Fq 'AUTHENTICATED_WORKSPACE_SELECTOR' scripts/capture-deployed-ui.mjs
           grep -Fq '[data-ui-capture="authenticated-workspace"]' scripts/capture-deployed-ui.mjs
+          grep -Fq "const OVERVIEW_FILE = 'ui-overview.png'" scripts/capture-deployed-ui.mjs
+          grep -Fq 'ui-overview.png' .github/workflows/deploy-pages.yml
+
+      - name: Validate job progress flow contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e frontend/src/features/pdf-jobs/components/JobTimeline.tsx
+          grep -Fq 'getJobFlowSteps' frontend/src/features/pdf-jobs/components/JobProgress.tsx
+          grep -Fq 'formatElapsedClock' frontend/src/features/pdf-jobs/components/JobProgress.tsx
+          ! grep -Fq 'JobTimeline' frontend/src/routes/JobDetailPage.tsx
 
       - name: Validate staged upload contract
         shell: bash
