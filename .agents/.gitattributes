@@ -1,0 +1,2 @@
+# Skills are vendored from upstream repositories; preserve their formatting.
+skills/** -whitespace
