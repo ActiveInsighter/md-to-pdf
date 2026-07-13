@@ -7,7 +7,8 @@ import test from 'node:test'
 
 function runPython(args) {
   return new Promise((resolve, reject) => {
-    const child = spawn('python3', ['scripts/prepare-supabase-input.py', ...args], {
+    const python = process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3')
+    const child = spawn(python, ['scripts/prepare-supabase-input.py', ...args], {
       cwd: process.cwd(),
       stdio: ['ignore', 'pipe', 'pipe'],
     })

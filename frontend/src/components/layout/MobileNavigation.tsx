@@ -9,8 +9,15 @@ export function MobileNavigation() {
   const setOpen = useWorkspaceStore((state) => state.setSidebarOpen)
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild><Button variant="ghost" size="icon" className="lg:hidden" aria-label="打开导航"><Menu className="h-5 w-5" /></Button></SheetTrigger>
-      <SheetContent className="p-0"><SheetHeader className="sr-only"><SheetTitle>导航</SheetTitle></SheetHeader><AppSidebar onNavigate={() => setOpen(false)} /></SheetContent>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="打开导航">
+          <Menu />
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="p-0">
+        <SheetHeader className="sr-only"><SheetTitle>主导航</SheetTitle></SheetHeader>
+        <AppSidebar onNavigate={() => setOpen(false)} />
+      </SheetContent>
     </Sheet>
   )
 }

@@ -13,13 +13,18 @@ const PERMISSION_RANK = new Map([
 ])
 
 const ALLOWED_WRITE_PERMISSIONS = new Map([
-  ['.github/workflows/build-pdf.yml', new Set(['contents'])],
   ['.github/workflows/cleanup-branches.yml', new Set(['contents'])],
   ['.github/workflows/deploy-pages.yml', new Set(['deployments', 'statuses'])],
   ['.github/workflows/smoke-supabase-service.yml', new Set(['statuses'])],
 ])
 
-const CREDENTIAL_WRITER_WORKFLOW = '.github/workflows/build-pdf.yml'
+const RETIRED_WORKFLOW_PATHS = new Set([
+  '.github/workflows/build-pdf.yml',
+])
+const RETIRED_WORKFLOW_MARKERS = [
+  { pattern: /\binbox(?:[\\/]|$)/im, label: 'repository inbox queue' },
+  { pattern: /\bPublish output branch\b|refs\/heads\/output/i, label: 'output branch publishing' },
+]
 
 function indentation(line) {
   return line.match(/^\s*/)?.[0].length ?? 0
@@ -232,14 +237,10 @@ function validateActionReferences(lines, relativePath, errors) {
 }
 
 function validateCheckoutCredentials(lines, relativePath, errors) {
-  let checkoutCount = 0
-  let credentialWriterCount = 0
-
   for (let index = 0; index < lines.length; index += 1) {
     const reference = actionReference(lines[index])
     if (!reference?.startsWith(`${CHECKOUT_ACTION}@`)) continue
 
-    checkoutCount += 1
     const usesIndent = indentation(lines[index])
     let setting = null
 
@@ -258,21 +259,19 @@ function validateCheckoutCredentials(lines, relativePath, errors) {
     if (setting === null) {
       errors.push(`${relativePath}:${index + 1}: checkout must set persist-credentials explicitly`)
     } else if (setting === 'true') {
-      credentialWriterCount += 1
-      if (relativePath !== CREDENTIAL_WRITER_WORKFLOW) {
-        errors.push(
-          `${relativePath}:${index + 1}: checkout credentials may only persist in ${CREDENTIAL_WRITER_WORKFLOW}`,
-        )
-      }
+      errors.push(`${relativePath}:${index + 1}: checkout credentials must not persist`)
     }
   }
+}
 
-  if (relativePath === CREDENTIAL_WRITER_WORKFLOW) {
-    if (checkoutCount === 0) errors.push(`${relativePath}: expected a checkout step`)
-    if (credentialWriterCount !== checkoutCount) {
-      errors.push(
-        `${relativePath}: every checkout must retain credentials because this workflow publishes repository changes`,
-      )
+function validateRetiredWorkflowArchitecture(source, relativePath, errors) {
+  if (RETIRED_WORKFLOW_PATHS.has(relativePath)) {
+    errors.push(`${relativePath}: retired repository-backed PDF workflow path must not be restored`)
+  }
+
+  for (const { pattern, label } of RETIRED_WORKFLOW_MARKERS) {
+    if (pattern.test(source)) {
+      errors.push(`${relativePath}: retired ${label} must not be restored`)
     }
   }
 }
@@ -286,6 +285,7 @@ export function validateWorkflowText(source, relativePath) {
     errors.push(`${normalizedPath}: pull_request_target is not allowed`)
   }
 
+  validateRetiredWorkflowArchitecture(source, normalizedPath, errors)
   const topLevelPermissions = parseTopLevelPermissions(lines, normalizedPath, errors)
   validateJobPermissions(lines, normalizedPath, topLevelPermissions, errors)
   validateActionReferences(lines, normalizedPath, errors)

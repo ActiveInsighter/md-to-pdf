@@ -23,8 +23,6 @@ jobs:
     env:
       JOB_ID: ${{ inputs.job_id }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
       PUPPETEER_SKIP_DOWNLOAD: 'true'
       PDF_MAX_MARKDOWN_BYTES: '10485760'
@@ -41,6 +39,9 @@ jobs:
           persist-credentials: false
 
       - name: Validate job and secrets
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -143,6 +144,9 @@ jobs:
           echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
 
       - name: Fetch and validate queued job
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -161,14 +165,23 @@ jobs:
           echo "PDF_THEME=$THEME" >> "$GITHUB_ENV"
 
       - name: Mark building
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs status building
 
       - name: Mark input download
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs progress fetching-input
 
       - name: Download Markdown
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -177,6 +190,9 @@ jobs:
 
       - name: Download optional assets
         id: download
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -186,6 +202,9 @@ jobs:
             2>&1 | tee work/logs/download-assets.log
 
       - name: Mark source preparation
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs progress preparing-source
 
@@ -211,6 +230,9 @@ jobs:
           python3 scripts/prepare-supabase-input.py "${ARGS[@]}"
 
       - name: Mark rendering
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs progress rendering
 
@@ -219,6 +241,9 @@ jobs:
         run: node scripts/build-pdf.mjs work/source/input.md dist/output.pdf --theme "$PDF_THEME"
 
       - name: Mark output validation
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs progress validating-output
 
@@ -234,42 +259,128 @@ jobs:
           pdfinfo dist/output.pdf | tee dist/pdfinfo.txt
 
       - name: Mark uploading
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs status uploading
 
       - name: Upload PDF to Supabase Storage
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs upload-output --input dist/output.pdf
 
       - name: Mark completed
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs complete
 
       - name: Delete source objects after success
         continue-on-error: true
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: node scripts/supabase-pdf-job.mjs delete-inputs
 
+      - name: Prepare sanitized failure diagnostic
+        if: failure()
+        shell: bash
+        env:
+          DIAGNOSTIC_RUN_ID: ${{ github.run_id }}
+          DIAGNOSTIC_RUN_ATTEMPT: ${{ github.run_attempt }}
+          DIAGNOSTIC_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p work/diagnostics
+          node -e 'const fs=require("node:fs"); const body={schemaVersion:1,outcome:"failed",runId:process.env.DIAGNOSTIC_RUN_ID,runAttempt:process.env.DIAGNOSTIC_RUN_ATTEMPT,commit:process.env.DIAGNOSTIC_COMMIT}; fs.writeFileSync("work/diagnostics/failure.json", `${JSON.stringify(body, null, 2)}\n`);'
+
       - name: Upload one-day debug artifact
-        if: always()
-        continue-on-error: true
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: pdf-api-job-${{ inputs.job_id }}
-          path: |
-            dist/output.pdf
-            dist/output.html
-            dist/pdfinfo.txt
-            work/job.json
-            work/logs/*.log
+          name: pdf-api-failure-${{ github.run_id }}
+          path: work/diagnostics/failure.json
           if-no-files-found: ignore
           retention-days: 1
 
       - name: Mark failed
         if: failure()
         continue-on-error: true
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/supabase-pdf-job.mjs fail \
-            --message "GitHub Actions PDF 构建失败，请查看对应运行日志。"
+          FAILURE_MESSAGE="GitHub Actions PDF 构建失败，请查看对应运行日志。"
+
+          if [[ -f scripts/supabase-pdf-job.mjs ]] && \
+            node scripts/supabase-pdf-job.mjs fail --message "$FAILURE_MESSAGE"; then
+            exit 0
+          fi
+
+          echo "Repository failure reporter was unavailable; using the minimal API fallback."
+          FAILURE_MESSAGE="$FAILURE_MESSAGE" node --input-type=module <<'NODE'
+          const supabaseUrl = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '')
+          const serviceKey = String(
+            process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          ).trim()
+          const jobId = String(process.env.JOB_ID || '').trim()
+          const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          const legacyJwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/
+
+          if (!supabaseUrl || !serviceKey || !uuidPattern.test(jobId)) {
+            throw new Error('Failure reporter configuration is invalid')
+          }
+
+          const isSecretKey = serviceKey.startsWith('sb_secret_')
+          if (!isSecretKey && !legacyJwtPattern.test(serviceKey)) {
+            throw new Error('Failure reporter service key format is unsupported')
+          }
+
+          const url = new URL(`${supabaseUrl}/rest/v1/pdf_jobs`)
+          url.searchParams.set('id', `eq.${jobId}`)
+          url.searchParams.set('status', 'in.(queued,building,uploading)')
+
+          const now = new Date().toISOString()
+          const runId = Number(process.env.GITHUB_RUN_ID || 0) || null
+          const repository = String(process.env.GITHUB_REPOSITORY || '')
+          const serverUrl = String(process.env.GITHUB_SERVER_URL || 'https://github.com')
+          const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              apikey: serviceKey,
+              ...(isSecretKey ? {} : { Authorization: `Bearer ${serviceKey}` }),
+              'Content-Type': 'application/json',
+              Prefer: 'return=representation',
+            },
+            body: JSON.stringify({
+              status: 'failed',
+              progress_stage: 'failed',
+              error_message: String(process.env.FAILURE_MESSAGE || 'PDF 构建失败。').slice(0, 500),
+              completed_at: now,
+              updated_at: now,
+              github_run_id: runId,
+              github_run_url: runId && repository ? `${serverUrl}/${repository}/actions/runs/${runId}` : null,
+              github_commit: process.env.GITHUB_SHA || null,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`Failure status update was rejected (${response.status})`)
+          }
+
+          const rows = await response.json().catch(() => null)
+          if (!Array.isArray(rows) || rows.length > 1) {
+            throw new Error('Failure status update returned an unexpected result')
+          }
+
+          console.log(rows.length === 1
+            ? 'PDF job marked failed by the API fallback.'
+            : 'PDF job was already terminal; failure update skipped.')
+          NODE

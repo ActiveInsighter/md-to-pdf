@@ -1,6 +1,7 @@
-import { CircleCheckBig, CircleX, FilePlus2, Files, Heart, LoaderCircle, Settings } from 'lucide-react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { CircleCheckBig, CircleX, FilePlus2, FileText, Files, Heart, LoaderCircle, Settings } from 'lucide-react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { usePdfJobs } from '@/features/pdf-jobs/hooks/usePdfJobs'
 import { isTerminalJob } from '@/features/pdf-jobs/status'
@@ -24,21 +25,24 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
     all: jobs.length,
     active: jobs.filter((job) => !isTerminalJob(job)).length,
     completed: jobs.filter((job) => job.status === 'completed').length,
-    failed: jobs.filter((job) => job.status === 'failed' || job.status === 'expired').length,
+    failed: jobs.filter((job) => job.status === 'failed' || job.status === 'expired' || job.status === 'cancelled').length,
     favorite: jobs.filter((job) => job.is_favorite).length,
   }
 
   return (
-    <aside className="flex h-full flex-col bg-white">
-      <div className="flex h-16 items-center gap-3 px-5"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">MP</div><div><strong className="block text-sm">Markdown PDF</strong><span className="text-xs text-muted-foreground">构建工作台</span></div></div>
+    <aside className="flex h-full flex-col">
+      <div className="flex min-h-20 items-center gap-3 px-5">
+        <div className="relative flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md"><FileText className="size-5" /><span className="absolute -bottom-1 -right-1 size-3 rounded-full border-2 border-card bg-success" /></div>
+        <div><strong className="block font-display text-base">Markdown PDF</strong><span className="text-xs text-muted-foreground">数字排版工坊</span></div>
+      </div>
       <Separator />
-      <nav className="flex-1 space-y-1 p-3">{navigation.map((item) => {
+      <nav aria-label="任务导航" className="flex flex-1 flex-col gap-1 p-3">{navigation.map((item) => {
         const active = item.to.includes('?') ? `${location.pathname}${location.search}` === item.to : location.pathname === item.to
         const Icon = item.icon
-        return <NavLink key={item.to} to={item.to} onClick={onNavigate} className={cn('flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground', active && 'bg-primary/10 text-primary')}><Icon className={cn('h-4 w-4', item.label === '进行中' && counts.active > 0 && 'animate-spin')} /><span>{item.label}</span>{item.count && <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{counts[item.count]}</span>}</NavLink>
+        return <Link key={item.to} to={item.to} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground', active && 'bg-accent text-accent-foreground')}><Icon className={cn('size-4', item.label === '进行中' && counts.active > 0 && 'animate-spin')} /><span>{item.label}</span>{item.count && <Badge variant="secondary" className="ml-auto min-w-7 justify-center">{counts[item.count]}</Badge>}</Link>
       })}</nav>
       <Separator />
-      <div className="p-3"><NavLink to="/settings" onClick={onNavigate} className={({ isActive }) => cn('flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground', isActive && 'bg-primary/10 text-primary')}><Settings className="h-4 w-4" />设置</NavLink></div>
+      <div className="p-3"><NavLink to="/settings" onClick={onNavigate} className={({ isActive }) => cn('flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground', isActive && 'bg-accent text-accent-foreground')}><Settings className="size-4" />设置</NavLink></div>
     </aside>
   )
 }

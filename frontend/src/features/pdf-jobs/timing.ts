@@ -55,13 +55,29 @@ export function getJobTimingSummary(job: PdfJob, now = Date.now()): { label: str
 }
 
 export function getJobTimeline(job: PdfJob): JobTimelineStep[] {
-  return [
+  const steps: JobTimelineStep[] = [
     { key: 'created', label: '创建任务', at: job.created_at },
     { key: 'uploaded', label: '文件上传完成', at: job.uploaded_at },
     { key: 'queued', label: '进入构建队列', at: job.queued_at },
     { key: 'started', label: '开始构建', at: job.started_at },
     { key: 'rendering', label: '开始渲染', at: job.rendering_at },
     { key: 'uploading', label: '上传 PDF', at: job.uploading_at },
-    { key: 'completed', label: '任务结束', at: job.completed_at },
   ]
+
+  if (job.status === 'failed' || job.status === 'cancelled') {
+    return [
+      ...steps,
+      {
+        key: job.status,
+        label: job.status === 'cancelled' ? '任务已取消' : '任务失败',
+        at: job.updated_at,
+      },
+    ]
+  }
+
+  steps.push({ key: 'completed', label: '任务完成', at: job.completed_at })
+  if (job.status === 'expired') {
+    steps.push({ key: 'expired', label: '产物已过期', at: job.updated_at })
+  }
+  return steps
 }

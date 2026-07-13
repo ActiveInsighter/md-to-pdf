@@ -10,7 +10,6 @@ function job(overrides = {}) {
     status: 'created',
     input_path: 'jobs/test/input.md',
     assets_path: 'jobs/test/assets.zip',
-    error_message: null,
     ...overrides,
   }
 }
@@ -32,20 +31,14 @@ test('Cancellation decisions hide foreign tasks and distinguish safe states', ()
     { kind: 'conflict', status: 'queued' },
   )
 
-  const cancelled = job({
-    status: 'failed',
-    error_message: cancellation.CANCELLED_ERROR_MESSAGE,
-  })
+  const cancelled = job({ status: 'cancelled' })
   const repeated = cancellation.decideCancellation('user-1', cancelled)
   assert.equal(repeated.kind, 'idempotent')
   assert.equal(repeated.job, cancelled)
 })
 
 test('A missed conditional update only accepts an already-cancelled race winner', () => {
-  const cancelled = job({
-    status: 'failed',
-    error_message: cancellation.CANCELLED_ERROR_MESSAGE,
-  })
+  const cancelled = job({ status: 'cancelled' })
   assert.equal(cancellation.resolveCancellationRace('user-1', cancelled).kind, 'idempotent')
   assert.deepEqual(
     cancellation.resolveCancellationRace('user-1', job({ status: 'building' })),

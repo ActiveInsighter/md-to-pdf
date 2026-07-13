@@ -10,7 +10,7 @@ import {
 
 const CANCELABLE_WORKFLOW = `name: Validate\n\non:\n  pull_request:\n\nconcurrency:\n  group: validation-\${{ github.ref }}\n  cancel-in-progress: true\n\njobs:\n  validate:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 5\n    steps:\n      - run: npm test\n`
 
-const TRANSACTIONAL_WORKFLOW = `name: Build\n\non:\n  workflow_dispatch:\n\nconcurrency:\n  group: md-to-pdf-build-main\n  cancel-in-progress: false\n\njobs:\n  build:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 30\n    steps:\n      - run: npm run build\n`
+const TRANSACTIONAL_WORKFLOW = `name: Build\n\non:\n  workflow_dispatch:\n\nconcurrency:\n  group: pdf-api-\${{ inputs.job_id }}\n  cancel-in-progress: false\n\njobs:\n  build:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 30\n    steps:\n      - run: npm run build\n`
 
 test('accepts replaceable workflows and approved transactional workflows', () => {
   assert.deepEqual(
@@ -18,7 +18,7 @@ test('accepts replaceable workflows and approved transactional workflows', () =>
     [],
   )
   assert.deepEqual(
-    validateWorkflowConcurrency(TRANSACTIONAL_WORKFLOW, '.github/workflows/build-pdf.yml'),
+    validateWorkflowConcurrency(TRANSACTIONAL_WORKFLOW, '.github/workflows/build-pdf-api.yml'),
     [],
   )
 })
@@ -54,10 +54,15 @@ test('restricts cancel-in-progress false to approved transactional workflows and
   assert.match(validateWorkflowConcurrency(unapproved, '.github/workflows/validate-example.yml')[0], /must use cancel-in-progress: true/)
 
   const cancellableTransaction = TRANSACTIONAL_WORKFLOW.replace('cancel-in-progress: false', 'cancel-in-progress: true')
-  assert.match(validateWorkflowConcurrency(cancellableTransaction, '.github/workflows/build-pdf.yml')[0], /transactional workflow/)
+  assert.match(validateWorkflowConcurrency(cancellableTransaction, '.github/workflows/build-pdf-api.yml')[0], /transactional workflow/)
 
-  const wrongGroup = TRANSACTIONAL_WORKFLOW.replace('md-to-pdf-build-main', 'per-run-${{ github.ref }}')
-  assert.match(validateWorkflowConcurrency(wrongGroup, '.github/workflows/build-pdf.yml')[0], /must use concurrency group/)
+  const wrongGroup = TRANSACTIONAL_WORKFLOW.replace('pdf-api-${{ inputs.job_id }}', 'per-run-${{ github.ref }}')
+  assert.match(validateWorkflowConcurrency(wrongGroup, '.github/workflows/build-pdf-api.yml')[0], /must use concurrency group/)
+
+  assert.match(
+    validateWorkflowConcurrency(TRANSACTIONAL_WORKFLOW, '.github/workflows/retired-build.yml')[0],
+    /must use cancel-in-progress: true/,
+  )
 })
 
 test('directory validation checks both yml and yaml files', async () => {

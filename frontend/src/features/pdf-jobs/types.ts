@@ -6,6 +6,7 @@ export const PDF_JOB_STATUSES = [
   'uploading',
   'completed',
   'failed',
+  'cancelled',
   'expired',
 ] as const
 
@@ -19,10 +20,11 @@ export const PDF_JOB_PENDING_INPUT_STATUSES = [
 export const PDF_JOB_TERMINAL_STATUSES = [
   'completed',
   'failed',
+  'cancelled',
   'expired',
 ] as const satisfies readonly PdfJobStatus[]
 
-export type JobDisplayStatus = 'created' | 'uploading' | 'queued' | 'running' | 'completed' | 'failed' | 'expired' | 'cancelled'
+export type JobDisplayStatus = 'created' | 'uploaded' | 'queued' | 'running' | 'uploading' | 'completed' | 'failed' | 'cancelled' | 'expired'
 
 export type PdfJob = {
   id: string

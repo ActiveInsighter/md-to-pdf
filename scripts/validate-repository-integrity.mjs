@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const REQUIRED_PATHS = [
+  '.github/pull_request_template.md',
   '.github/workflows/build-pdf-api.yml',
   '.github/workflows/deploy-pages.yml',
   '.github/workflows/repository-hygiene.yml',
@@ -24,6 +25,10 @@ export const REQUIRED_PATHS = [
   'scripts/test-render.mjs',
   'supabase/config.toml',
   'themes/chatgpt-light.css',
+]
+
+export const FORBIDDEN_PATHS = [
+  '.github/latest-run-attempt.txt',
 ]
 
 const MARKDOWN_ROOTS = ['README.md', 'docs']
@@ -109,6 +114,7 @@ async function pathExists(target) {
 export async function validateRepositoryIntegrity({
   root = process.cwd(),
   requiredPaths = REQUIRED_PATHS,
+  forbiddenPaths = FORBIDDEN_PATHS,
   markdownRoots = MARKDOWN_ROOTS,
 } = {}) {
   const resolvedRoot = path.resolve(root)
@@ -117,6 +123,12 @@ export async function validateRepositoryIntegrity({
   for (const requiredPath of requiredPaths) {
     if (!(await pathExists(path.resolve(resolvedRoot, requiredPath)))) {
       errors.push(`Missing required repository path: ${toPosix(requiredPath)}`)
+    }
+  }
+
+  for (const forbiddenPath of forbiddenPaths) {
+    if (await pathExists(path.resolve(resolvedRoot, forbiddenPath))) {
+      errors.push(`Forbidden repository runtime state path: ${toPosix(forbiddenPath)}`)
     }
   }
 
@@ -154,7 +166,7 @@ async function main() {
     return
   }
 
-  console.log(`Validated ${REQUIRED_PATHS.length} required paths and local Markdown links.`)
+  console.log(`Validated ${REQUIRED_PATHS.length} required paths, ${FORBIDDEN_PATHS.length} forbidden paths, and local Markdown links.`)
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

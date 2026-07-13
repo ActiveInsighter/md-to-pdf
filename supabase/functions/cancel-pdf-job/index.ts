@@ -2,7 +2,6 @@ import { handleOptions, json } from '../_shared/cors.ts'
 import { PDF_JOB_PENDING_INPUT_STATUSES } from '../_shared/pdf-job-status.ts'
 import { createAdminClient, requireUser, safeErrorMessage, storageBucket } from '../_shared/supabase.ts'
 import {
-  CANCELLED_ERROR_MESSAGE,
   cleanupCancelledJob,
   decideCancellation,
   isValidJobId,
@@ -30,8 +29,7 @@ async function removePendingObjects(
           updated_at: new Date().toISOString(),
         })
         .eq('id', jobId)
-        .eq('status', 'failed')
-        .eq('error_message', CANCELLED_ERROR_MESSAGE)
+        .eq('status', 'cancelled')
       return error?.message || null
     },
   })
@@ -67,7 +65,7 @@ Deno.serve(async (req) => {
     const admin = createAdminClient()
     const { data: current, error: currentError } = await admin
       .from('pdf_jobs')
-      .select('id,user_id,status,input_path,assets_path,error_message')
+      .select('id,user_id,status,input_path,assets_path')
       .eq('id', jobId)
       .maybeSingle()
 
@@ -89,22 +87,22 @@ Deno.serve(async (req) => {
       const { data, error } = await admin
         .from('pdf_jobs')
         .update({
-          status: 'failed',
-          error_message: CANCELLED_ERROR_MESSAGE,
+          status: 'cancelled',
+          error_message: null,
           completed_at: now,
           updated_at: now,
         })
         .eq('id', jobId)
         .eq('user_id', user.id)
         .in('status', [...PDF_JOB_PENDING_INPUT_STATUSES])
-        .select('id,user_id,status,input_path,assets_path,error_message')
+        .select('id,user_id,status,input_path,assets_path')
         .maybeSingle()
 
       if (error) throw error
       if (!data) {
         const { data: latest, error: latestError } = await admin
           .from('pdf_jobs')
-          .select('id,user_id,status,input_path,assets_path,error_message')
+          .select('id,user_id,status,input_path,assets_path')
           .eq('id', jobId)
           .maybeSingle()
 
@@ -128,7 +126,7 @@ Deno.serve(async (req) => {
     const cleanupPending = await removePendingObjects(admin, cancelled)
     return json(req, {
       jobId,
-      status: 'failed',
+      status: 'cancelled',
       cancelled: true,
       idempotent,
       cleanupPending,

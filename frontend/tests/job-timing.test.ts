@@ -72,3 +72,17 @@ test('timeline exposes every supported task milestone', () => {
   ])
   assert.equal(steps.find((step) => step.key === 'uploading')?.at, '2026-07-13T00:03:00.000Z')
 })
+
+test('cancelled jobs use their terminal update for timing and timeline', () => {
+  const cancelled = job('cancelled', {
+    started_at: null,
+    updated_at: '2026-07-13T00:02:00.000Z',
+  })
+  assert.equal(getJobElapsedMilliseconds(cancelled), 120_000)
+  assert.deepEqual(getJobTimingSummary(cancelled), { label: '总耗时', value: '2 分 00 秒' })
+  assert.deepEqual(getJobTimeline(cancelled).at(-1), {
+    key: 'cancelled',
+    label: '任务已取消',
+    at: '2026-07-13T00:02:00.000Z',
+  })
+})

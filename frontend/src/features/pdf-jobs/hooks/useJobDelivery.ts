@@ -6,7 +6,7 @@ import { getPdfDownload } from '../api/pdfJobs'
 import { triggerDownload } from '@/lib/download'
 import { toUserMessage } from '@/lib/errors'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
-import { shouldDeliverJobCompletion, type JobDeliverySnapshot } from '../delivery'
+import { runActiveJobDelivery, shouldDeliverJobCompletion, type JobDeliverySnapshot } from '../delivery'
 
 export function useJobDelivery(job: PdfJob | null | undefined) {
   const autoDownload = useWorkspaceStore((state) => state.autoDownload)
@@ -29,27 +29,35 @@ export function useJobDelivery(job: PdfJob | null | undefined) {
     if (delivered.current.has(deliveryKey)) return
     delivered.current.add(deliveryKey)
 
-    void (async () => {
-      if (notifyOnComplete && 'Notification' in window) {
-        try {
-          if (Notification.permission === 'granted') {
-            new Notification('PDF 构建完成', { body: `${job.document_name} 已可下载。` })
-          }
-        } catch {
-          toast.warning('浏览器通知发送失败，任务仍可手动下载。')
-        }
-      }
+    let active = true
 
-      if (autoDownload) {
-        try {
-          const download = await getPdfDownload(job.id)
+    if (notifyOnComplete && 'Notification' in window) {
+      try {
+        if (Notification.permission === 'granted') {
+          new Notification('PDF 构建完成', { body: `${job.document_name} 已可下载。` })
+        }
+      } catch {
+        toast.warning('浏览器通知发送失败，任务仍可手动下载。')
+      }
+    }
+
+    if (autoDownload) {
+      void runActiveJobDelivery(
+        () => getPdfDownload(job.id),
+        (download) => {
           triggerDownload(download.downloadUrl, download.fileName)
           toast.success(`${download.fileName} 已开始下载。`)
-        } catch (cause) {
+        },
+        (cause) => {
           toast.error(`${toUserMessage(cause, '自动下载失败。')} 可在任务详情中手动下载。`)
-        }
-      }
-    })()
+        },
+        () => active,
+      )
+    }
+
+    return () => {
+      active = false
+    }
   }, [
     autoDownload,
     job?.completed_at,

@@ -4,33 +4,67 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 47.4% 11.2%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
-    --primary: 215 62% 45%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 89%;
-    --input: 214.3 31.8% 89%;
-    --ring: 215 62% 45%;
-    --radius: 0.625rem;
+    --background: 42 24% 96%;
+    --foreground: 213 39% 15%;
+    --card: 42 33% 99%;
+    --card-foreground: 213 39% 15%;
+    --primary: 200 65% 30%;
+    --primary-foreground: 42 33% 99%;
+    --secondary: 42 18% 91%;
+    --secondary-foreground: 213 34% 20%;
+    --muted: 40 18% 93%;
+    --muted-foreground: 215 14% 39%;
+    --accent: 188 30% 89%;
+    --accent-foreground: 200 65% 23%;
+    --destructive: 3 68% 43%;
+    --destructive-foreground: 42 33% 99%;
+    --success: 153 48% 29%;
+    --success-foreground: 42 33% 99%;
+    --success-muted: 151 35% 90%;
+    --warning: 34 83% 34%;
+    --warning-foreground: 42 33% 99%;
+    --warning-muted: 38 62% 89%;
+    --info: 215 62% 39%;
+    --info-foreground: 42 33% 99%;
+    --info-muted: 213 45% 91%;
+    --border: 210 18% 82%;
+    --input: 210 18% 76%;
+    --ring: 200 65% 30%;
+    --radius: 0.75rem;
   }
   * { @apply border-border; }
-  html { @apply bg-background; }
-  body { @apply min-w-0 bg-background text-foreground antialiased; font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  html { @apply bg-background; color-scheme: light; }
+  body {
+    @apply min-w-0 bg-background font-sans text-foreground antialiased;
+    min-height: 100dvh;
+    background-image:
+      radial-gradient(circle at 8% -10%, hsl(var(--info-muted) / 0.72), transparent 30rem),
+      radial-gradient(circle at 92% 4%, hsl(var(--warning-muted) / 0.48), transparent 28rem);
+    background-attachment: fixed;
+  }
+  #root { min-height: 100dvh; }
+  h1, h2 { @apply font-display; text-wrap: balance; }
   button, input, textarea, select { font: inherit; }
-  a { @apply outline-none; }
-  :focus-visible { @apply ring-2 ring-ring ring-offset-2 ring-offset-background; }
+  button, [role='button'], a, label[for], select { touch-action: manipulation; }
+  a { @apply rounded-sm outline-none; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+  ::selection { @apply bg-primary/20 text-foreground; }
 }
 
 @layer utilities {
   .break-anywhere { overflow-wrap: anywhere; }
+  .text-balance { text-wrap: balance; }
+  .paper-rule {
+    background-image: linear-gradient(to right, hsl(var(--border) / 0.58) 1px, transparent 1px);
+    background-size: 2rem 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

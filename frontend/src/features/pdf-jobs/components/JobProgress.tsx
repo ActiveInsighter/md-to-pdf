@@ -26,7 +26,7 @@ export function JobProgress({ job, compact = false }: { job: PdfJob; compact?: b
         <span className={compact ? 'truncate text-muted-foreground' : 'text-muted-foreground'}>{getJobStageDescription(job)}</span>
         <strong className="shrink-0 text-foreground">{progress}%</strong>
       </div>
-      <Progress value={progress} />
+      <Progress value={progress} aria-label={`${job.document_name} 构建进度`} />
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>{timing.label}：{timing.value}</span>
         <span>更新：{formatDateTime(job.updated_at)}</span>

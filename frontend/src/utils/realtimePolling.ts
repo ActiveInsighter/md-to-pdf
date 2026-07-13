@@ -1,8 +1,8 @@
-export const FALLBACK_POLL_INTERVAL_MS = 3_000
-export const HEALTHY_REALTIME_POLL_INTERVAL_MS = 5_000
+export const FALLBACK_POLL_INTERVAL_MS = 5_000
+export const HEALTHY_REALTIME_POLL_INTERVAL_MS = 30_000
 
 export function getPdfJobPollInterval(realtimeStatus: string): number {
-  return realtimeStatus === 'SUBSCRIBED'
+  return realtimeStatus === 'connected' || realtimeStatus === 'SUBSCRIBED'
     ? HEALTHY_REALTIME_POLL_INTERVAL_MS
     : FALLBACK_POLL_INTERVAL_MS
 }

@@ -1,14 +1,6 @@
 name: Deploy frontend to Cloudflare Pages
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'frontend/**'
-      - 'scripts/capture-deployed-ui.mjs'
-      - 'scripts/manage-ui-capture-user.mjs'
-      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
 permissions:

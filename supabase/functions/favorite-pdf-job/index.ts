@@ -43,9 +43,13 @@ Deno.serve(async (req) => {
       })
       .eq('id', jobId)
       .eq('user_id', user.id)
+      .neq('status', 'expired')
       .select('id,is_favorite,expires_at')
-      .single()
+      .maybeSingle()
     if (error) throw error
+    if (!data) {
+      return json(req, { error: '任务已进入过期清理，无法更新收藏状态。' }, 409)
+    }
 
     return json(req, {
       jobId: data.id,

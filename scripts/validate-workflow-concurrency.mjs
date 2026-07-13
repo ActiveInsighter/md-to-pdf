@@ -6,7 +6,6 @@ import { discoverWorkflowFiles } from './validate-workflow-security.mjs'
 const WORKFLOW_DIR = '.github/workflows'
 const NON_CANCELABLE_WORKFLOWS = new Map([
   ['.github/workflows/build-pdf-api.yml', 'pdf-api-${{ inputs.job_id }}'],
-  ['.github/workflows/build-pdf.yml', 'md-to-pdf-build-main'],
   ['.github/workflows/cleanup-branches.yml', 'branch-cleanup-${{ github.repository }}'],
   ['.github/workflows/cleanup-supabase-pdf-jobs.yml', 'cleanup-supabase-pdf-jobs'],
   ['.github/workflows/smoke-supabase-service.yml', 'supabase-pdf-service-smoke'],

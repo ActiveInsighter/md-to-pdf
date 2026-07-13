@@ -1,10 +1,19 @@
+import { useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { listPdfJobs } from '../api/pdfJobs'
 import { pdfJobKeys } from '../queryKeys'
 import { getJobDisplayStatus, isTerminalJob } from '../status'
 import type { JobFilters, PdfJob } from '../types'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
-import { mergePdfJobHistory } from './cache'
+import { getPdfJobPollInterval } from '@/utils/realtimePolling'
+import {
+  getPdfJobListRevision,
+  markPdfJobListSnapshot,
+  reconcilePdfJobHistory,
+} from './cache'
+
+const DEFAULT_JOB_FILTERS: JobFilters = { status: 'all', search: '' }
 
 export function filterPdfJobs(jobs: PdfJob[], filters: JobFilters): PdfJob[] {
   const search = filters.search?.trim().toLowerCase() || ''
@@ -20,20 +29,33 @@ export function filterPdfJobs(jobs: PdfJob[], filters: JobFilters): PdfJob[] {
   })
 }
 
-export function usePdfJobs(filters: JobFilters = { status: 'all', search: '' }) {
+export function usePdfJobs(filters: JobFilters = DEFAULT_JOB_FILTERS) {
+  const { session } = useAuth()
+  const userId = session?.user.id
   const realtimeConnection = useWorkspaceStore((state) => state.realtimeConnection)
+  const selectJobs = useCallback(
+    (jobs: PdfJob[]) => filterPdfJobs(jobs, filters),
+    [filters.search, filters.status],
+  )
+
   return useQuery<PdfJob[], Error, PdfJob[]>({
-    queryKey: pdfJobKeys.list(filters),
-    queryFn: listPdfJobs,
-    structuralSharing: (oldData, newData) => mergePdfJobHistory(
+    queryKey: pdfJobKeys.list(userId || 'anonymous'),
+    queryFn: async () => {
+      if (!userId) return []
+      const revision = getPdfJobListRevision(userId)
+      const jobs = await listPdfJobs()
+      return markPdfJobListSnapshot(jobs, userId, revision)
+    },
+    enabled: Boolean(userId),
+    structuralSharing: (oldData, newData) => reconcilePdfJobHistory(
       oldData as PdfJob[] | undefined,
       newData as PdfJob[],
     ),
-    select: (jobs) => filterPdfJobs(jobs, filters),
+    select: selectJobs,
     refetchInterval: (query) => {
       const jobs = query.state.data
       if (!jobs?.some((job) => !isTerminalJob(job))) return false
-      return realtimeConnection === 'connected' ? 30_000 : 5_000
+      return getPdfJobPollInterval(realtimeConnection)
     },
   })
 }

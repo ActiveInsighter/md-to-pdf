@@ -34,6 +34,7 @@ function job(overrides = {}) {
 test('The first task snapshot is accepted but a different task cannot replace the selection', () => {
   assert.equal(shouldApplyPdfJobUpdate(null, job()), true)
   assert.equal(shouldApplyPdfJobUpdate(job(), job({ id: 'job-2' })), false)
+  assert.equal(shouldApplyPdfJobUpdate(job(), job({ user_id: 'user-2' })), false)
 })
 
 test('A newer timestamp wins and an older polling response is ignored', () => {
@@ -57,6 +58,19 @@ test('Equal timestamps use status progression as a deterministic fallback', () =
   assert.equal(shouldApplyPdfJobUpdate(current, job({ status: 'uploading' })), true)
   assert.equal(shouldApplyPdfJobUpdate(current, job({ status: 'queued' })), false)
   assert.equal(shouldApplyPdfJobUpdate(current, job({ status: 'failed' })), true)
+  assert.equal(shouldApplyPdfJobUpdate(current, job({ status: 'cancelled' })), true)
+})
+
+test('A real cancelled status is terminal and cannot regress to an active state', () => {
+  const cancelled = job({ status: 'cancelled', updated_at: '2026-07-11T10:05:00.000Z' })
+  assert.equal(
+    shouldApplyPdfJobUpdate(cancelled, job({ status: 'queued', updated_at: '2026-07-11T10:06:00.000Z' })),
+    false,
+  )
+  assert.equal(
+    shouldApplyPdfJobUpdate(cancelled, { ...cancelled, input_path: null, updated_at: '2026-07-11T10:06:00.000Z' }),
+    true,
+  )
 })
 
 test('Valid timestamps take precedence over malformed timestamps', () => {

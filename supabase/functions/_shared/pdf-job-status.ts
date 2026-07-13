@@ -6,6 +6,7 @@ export const PDF_JOB_STATUSES = [
   'uploading',
   'completed',
   'failed',
+  'cancelled',
   'expired',
 ] as const
 
@@ -25,6 +26,7 @@ export const PDF_JOB_ACTIVE_STATUSES = [
 export const PDF_JOB_TERMINAL_STATUSES = [
   'completed',
   'failed',
+  'cancelled',
   'expired',
 ] as const satisfies readonly PdfJobStatus[]
 
