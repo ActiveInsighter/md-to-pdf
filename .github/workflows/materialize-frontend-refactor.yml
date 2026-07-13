@@ -1,9 +1,13 @@
 name: Materialize frontend refactor
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/frontend-architecture-refactor
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
     paths:
       - '.github/frontend-refactor/**'
       - '.github/workflows/materialize-frontend-refactor.yml'
@@ -17,7 +21,7 @@ concurrency:
 
 jobs:
   materialize:
-    if: github.actor != 'github-actions[bot]'
+    if: github.head_ref == 'agent/frontend-architecture-refactor' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
