@@ -34,7 +34,7 @@ export function WorkspacePage() {
 
   return (
     <PageContainer className="flex flex-col gap-7">
-      <section className="paper-rule relative overflow-hidden rounded-2xl border bg-card/90 p-5 shadow-panel sm:p-8 lg:p-10" aria-labelledby="workspace-title">
+      <section data-ui-capture="authenticated-workspace" className="paper-rule relative overflow-hidden rounded-2xl border bg-card/90 p-5 shadow-panel sm:p-8 lg:p-10" aria-labelledby="workspace-title">
         <div aria-hidden="true" className="absolute -right-16 -top-20 size-64 rounded-full bg-accent/70 blur-3xl" />
         <div className="relative grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)] lg:items-end">
           <div className="min-w-0">
