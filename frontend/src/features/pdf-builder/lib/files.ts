@@ -30,27 +30,29 @@ export function inferMarkdownDocumentName(markdown: string): string {
   let fence: '`' | '~' | null = null
 
   for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]
-    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/)
-    if (fenceMatch) {
-      const marker = fenceMatch[1][0] as '`' | '~'
+    const line = lines[index] ?? ''
+    const fenceToken = line.match(/^\s{0,3}(`{3,}|~{3,})/)?.[1] ?? ''
+    if (fenceToken) {
+      const marker = fenceToken[0] as '`' | '~'
       fence = fence === marker ? null : fence || marker
       continue
     }
     if (fence) continue
 
     const atx = line.match(/^\s{0,3}(#{1,6})[\t ]+(.+?)\s*$/)
-    if (atx) {
-      const title = cleanDocumentNameCandidate(atx[2])
-      if (title) headings.push({ index, level: atx[1].length, title })
+    const atxMarkers = atx?.[1] ?? ''
+    const atxTitle = atx?.[2] ?? ''
+    if (atxMarkers && atxTitle) {
+      const title = cleanDocumentNameCandidate(atxTitle)
+      if (title) headings.push({ index, level: atxMarkers.length, title })
       continue
     }
 
-    const next = lines[index + 1] || ''
-    const setext = next.match(/^\s{0,3}(=+|-+)\s*$/)
+    const next = lines[index + 1] ?? ''
+    const setextMarker = next.match(/^\s{0,3}(=+|-+)\s*$/)?.[1] ?? ''
     const title = cleanDocumentNameCandidate(line)
-    if (title && setext) {
-      headings.push({ index, level: setext[1][0] === '=' ? 1 : 2, title })
+    if (title && setextMarker) {
+      headings.push({ index, level: setextMarker[0] === '=' ? 1 : 2, title })
       index += 1
     }
   }
