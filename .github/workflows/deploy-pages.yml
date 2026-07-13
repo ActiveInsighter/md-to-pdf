@@ -185,7 +185,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/capture-deployed-ui.mjs
-          for file in public-desktop-1440.png authenticated-desktop-1440.png public-mobile-390.png authenticated-mobile-390.png metadata.json; do
+          for file in ui-overview.png public-desktop-1440.png authenticated-desktop-1440.png public-mobile-390.png authenticated-mobile-390.png metadata.json; do
             test -s "frontend/deployment-screenshots/$file"
           done
 
@@ -227,8 +227,8 @@ jobs:
             echo "- Production: $PAGES_URL"
             echo "- Commit: \`$GITHUB_SHA\`"
             echo "- Screenshots: ${ARTIFACT_URL:-not available}"
-            echo '- Primary: authenticated-desktop-1440.png, authenticated-mobile-390.png'
-            echo '- Public: public-desktop-1440.png, public-mobile-390.png'
+            echo '- Primary overview: ui-overview.png'
+            echo '- Source captures: public/authenticated desktop and mobile PNG files'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Pages deployment result
