@@ -4,9 +4,64 @@ import type { MarkdownSource, SubmissionRecovery } from '../types'
 export const MAX_MARKDOWN_BYTES = 10 * 1024 * 1024
 export const MAX_ASSETS_BYTES = 50 * 1024 * 1024
 export const MAX_BATCH_FILES = 20
+const MAX_DOCUMENT_NAME_LENGTH = 120
+
+function cleanDocumentNameCandidate(value: string): string {
+  return value
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[`*_~]/g, '')
+    .replace(/\s+#+\s*$/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_DOCUMENT_NAME_LENGTH)
+}
 
 export function documentNameFromMarkdown(filename: string): string {
-  return filename.replace(/\.md$/i, '').trim() || 'document'
+  return cleanDocumentNameCandidate(filename.replace(/\.md$/i, '')) || 'document'
+}
+
+export function inferMarkdownDocumentName(markdown: string): string {
+  const lines = markdown.replace(/^\uFEFF/, '').split(/\r?\n/)
+  const headings: Array<{ index: number; level: number; title: string }> = []
+  let fence: '`' | '~' | null = null
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]
+    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/)
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0] as '`' | '~'
+      fence = fence === marker ? null : fence || marker
+      continue
+    }
+    if (fence) continue
+
+    const atx = line.match(/^\s{0,3}(#{1,6})[\t ]+(.+?)\s*$/)
+    if (atx) {
+      const title = cleanDocumentNameCandidate(atx[2])
+      if (title) headings.push({ index, level: atx[1].length, title })
+      continue
+    }
+
+    const next = lines[index + 1] || ''
+    const setext = next.match(/^\s{0,3}(=+|-+)\s*$/)
+    const title = cleanDocumentNameCandidate(line)
+    if (title && setext) {
+      headings.push({ index, level: setext[1][0] === '=' ? 1 : 2, title })
+      index += 1
+    }
+  }
+
+  if (headings.length > 0) {
+    const highestLevel = Math.min(...headings.map((heading) => heading.level))
+    return headings.find((heading) => heading.level === highestLevel)?.title || '粘贴的 Markdown'
+  }
+
+  const firstContent = lines
+    .map((line) => cleanDocumentNameCandidate(line))
+    .find((line) => line && line !== '---')
+  return firstContent || '粘贴的 Markdown'
 }
 
 export function markdownFilename(name: string): string {
