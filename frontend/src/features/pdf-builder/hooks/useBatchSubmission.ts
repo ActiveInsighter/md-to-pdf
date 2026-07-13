@@ -87,13 +87,17 @@ export function useBatchSubmission() {
         const latest = await getPdfJob(jobId)
         recovery = getSubmissionRecovery(latest)
         if (!recovery) {
-          update(entry.key, {
-            state: 'submitted',
-            jobId,
-            localProgress: getJobProgress(latest),
-            message: isTerminalJob(latest) ? '服务端任务已结束' : '服务端任务仍在构建',
-          })
-          return
+          if (!isTerminalJob(latest) || latest.status === 'completed') {
+            update(entry.key, {
+              state: 'submitted',
+              jobId,
+              recovery: null,
+              localProgress: getJobProgress(latest),
+              message: latest.status === 'completed' ? '构建已完成' : '服务端任务仍在构建',
+            })
+            return
+          }
+          jobId = null
         }
       }
 
@@ -152,12 +156,15 @@ export function useBatchSubmission() {
           const latest = await getPdfJob(jobId)
           const serverRecovery = getSubmissionRecovery(latest)
           if (!serverRecovery) {
+            const terminalFailure = isTerminalJob(latest) && latest.status !== 'completed'
             update(entry.key, {
-              state: isTerminalJob(latest) && latest.status !== 'completed' ? 'failed' : 'submitted',
-              jobId,
+              state: terminalFailure ? 'failed' : 'submitted',
+              jobId: terminalFailure ? null : jobId,
               recovery: null,
               localProgress: getJobProgress(latest),
-              message: latest.status === 'completed' ? '构建已完成' : latest.error_message || message,
+              message: latest.status === 'completed'
+                ? '构建已完成'
+                : latest.error_message || (terminalFailure ? '服务端任务失败，可创建新任务重试。' : message),
             })
             return
           }
