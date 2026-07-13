@@ -15,7 +15,7 @@
 - 前端只能使用 `VITE_SUPABASE_URL` 与 `VITE_SUPABASE_ANON_KEY`；
 - Auth、RLS、CORS、Storage 路径、任务所有权、状态转换和签名下载必须在服务端执行。
 
-任务成功路径是 `created → uploaded → queued → building → uploading → completed`。失败进入 `failed`；未启动的 `created` / `uploaded` 才能进入真实 `cancelled`；安全终态在保留期后可进入 `expired`。不要用 `failed` 模拟取消，也不要让前端本地状态代替数据库状态。
+任务成功路径是 `created → uploaded → queued → building → uploading → completed`。前端可以在 `created` 阶段先上传私有输入，但只有用户明确点击生成后才能调用 `start-pdf-job` 并进入 `queued`。失败进入 `failed`；未启动的 `created` / `uploaded` 才能进入真实 `cancelled`；安全终态在保留期后可进入 `expired`。不要用 `failed` 模拟取消，也不要让前端本地状态代替数据库状态。
 
 ## 分支与 Pull Request
 
@@ -82,15 +82,15 @@ npm run check:functions
 
 完成本地验证与 PR 审查后：
 
-1. 合并已验证的 PR；
-2. 先应用向后兼容的数据库迁移；
-3. 部署全部受影响的 Edge Functions，共享模块变化时部署全部六个；
-4. 验证 JWT、CORS、所有权、真实 `cancelled`、状态单向推进和唯一 workflow dispatch；
-5. 在 GitHub Actions 手动运行 `Smoke test Supabase PDF service`，观察构建、下载和过期清理；
-6. smoke 通过后，手动运行 `Deploy frontend to Cloudflare Pages` 并验证生产前端；
+1. 前端若依赖新后端能力，先应用向后兼容的数据库迁移；
+2. 部署全部受影响的 Edge Functions，共享模块变化时部署全部六个；
+3. 验证 JWT、CORS、所有权、真实 `cancelled`、状态单向推进和唯一 workflow dispatch；
+4. 在 GitHub Actions 手动运行 `Smoke test Supabase PDF service`，观察构建、下载和过期清理；
+5. 后端验证通过后再合并依赖它的前端 PR；
+6. 合并到 `main` 的前端相关路径会自动触发 `Deploy frontend to Cloudflare Pages`；需要重试时也可手动运行；
 7. 完成后 dry-run 审计已合并临时分支，再执行清理。
 
-两个生产工作流都只允许 `workflow_dispatch`；合并或推送 `main` 不会自动运行。依赖新后端行为的前端使用分阶段 PR：先发布兼容后端并通过手动 smoke，再合并和手动部署前端。生产迁移只做前向修复；不要用 `db reset` 或删除已应用迁移回滚。详细操作见 [Supabase 服务文档](supabase-pdf-service.md) 与 [Pages 部署文档](cloudflare-pages-actions-deploy.md)。
+Supabase smoke 仍只允许 `workflow_dispatch`。Pages 工作流同时支持路径受限的 `main` push 和手动 `workflow_dispatch`：只有 `frontend/**`、UI 截图脚本或 Pages 工作流本身变化时自动发布，纯后端、渲染器和文档改动不会部署前端。生产迁移只做前向修复；不要用 `db reset` 或删除已应用迁移回滚。详细操作见 [Supabase 服务文档](supabase-pdf-service.md) 与 [Pages 部署文档](cloudflare-pages-actions-deploy.md)。
 
 <!-- ci:never-commit-generated-outputs -->
 ## 禁止提交生成物
