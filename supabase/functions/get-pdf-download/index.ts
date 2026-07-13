@@ -8,20 +8,6 @@ type DownloadBody = { jobId?: string; kind?: DownloadKind }
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const EXPIRES_IN = 3600
 
-async function objectExists(
-  bucket: ReturnType<ReturnType<typeof createAdminClient>['storage']['from']>,
-  objectPath: string,
-): Promise<boolean> {
-  const parts = objectPath.split('/')
-  const fileName = parts.pop()
-  const folder = parts.join('/')
-  if (!fileName || !folder) return false
-
-  const { data, error } = await bucket.list(folder, { limit: 20, search: fileName })
-  if (error) throw error
-  return data.some((item) => item.name === fileName && Number(item.metadata?.size || 0) > 0)
-}
-
 Deno.serve(async (req) => {
   const optionsResponse = handleOptions(req)
   if (optionsResponse) return optionsResponse
@@ -47,8 +33,8 @@ Deno.serve(async (req) => {
       job.source_filename || job.source_name || `${job.document_name || 'document'}.md`,
     )
 
-    let objectPath: string | null = null
-    let fileName = 'document.pdf'
+    let objectPath: string
+    let fileName: string
     if (kind === 'source') {
       if (job.status === 'expired' || job.status === 'cancelled' || !job.input_path) {
         return json(req, { error: 'Markdown 源文件已不可用。' }, 409)
@@ -66,8 +52,18 @@ Deno.serve(async (req) => {
         || 'document.pdf'
     }
 
+    const pathParts = objectPath.split('/')
+    const storedFileName = pathParts.pop()
+    const storedFolder = pathParts.join('/')
+    if (!storedFileName || !storedFolder) return json(req, { error: '文件路径无效。' }, 409)
+
     const bucket = admin.storage.from(storageBucket())
-    if (!(await objectExists(bucket, objectPath))) {
+    const { data: objects, error: listError } = await bucket.list(storedFolder, {
+      limit: 20,
+      search: storedFileName,
+    })
+    if (listError) throw listError
+    if (!objects.some((item) => item.name === storedFileName && Number(item.metadata?.size || 0) > 0)) {
       return json(req, { error: kind === 'source' ? 'Markdown 源文件不存在。' : 'PDF 文件不存在。' }, 409)
     }
 
