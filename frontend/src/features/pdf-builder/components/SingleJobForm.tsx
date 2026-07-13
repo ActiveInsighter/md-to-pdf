@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Select } from '@/components/ui/select'
@@ -132,50 +133,100 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
 
   return (
     <>
-      {globalDrop.active && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-6 backdrop-blur-sm"><div className="rounded-xl border border-white/40 bg-white p-8 text-center shadow-2xl"><UploadCloud className="mx-auto h-10 w-10 text-primary" /><strong className="mt-3 block text-lg">松开即可添加文件</strong><p className="mt-1 text-sm text-muted-foreground">支持一个 Markdown 和一个可选 ZIP 资源包</p></div></div>}
-      <Card>
-        <CardHeader><CardTitle>创建 PDF 任务</CardTitle><CardDescription>上传文件或粘贴文本，文件名、任务名和输出 PDF 名称保持一致。</CardDescription></CardHeader>
-        <CardContent>
-          <form className="space-y-6" onSubmit={submit}>
-            {submission.recovery && <Alert variant="warning"><AlertTitle>发现未完成任务</AlertTitle><AlertDescription>{submission.recovery.status === 'uploaded' ? '源文件已经上传，可以直接继续启动构建。' : '页面刷新不会恢复本地 File 对象，请重新选择原 Markdown 和所需 ZIP 后继续。'}</AlertDescription></Alert>}
-            <div className="space-y-2"><label className="text-sm font-medium" htmlFor="document-name">文档名称</label><Input id="document-name" placeholder="例如：操作系统第 5 章" disabled={submission.busy || Boolean(submission.recovery)} {...form.register('documentName')} />{form.formState.errors.documentName && <p className="text-sm text-red-600">{form.formState.errors.documentName.message}</p>}</div>
+      {globalDrop.active && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 p-6 backdrop-blur-sm" role="status" aria-live="polite">
+          <div className="rounded-2xl border border-background/50 bg-card p-8 text-center shadow-2xl sm:p-10">
+            <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-accent text-primary"><UploadCloud className="size-7" /></span>
+            <strong className="mt-4 block text-lg">松开即可添加文件</strong>
+            <p className="mt-1 text-sm text-muted-foreground">支持一个 Markdown 和一个可选 ZIP 资源包</p>
+          </div>
+        </div>
+      )}
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b bg-muted/20">
+          <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary">单文件工作流</span>
+          <CardTitle>创建 PDF 任务</CardTitle>
+          <CardDescription>选择内容、资源与版式，然后将私有输入交给构建服务。</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-5 sm:pt-6">
+          <form className="space-y-7" onSubmit={submit} noValidate>
+            {submission.recovery && (
+              <Alert variant="warning">
+                <AlertTitle>发现未完成任务</AlertTitle>
+                <AlertDescription>{submission.recovery.status === 'uploaded' ? '源文件已经上传，可以直接继续启动构建。' : '页面刷新不会恢复本地文件，请重新选择原 Markdown 和所需 ZIP 后继续。'}</AlertDescription>
+              </Alert>
+            )}
 
-            <Controller control={form.control} name="sourceMode" render={({ field }) => <Tabs value={field.value} onValueChange={(value) => field.onChange(value as BuilderFormValues['sourceMode'])}>
-              <TabsList className="grid w-full grid-cols-2 sm:w-80"><TabsTrigger value="file">上传文件</TabsTrigger><TabsTrigger value="text">粘贴文本</TabsTrigger></TabsList>
-              <TabsContent value="file">
-                <label className="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50/70 p-6 text-center transition hover:border-primary/50 hover:bg-primary/[0.03]">
-                  <input className="sr-only" type="file" accept=".md,text/markdown,text/plain" disabled={submission.busy} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptMarkdown(file) }} />
-                  <FileText className="h-8 w-8 text-primary" /><strong className="mt-3 break-all">{markdownFile ? markdownFile.name : '选择或拖入 Markdown 文件'}</strong><span className="mt-1 text-sm text-muted-foreground">{markdownFile ? formatFileSize(markdownFile.size) : '最大 10 MiB，仅支持 .md'}</span>
-                </label>
-              </TabsContent>
-              <TabsContent value="text" className="space-y-3">
-                <Textarea placeholder="# 标题\n\n在此粘贴 Markdown 内容……" className="min-h-64 font-mono text-sm" disabled={submission.busy} {...form.register('markdownText')} />
-                <Button type="button" variant="outline" onClick={() => void pasteClipboard()} disabled={submission.busy}><ClipboardPaste className="h-4 w-4" />粘贴剪切板</Button>
-                {form.formState.errors.markdownText && <p className="text-sm text-red-600">{form.formState.errors.markdownText.message}</p>}
-              </TabsContent>
-            </Tabs>}/>
+            <Field data-invalid={Boolean(form.formState.errors.documentName)}>
+              <FieldLabel htmlFor="document-name">文档名称</FieldLabel>
+              <Input id="document-name" placeholder="例如：操作系统第 5 章" autoComplete="off" disabled={submission.busy || Boolean(submission.recovery)} aria-invalid={Boolean(form.formState.errors.documentName)} aria-describedby="document-name-description document-name-error" {...form.register('documentName')} />
+              <FieldDescription id="document-name-description">任务名称与输出 PDF 文件名将保持一致。</FieldDescription>
+              <FieldError id="document-name-error">{form.formState.errors.documentName?.message}</FieldError>
+            </Field>
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <label className="flex min-h-28 cursor-pointer items-center gap-4 rounded-lg border border-dashed p-4 hover:bg-muted/40">
-                <input className="sr-only" type="file" accept=".zip,application/zip" disabled={submission.busy} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptAssets(file) }} />
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-secondary"><Archive className="h-5 w-5" /></span>
-                <span className="min-w-0"><strong className="block break-all">{assets?.name || '上传 ZIP 资源包'}</strong><small className="text-muted-foreground">{assets ? formatFileSize(assets.size) : '可选，最大 50 MiB'}</small></span>
-                {assets && <Button type="button" variant="ghost" size="icon" className="ml-auto shrink-0" onClick={(event) => { event.preventDefault(); setAssets(null) }}><X className="h-4 w-4" /></Button>}
-              </label>
-              <div className="space-y-2"><label className="text-sm font-medium" htmlFor="pdf-theme">PDF 主题</label><Select id="pdf-theme" disabled={submission.busy} {...form.register('theme')}>{PDF_THEMES.map((item) => <option key={item.id} value={item.id}>{item.name} — {item.description}</option>)}</Select></div>
+            <Controller control={form.control} name="sourceMode" render={({ field }) => (
+              <Tabs value={field.value} onValueChange={(value) => field.onChange(value as BuilderFormValues['sourceMode'])}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div><h3 className="text-sm font-semibold">文档内容</h3><p className="mt-1 text-sm text-muted-foreground">上传本地文件，或直接粘贴 Markdown。</p></div>
+                  <TabsList className="grid w-full grid-cols-2 sm:w-80"><TabsTrigger value="file">上传文件</TabsTrigger><TabsTrigger value="text">粘贴文本</TabsTrigger></TabsList>
+                </div>
+                <TabsContent value="file">
+                  <label className="group flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 p-6 text-center transition-colors hover:border-primary/50 hover:bg-accent/50 focus-within:border-primary focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                    <input className="sr-only" type="file" accept=".md,text/markdown,text/plain" disabled={submission.busy} aria-describedby="markdown-file-help" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptMarkdown(file) }} />
+                    <span className="flex size-12 items-center justify-center rounded-xl bg-accent text-primary transition-transform group-hover:-translate-y-0.5"><FileText className="size-6" /></span>
+                    <strong className="mt-4 max-w-full break-all">{markdownFile ? markdownFile.name : '选择或拖入 Markdown 文件'}</strong>
+                    <span id="markdown-file-help" className="mt-1 text-sm text-muted-foreground">{markdownFile ? formatFileSize(markdownFile.size) : '仅支持 .md，最大 10 MiB'}</span>
+                  </label>
+                </TabsContent>
+                <TabsContent value="text">
+                  <Field data-invalid={Boolean(form.formState.errors.markdownText)}>
+                    <FieldLabel className="sr-only" htmlFor="markdown-text">Markdown 内容</FieldLabel>
+                    <Textarea id="markdown-text" placeholder="# 标题\n\n在此粘贴 Markdown 内容……" className="min-h-72 resize-y font-mono text-sm leading-6" disabled={submission.busy} aria-invalid={Boolean(form.formState.errors.markdownText)} aria-describedby="markdown-text-error" {...form.register('markdownText')} />
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <FieldError id="markdown-text-error">{form.formState.errors.markdownText?.message}</FieldError>
+                      <Button type="button" variant="outline" className="sm:ml-auto" onClick={() => void pasteClipboard()} disabled={submission.busy}><ClipboardPaste />粘贴剪切板</Button>
+                    </div>
+                  </Field>
+                </TabsContent>
+              </Tabs>
+            )} />
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Field>
+                <FieldLabel>文档资源 <span className="font-normal text-muted-foreground">可选</span></FieldLabel>
+                <div className="flex min-h-28 items-stretch rounded-xl border border-dashed bg-muted/20 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:border-primary/40 hover:bg-accent/40">
+                  <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-4 p-4">
+                    <input className="sr-only" type="file" accept=".zip,application/zip" disabled={submission.busy} aria-describedby="assets-file-help" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptAssets(file) }} />
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary"><Archive className="size-5" /></span>
+                    <span className="min-w-0"><strong className="block break-all">{assets?.name || '选择 ZIP 资源包'}</strong><small id="assets-file-help" className="text-muted-foreground">{assets ? formatFileSize(assets.size) : '图片等相对路径资源，最大 50 MiB'}</small></span>
+                  </label>
+                  {assets && <Button type="button" variant="ghost" size="icon" className="mr-2 self-center" onClick={() => setAssets(null)} aria-label="移除 ZIP 资源包"><X /></Button>}
+                </div>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="pdf-theme">PDF 主题</FieldLabel>
+                <Select id="pdf-theme" disabled={submission.busy} {...form.register('theme')}>{PDF_THEMES.map((item) => <option key={item.id} value={item.id}>{item.name} — {item.description}</option>)}</Select>
+                <FieldDescription>默认使用适合屏幕与打印阅读的 ChatGPT Light。</FieldDescription>
+              </Field>
             </div>
 
-            <div className="grid gap-3 rounded-lg border bg-muted/25 p-4 sm:grid-cols-2">
-              <label className="flex items-center gap-3 text-sm"><Checkbox {...form.register('autoDownload')} />构建完成后自动下载</label>
-              <label className="flex items-center gap-3 text-sm"><Checkbox {...form.register('notifyOnComplete')} /><Bell className="h-4 w-4 text-muted-foreground" />浏览器通知</label>
-            </div>
+            <fieldset className="grid gap-3 rounded-xl border bg-muted/20 p-4 sm:grid-cols-2">
+              <legend className="px-1 text-sm font-semibold">完成后的操作</legend>
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 hover:bg-card"><Checkbox {...form.register('autoDownload')} /><span><strong className="block text-sm">自动下载</strong><small className="text-muted-foreground">此设备首次交付时下载 PDF</small></span></label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 hover:bg-card"><Checkbox {...form.register('notifyOnComplete')} /><Bell className="mt-0.5 size-4 shrink-0 text-muted-foreground" /><span><strong className="block text-sm">浏览器通知</strong><small className="text-muted-foreground">任务完成时发出本地提醒</small></span></label>
+            </fieldset>
 
             {message && <Alert variant="destructive"><AlertDescription>{message}</AlertDescription></Alert>}
-            {submission.state.status !== 'idle' && <div className="space-y-2 rounded-lg border p-4"><div className="flex items-center justify-between text-sm"><span>{getSubmissionLabel(submission.state)}</span><strong>{progress}%</strong></div><Progress value={progress} /></div>}
+            {submission.state.status !== 'idle' && (
+              <div className="space-y-3 rounded-xl border bg-muted/20 p-4" aria-live="polite">
+                <div className="flex items-center justify-between gap-4 text-sm"><span>{getSubmissionLabel(submission.state)}</span><strong className="tabular-nums">{progress}%</strong></div>
+                <Progress value={progress} aria-label="任务提交进度" />
+              </div>
+            )}
 
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" disabled={submission.busy} onClick={() => submission.recovery ? void submission.cancelRecovery() : resetLocal()}><RotateCcw className="h-4 w-4" />{submission.recovery ? '取消恢复任务' : '清空'}</Button>
-              <Button type="submit" size="lg" disabled={submission.busy}>{submission.busy && <LoaderCircle className="h-4 w-4 animate-spin" />}{submission.recovery?.status === 'uploaded' ? '继续启动构建' : '生成 PDF'}</Button>
+            <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" disabled={submission.busy} onClick={() => submission.recovery ? void submission.cancelRecovery() : resetLocal()}><RotateCcw />{submission.recovery ? '取消恢复任务' : '清空'}</Button>
+              <Button type="submit" size="lg" disabled={submission.busy}>{submission.busy && <LoaderCircle className="animate-spin" />}{submission.recovery?.status === 'uploaded' ? '继续启动构建' : '生成 PDF'}</Button>
             </div>
           </form>
         </CardContent>

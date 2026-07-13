@@ -6,5 +6,14 @@ import { AuthProvider } from '@/features/auth/hooks/useAuth'
 import { queryClient } from '@/lib/queryClient'
 
 export function AppProviders({ children }: { children: ReactNode }) {
-  return <QueryClientProvider client={queryClient}><AuthProvider><TooltipProvider delayDuration={300}>{children}<Toaster richColors position="top-right" closeButton /></TooltipProvider></AuthProvider></QueryClientProvider>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider delayDuration={250}>
+          {children}
+          <Toaster richColors position="top-right" closeButton visibleToasts={3} />
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  )
 }

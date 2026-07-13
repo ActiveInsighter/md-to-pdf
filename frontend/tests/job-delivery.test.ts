@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { shouldDeliverJobCompletion } from '../src/features/pdf-jobs/delivery'
+import { runActiveJobDelivery, shouldDeliverJobCompletion } from '../src/features/pdf-jobs/delivery'
 
 const activeStatuses = ['created', 'uploaded', 'queued', 'building', 'uploading'] as const
 
@@ -32,7 +32,39 @@ test('completed refreshes, route changes and terminal transitions do not trigger
     false,
   )
   assert.equal(
+    shouldDeliverJobCompletion({ id: 'job-1', status: 'cancelled' }, { id: 'job-1', status: 'completed' }),
+    false,
+  )
+  assert.equal(
     shouldDeliverJobCompletion({ id: 'job-1', status: 'expired' }, { id: 'job-1', status: 'completed' }),
     false,
   )
+})
+
+test('an inactive delivery suppresses both download commits and error toasts', async () => {
+  let active = true
+  let resolveDownload: ((value: string) => void) | undefined
+  const download = new Promise<string>((resolve) => { resolveDownload = resolve })
+  const committed: string[] = []
+  const rejected: unknown[] = []
+  const pending = runActiveJobDelivery(
+    () => download,
+    (value) => committed.push(value),
+    (error) => rejected.push(error),
+    () => active,
+  )
+
+  active = false
+  resolveDownload?.('signed-url')
+  await pending
+  assert.deepEqual(committed, [])
+  assert.deepEqual(rejected, [])
+
+  await runActiveJobDelivery(
+    async () => { throw new Error('late failure') },
+    (value) => committed.push(value),
+    (error) => rejected.push(error),
+    () => active,
+  )
+  assert.deepEqual(rejected, [])
 })

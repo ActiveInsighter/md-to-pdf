@@ -1,5 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {
+  WORKFLOW_EXPECTED_STATUSES,
+  WORKFLOW_TERMINAL_STATUSES,
+  isIdempotentStatus,
+  postgrestStatusFilter,
+  serviceKeyHeaders,
+} from './lib/supabase-service-request.mjs';
 
 const args = process.argv.slice(2);
 const command = args.shift();
@@ -43,11 +50,7 @@ function encodedObjectPath(filename) {
 }
 
 function headers(extra = {}) {
-  return {
-    apikey: SERVICE_KEY,
-    Authorization: `Bearer ${SERVICE_KEY}`,
-    ...extra,
-  };
+  return serviceKeyHeaders(SERVICE_KEY, extra);
 }
 
 async function parseResponse(response) {
@@ -77,9 +80,10 @@ async function getJob() {
   return rows[0];
 }
 
-async function patchJob(body) {
+async function patchJob(body, { expectedStatuses, idempotentStatuses = [] }) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/pdf_jobs`);
   url.searchParams.set('id', `eq.${JOB_ID}`);
+  url.searchParams.set('status', postgrestStatusFilter(expectedStatuses));
   const response = await fetch(url, {
     method: 'PATCH',
     headers: headers({
@@ -89,6 +93,11 @@ async function patchJob(body) {
     body: JSON.stringify({ ...body, updated_at: new Date().toISOString() }),
   });
   const rows = await parseResponse(response);
+  if (Array.isArray(rows) && rows.length === 1) return rows[0];
+  if (Array.isArray(rows) && rows.length === 0 && idempotentStatuses.length > 0) {
+    const current = await getJob();
+    if (isIdempotentStatus(current.status, idempotentStatuses)) return current;
+  }
   if (!Array.isArray(rows) || rows.length !== 1) throw new Error('PDF job update affected no rows');
   return rows[0];
 }
@@ -160,7 +169,9 @@ async function main() {
         body.progress_percent = 90;
         body.progress_stage = 'uploading-output';
       }
-      await patchJob(body);
+      await patchJob(body, {
+        expectedStatuses: WORKFLOW_EXPECTED_STATUSES[status],
+      });
       break;
     }
     case 'progress': {
@@ -175,7 +186,7 @@ async function main() {
         ...runMetadata(),
       };
       if (config.timestamp) body[config.timestamp] = now;
-      await patchJob(body);
+      await patchJob(body, { expectedStatuses: WORKFLOW_EXPECTED_STATUSES.progress });
       break;
     }
     case 'download-input': {
@@ -202,31 +213,43 @@ async function main() {
       break;
     }
     case 'complete': {
-      await patchJob({
-        status: 'completed',
-        progress_percent: 100,
-        progress_stage: 'completed',
-        output_path: objectPath('output.pdf'),
-        completed_at: new Date().toISOString(),
-        error_message: null,
-        ...runMetadata(),
-      });
+      await patchJob(
+        {
+          status: 'completed',
+          progress_percent: 100,
+          progress_stage: 'completed',
+          output_path: objectPath('output.pdf'),
+          completed_at: new Date().toISOString(),
+          error_message: null,
+          ...runMetadata(),
+        },
+        {
+          expectedStatuses: WORKFLOW_EXPECTED_STATUSES.completed,
+          idempotentStatuses: ['completed'],
+        },
+      );
       break;
     }
     case 'fail': {
       const message = sanitizeMessage(option('--message', 'PDF 构建失败。'));
       const job = await getJob();
-      if (job.status === 'completed' || job.status === 'expired') {
+      if (isIdempotentStatus(job.status, WORKFLOW_TERMINAL_STATUSES)) {
         console.log(`Failure update skipped because job is ${job.status}.`);
         return;
       }
-      await patchJob({
-        status: 'failed',
-        progress_stage: 'failed',
-        error_message: message,
-        completed_at: new Date().toISOString(),
-        ...runMetadata(),
-      });
+      await patchJob(
+        {
+          status: 'failed',
+          progress_stage: 'failed',
+          error_message: message,
+          completed_at: new Date().toISOString(),
+          ...runMetadata(),
+        },
+        {
+          expectedStatuses: WORKFLOW_EXPECTED_STATUSES.failed,
+          idempotentStatuses: WORKFLOW_TERMINAL_STATUSES,
+        },
+      );
       break;
     }
     case 'delete-inputs': {

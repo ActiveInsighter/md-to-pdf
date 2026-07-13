@@ -1,4 +1,4 @@
-import { LogOut, UserRound } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -19,9 +19,26 @@ export function AppHeader() {
     }
   }
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white/95 px-4 backdrop-blur sm:px-6">
-      <div className="flex items-center gap-3"><MobileNavigation /><div><strong className="block text-sm">PDF 工作台</strong><span className="hidden text-xs text-muted-foreground sm:block">可靠地上传、构建和交付文档</span></div></div>
-      <div className="flex items-center gap-2"><div className="hidden sm:block"><RealtimeIndicator /></div><div className="hidden items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground md:flex"><UserRound className="h-4 w-4" /><span className="max-w-48 truncate">{session?.user.email}</span></div><Button variant="ghost" size="icon" onClick={() => void handleSignOut()} aria-label="退出登录"><LogOut className="h-4 w-4" /></Button></div>
+    <header className="sticky top-0 z-40 flex min-h-16 items-center justify-between border-b bg-background/85 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
+      <div className="flex items-center gap-3">
+        <MobileNavigation />
+        <div>
+          <strong className="block text-sm">文档工坊</strong>
+          <span className="hidden text-xs text-muted-foreground sm:block">从源稿到可交付 PDF</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="hidden sm:block"><RealtimeIndicator /></div>
+        <div className="hidden items-center gap-3 rounded-full border bg-card/70 py-1.5 pl-1.5 pr-3 text-sm text-muted-foreground md:flex">
+          <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-primary text-xs font-bold uppercase text-primary-foreground">
+            {session?.user.email?.slice(0, 1) || 'U'}
+          </span>
+          <span className="max-w-48 truncate">{session?.user.email}</span>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => void handleSignOut()} aria-label="退出登录">
+          <LogOut data-icon="inline-start" />
+        </Button>
+      </div>
     </header>
   )
 }

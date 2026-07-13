@@ -25,3 +25,19 @@ export function shouldDeliverJobCompletion(
       && current.status === 'completed',
   )
 }
+
+export async function runActiveJobDelivery<T>(
+  operation: () => Promise<T>,
+  commit: (value: T) => void,
+  reject: (error: unknown) => void,
+  isActive: () => boolean,
+): Promise<void> {
+  try {
+    const value = await operation()
+    if (!isActive()) return
+    commit(value)
+  } catch (error) {
+    if (!isActive()) return
+    reject(error)
+  }
+}

@@ -1,4 +1,6 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY || '';
@@ -8,24 +10,19 @@ const apiBase = process.env.GITHUB_API_URL || 'https://api.github.com';
 const dryRun = process.argv.includes('--dry-run') || process.env.DRY_RUN === 'true';
 const maxPulls = Number(process.env.MAX_PULLS || 100);
 
-if (!token) {
-  throw new Error('GITHUB_TOKEN or GH_TOKEN is required.');
-}
-
-if (!repository || !repository.includes('/')) {
-  throw new Error('GITHUB_REPOSITORY must be owner/repo.');
-}
-
-const protectedBranches = new Set([
+export const PROTECTED_BRANCH_NAMES = Object.freeze([
   'main',
   'master',
   'output',
   'gh-pages'
 ]);
+const protectedBranches = new Set(PROTECTED_BRANCH_NAMES);
 
 const cleanupPatterns = [
+  /^agent\//,
   /^feature\//,
   /^fix\//,
+  /^refactor\//,
   /^style\//,
   /^docs\//,
   /^test\//,
@@ -66,7 +63,7 @@ function encodeBranchRef(branch) {
   return branch.split('/').map(encodeURIComponent).join('/');
 }
 
-function shouldCleanupBranch(branch) {
+export function shouldCleanupBranch(branch) {
   if (!branch || protectedBranches.has(branch)) return false;
   return cleanupPatterns.some((pattern) => pattern.test(branch));
 }
@@ -75,34 +72,68 @@ function describeBranch(branch) {
   return shouldCleanupBranch(branch) ? 'eligible' : 'skipped';
 }
 
-async function branchExists(branch) {
+async function branchHeadSha(branch) {
   const encoded = encodeBranchRef(branch);
   const result = await request('GET', `/repos/${repository}/git/ref/heads/${encoded}`, null, true);
-  return Boolean(result);
+  return typeof result?.object?.sha === 'string' ? result.object.sha : null;
 }
 
-async function deleteBranch(branch, reason) {
+export function decideBranchDeletion({ branch, reason, currentSha, expectedSha, isDryRun }) {
+  if (!currentSha) {
+    return {
+      branch,
+      status: 'missing',
+      reason,
+      shouldDelete: false,
+      auditMessage: `Already gone: ${branch}`,
+    };
+  }
+
+  if (!expectedSha || currentSha !== expectedSha) {
+    return {
+      branch,
+      status: 'changed',
+      reason,
+      shouldDelete: false,
+      auditMessage: `Skipped changed branch: ${branch} (expected ${expectedSha || 'unknown'}, found ${currentSha})`,
+    };
+  }
+
+  if (isDryRun) {
+    return {
+      branch,
+      status: 'dry-run',
+      reason,
+      shouldDelete: false,
+      auditMessage: `[dry-run] Would delete ${branch} (${reason})`,
+    };
+  }
+
+  return {
+    branch,
+    status: 'deleted',
+    reason,
+    shouldDelete: true,
+    auditMessage: `Deleted ${branch} (${reason})`,
+  };
+}
+
+async function deleteBranch(branch, reason, expectedSha) {
   const encoded = encodeBranchRef(branch);
-  const exists = await branchExists(branch);
-  if (!exists) {
-    console.log(`Already gone: ${branch}`);
-    return { branch, status: 'missing', reason };
+  const currentSha = await branchHeadSha(branch);
+  const decision = decideBranchDeletion({ branch, reason, currentSha, expectedSha, isDryRun: dryRun });
+  if (decision.shouldDelete) {
+    await request('DELETE', `/repos/${repository}/git/refs/heads/${encoded}`);
   }
-
-  if (dryRun) {
-    console.log(`[dry-run] Would delete ${branch} (${reason})`);
-    return { branch, status: 'dry-run', reason };
-  }
-
-  await request('DELETE', `/repos/${repository}/git/refs/heads/${encoded}`);
-  console.log(`Deleted ${branch} (${reason})`);
-  return { branch, status: 'deleted', reason };
+  console.log(decision.auditMessage);
+  const { shouldDelete, auditMessage, ...result } = decision;
+  return result;
 }
 
-function branchFromPullRequest(pr) {
+export function branchFromPullRequest(pr, targetRepository = repository) {
   if (!pr?.head?.ref) return null;
   const headRepo = pr.head.repo?.full_name;
-  if (headRepo && headRepo !== repository) return null;
+  if (!headRepo || headRepo !== targetRepository) return null;
   return pr.head.ref;
 }
 
@@ -123,7 +154,7 @@ async function cleanupPullRequest(pr, reasonPrefix = 'merged pull request') {
     return { branch, status: 'skipped', reason: 'not eligible by policy' };
   }
 
-  return deleteBranch(branch, `${reasonPrefix} #${pr.number}`);
+  return deleteBranch(branch, `${reasonPrefix} #${pr.number}`, pr.head.sha);
 }
 
 async function cleanupEventPullRequest() {
@@ -171,6 +202,14 @@ async function cleanupRecentMergedPullRequests() {
 }
 
 async function main() {
+  if (!token) {
+    throw new Error('GITHUB_TOKEN or GH_TOKEN is required.');
+  }
+
+  if (!repository || !repository.includes('/')) {
+    throw new Error('GITHUB_REPOSITORY must be owner/repo.');
+  }
+
   console.log(`Repository: ${repository}`);
   console.log(`Event: ${eventName || 'manual/local'}`);
   console.log(`Dry run: ${dryRun}`);
@@ -188,7 +227,9 @@ async function main() {
   console.log(`Cleanup summary: ${JSON.stringify(summary)}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

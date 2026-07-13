@@ -7,10 +7,12 @@ on:
     paths:
       - '.github/workflows/validate-functions.yml'
       - 'package.json'
+      - 'package-lock.json'
       - 'frontend/src/features/pdf-jobs/types.ts'
       - 'frontend/src/features/pdf-jobs/status.ts'
+      - 'supabase/config.toml'
       - 'supabase/functions/**'
-      - 'supabase/migrations/20260711123000_create_pdf_jobs.sql'
+      - 'supabase/migrations/**'
   workflow_dispatch:
 
 permissions:
@@ -36,8 +38,16 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install locked validation tools
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm ci --no-audit --no-fund
+
       - name: Test shared Edge Function modules
         run: npm run test:functions
+
+      - name: Type-check every Edge Function
+        run: npm run check:functions
 
       - name: Validate shared function wiring
         shell: bash
@@ -53,16 +63,28 @@ jobs:
           fi
 
           functions=(
-            create-pdf-job
-            start-pdf-job
             cancel-pdf-job
+            create-pdf-job
+            favorite-pdf-job
             get-pdf-download
+            rebuild-pdf-job
+            start-pdf-job
           )
+
+          declared_functions="$(printf '%s\n' "${functions[@]}" | sort)"
+          discovered_functions="$(find supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name '_shared' -printf '%f\n' | sort)"
+          if [[ "$declared_functions" != "$discovered_functions" ]]; then
+            echo 'validate-functions.yml must cover every Edge Function directory.'
+            diff <(printf '%s\n' "$declared_functions") <(printf '%s\n' "$discovered_functions") || true
+            exit 1
+          fi
 
           for function_name in "${functions[@]}"; do
             file="supabase/functions/${function_name}/index.ts"
+            test -s "$file"
             grep -q "handleOptions(req)" "$file"
             grep -q "json(req," "$file"
+            grep -Fq "[functions.${function_name}]" supabase/config.toml
           done
 
           grep -q 'isStartIdempotentPdfJobStatus' supabase/functions/start-pdf-job/index.ts

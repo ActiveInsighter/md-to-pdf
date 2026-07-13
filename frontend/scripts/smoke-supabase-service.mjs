@@ -135,7 +135,7 @@ async function verifyCancellation(jobId) {
   if (cancelError) throw new Error(await functionErrorMessage('cancel-pdf-job', cancelError))
 
   assert(cancelled?.cancelled === true, 'cancel-pdf-job did not confirm cancellation')
-  assert(cancelled?.status === 'failed', 'cancel-pdf-job returned an unexpected status')
+  assert(cancelled?.status === 'cancelled', 'cancel-pdf-job returned an unexpected status')
   assert(cancelled?.idempotent === false, 'first cancellation was unexpectedly idempotent')
   assert(cancelled?.cleanupPending === false, 'cancel-pdf-job did not remove pending Storage objects')
 
@@ -146,8 +146,8 @@ async function verifyCancellation(jobId) {
     .single()
   if (rowError) throw rowError
 
-  assert(row.status === 'failed', 'cancelled job row is not terminal')
-  assert(row.error_message === '用户已取消未启动任务。', 'cancelled job row has an unexpected error summary')
+  assert(row.status === 'cancelled', 'cancelled job row is not terminal')
+  assert(row.error_message === null, 'cancelled job row should not be represented as a failure')
   assert(row.input_path === null && row.assets_path === null, 'cancelled job retained input paths after cleanup')
   assert(Boolean(row.completed_at), 'cancelled job has no completion timestamp')
 

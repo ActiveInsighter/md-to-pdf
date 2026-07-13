@@ -104,20 +104,34 @@ test('rejects job permission shorthand that can hide broad access', () => {
   assert.ok(errors.some((error) => error.includes('explicit map or {}')))
 })
 
-test('only the publishing workflow may retain checkout credentials', () => {
-  assert.ok(
-    validateWorkflowText(
-      workflow({ persist: 'true' }),
-      '.github/workflows/test.yml',
-    ).some((error) => error.includes('may only persist')),
+test('rejects persisted checkout credentials in every workflow', () => {
+  const errors = validateWorkflowText(
+    workflow({ permissions: '  contents: write', persist: 'true' }),
+    '.github/workflows/cleanup-branches.yml',
   )
-  assert.deepEqual(
-    validateWorkflowText(
-      workflow({ permissions: '  contents: write', persist: 'true' }),
-      '.github/workflows/build-pdf.yml',
-    ),
-    [],
+  assert.ok(errors.some((error) => error.includes('must not persist')))
+})
+
+test('rejects retired repository-backed PDF workflow architecture', () => {
+  const retiredPathErrors = validateWorkflowText(
+    workflow(),
+    '.github/workflows/build-pdf.yml',
   )
+  assert.ok(retiredPathErrors.some((error) => error.includes('retired repository-backed PDF workflow')))
+
+  const inboxQueue = workflow().replace(
+    '      - name: Checkout',
+    '      - name: Consume processed inbox jobs\n        run: node consume.mjs inbox/jobs\n      - name: Checkout',
+  )
+  const inboxErrors = validateWorkflowText(inboxQueue, '.github/workflows/test.yml')
+  assert.ok(inboxErrors.some((error) => error.includes('retired repository inbox queue')))
+
+  const outputPublisher = workflow().replace(
+    '      - name: Checkout',
+    '      - name: Publish output branch\n        run: git push origin HEAD:refs/heads/output\n      - name: Checkout',
+  )
+  const outputErrors = validateWorkflowText(outputPublisher, '.github/workflows/test.yml')
+  assert.ok(outputErrors.some((error) => error.includes('retired output branch publishing')))
 })
 
 test('discovers every yml and yaml workflow recursively', async () => {

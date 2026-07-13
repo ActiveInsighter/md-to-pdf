@@ -13,17 +13,24 @@ function job(status: PdfJob['status'], patch: Partial<PdfJob> = {}): PdfJob {
   }
 }
 
-test('legacy backend statuses map to the unified UI model', () => {
-  assert.equal(getJobDisplayStatus(job('uploaded')), 'uploading')
+test('server statuses map to distinct UI lifecycle stages', () => {
+  assert.equal(getJobDisplayStatus(job('uploaded')), 'uploaded')
   assert.equal(getJobDisplayStatus(job('building')), 'running')
+  assert.equal(getJobDisplayStatus(job('uploading')), 'uploading')
+  assert.equal(getJobDisplayStatus(job('cancelled')), 'cancelled')
+  assert.equal(getJobStatusLabel(job('uploaded')), '已上传')
+  assert.equal(getJobStatusLabel(job('uploading')), '上传 PDF 中')
+  assert.equal(getJobStatusLabel(job('cancelled')), '已取消')
   assert.equal(getJobStatusLabel(job('completed')), '已完成')
 })
 
 test('status capabilities are centralized', () => {
   assert.equal(canCancelJob(job('created')), true)
+  assert.equal(canCancelJob(job('uploaded')), true)
   assert.equal(canCancelJob(job('queued')), false)
   assert.equal(canDownloadJob(job('completed')), true)
   assert.equal(canDownloadJob(job('expired')), false)
   assert.equal(isTerminalJob(job('failed')), true)
+  assert.equal(isTerminalJob(job('cancelled')), true)
   assert.equal(getJobProgress(job('building', { progress_percent: 73 })), 73)
 })

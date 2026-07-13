@@ -2,6 +2,7 @@ import { FileText, MoreHorizontal } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime } from '@/lib/utils'
@@ -10,14 +11,15 @@ import { JobStatusBadge } from './JobStatusBadge'
 import { JobProgress } from './JobProgress'
 
 export function JobList({ jobs, loading, emptyMessage = '暂无任务。' }: { jobs: PdfJob[]; loading?: boolean; emptyMessage?: string }) {
-  if (loading) return <div className="space-y-3">{Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-20 w-full" />)}</div>
-  if (jobs.length === 0) return <Card><CardContent className="flex min-h-40 flex-col items-center justify-center gap-3 text-center text-muted-foreground"><FileText className="h-8 w-8" /><p>{emptyMessage}</p></CardContent></Card>
+  if (loading) return <div className="space-y-3" role="status"><span className="sr-only">正在加载任务</span>{Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-20 w-full" />)}</div>
+  if (jobs.length === 0) return <Empty><EmptyMedia><FileText /></EmptyMedia><div><EmptyTitle>暂时没有任务</EmptyTitle><EmptyDescription className="mt-1">{emptyMessage}</EmptyDescription></div></Empty>
 
   return (
     <>
       <div className="hidden md:block">
         <Card className="overflow-hidden">
-          <Table>
+          <Table aria-label="PDF 任务列表">
+            <caption className="sr-only">PDF 任务、当前状态、构建进度与更新时间</caption>
             <TableHeader><TableRow><TableHead>任务</TableHead><TableHead>状态</TableHead><TableHead className="min-w-72">进度与耗时</TableHead><TableHead>任务时间</TableHead><TableHead className="w-16" /></TableRow></TableHeader>
             <TableBody>{jobs.map((job) => <TableRow key={job.id}>
               <TableCell><Link to={`/jobs/${job.id}`} className="block max-w-72"><strong className="block truncate font-medium">{job.document_name}</strong><span className="block truncate text-xs text-muted-foreground">{job.source_filename}</span></Link></TableCell>

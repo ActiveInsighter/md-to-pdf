@@ -14,6 +14,11 @@ import {
   isTerminalJob,
 } from '../src/features/pdf-jobs/status.ts'
 import { formatFileSize } from '../src/lib/utils.ts'
+import {
+  FALLBACK_POLL_INTERVAL_MS,
+  HEALTHY_REALTIME_POLL_INTERVAL_MS,
+  getPdfJobPollInterval,
+} from '../src/utils/realtimePolling.ts'
 
 function file(name, size) {
   return { name, size }
@@ -58,11 +63,14 @@ test('File sizes are formatted consistently at unit boundaries', () => {
 })
 
 test('Backend statuses map to the unified task display model', () => {
-  assert.equal(getJobDisplayStatus(job('uploaded')), 'uploading')
+  assert.equal(getJobDisplayStatus(job('uploaded')), 'uploaded')
   assert.equal(getJobDisplayStatus(job('building')), 'running')
-  assert.equal(getJobDisplayStatus(job('failed', { error_message: 'Task cancelled by user' })), 'cancelled')
+  assert.equal(getJobDisplayStatus(job('uploading')), 'uploading')
+  assert.equal(getJobDisplayStatus(job('failed', { error_message: 'Task cancelled by user' })), 'failed')
+  assert.equal(getJobDisplayStatus(job('cancelled')), 'cancelled')
   assert.equal(getJobStatusLabel(job('completed')), '已完成')
   assert.equal(isTerminalJob(job('failed')), true)
+  assert.equal(isTerminalJob(job('cancelled')), true)
   assert.equal(isTerminalJob(job('queued')), false)
 })
 
@@ -86,9 +94,11 @@ test('Submission recovery only accepts reusable jobs with valid storage paths', 
 test('Realtime health keeps polling fallback and terminal stop rules in Query hooks', async () => {
   const detailHook = await readFile(new URL('../src/features/pdf-jobs/hooks/usePdfJob.ts', import.meta.url), 'utf8')
   const listHook = await readFile(new URL('../src/features/pdf-jobs/hooks/usePdfJobs.ts', import.meta.url), 'utf8')
-  assert.match(detailHook, /realtimeConnection === 'connected' \? 30_000 : 4_000/)
+  assert.equal(getPdfJobPollInterval('connected'), HEALTHY_REALTIME_POLL_INTERVAL_MS)
+  assert.equal(getPdfJobPollInterval('disconnected'), FALLBACK_POLL_INTERVAL_MS)
+  assert.match(detailHook, /getPdfJobPollInterval\(realtimeConnection\)/)
   assert.match(detailHook, /isTerminalJob\(job\)/)
-  assert.match(listHook, /realtimeConnection === 'connected' \? 30_000 : 5_000/)
+  assert.match(listHook, /getPdfJobPollInterval\(realtimeConnection\)/)
 })
 
 test('Pending job cancellation keeps user scoping and JWT protection', async () => {

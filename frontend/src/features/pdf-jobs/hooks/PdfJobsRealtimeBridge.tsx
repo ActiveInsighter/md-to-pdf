@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
 import type { PdfJob } from '../types'
-import { mergeJobIntoCache } from './cache'
+import { mergeJobIntoCache, removeJobFromCache } from './cache'
 
 export function PdfJobsRealtimeBridge({ children }: { children: ReactNode }) {
   const { session } = useAuth()
@@ -23,7 +23,14 @@ export function PdfJobsRealtimeBridge({ children }: { children: ReactNode }) {
     const channel = supabase
       .channel(`pdf-jobs-user-${userId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pdf_jobs', filter: `user_id=eq.${userId}` }, (payload) => {
-        if (!active || !payload.new || !('id' in payload.new)) return
+        if (!active) return
+        if (payload.eventType === 'DELETE') {
+          if (payload.old && 'id' in payload.old && typeof payload.old.id === 'string') {
+            removeJobFromCache(queryClient, userId, payload.old.id)
+          }
+          return
+        }
+        if (!payload.new || !('id' in payload.new)) return
         mergeJobIntoCache(queryClient, payload.new as PdfJob)
       })
       .subscribe((status) => {

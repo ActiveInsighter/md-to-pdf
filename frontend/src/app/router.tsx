@@ -1,22 +1,50 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { ProtectedLayout } from '@/components/layout/ProtectedLayout'
-import { JobDetailPage } from '@/routes/JobDetailPage'
-import { JobsPage } from '@/routes/JobsPage'
-import { LoginPage } from '@/routes/LoginPage'
 import { NotFoundPage } from '@/routes/NotFoundPage'
-import { SettingsPage } from '@/routes/SettingsPage'
-import { WorkspacePage } from '@/routes/WorkspacePage'
+import { RouteErrorPage } from '@/routes/RouteErrorPage'
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  {
+    path: '/login',
+    lazy: async () => {
+      const { LoginPage } = await import('@/routes/LoginPage')
+      return { Component: LoginPage }
+    },
+    errorElement: <RouteErrorPage />,
+  },
   {
     element: <ProtectedLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/', element: <Navigate to="/workspace" replace /> },
-      { path: '/workspace', element: <WorkspacePage /> },
-      { path: '/jobs', element: <JobsPage /> },
-      { path: '/jobs/:jobId', element: <JobDetailPage /> },
-      { path: '/settings', element: <SettingsPage /> },
+      {
+        path: '/workspace',
+        lazy: async () => {
+          const { WorkspacePage } = await import('@/routes/WorkspacePage')
+          return { Component: WorkspacePage }
+        },
+      },
+      {
+        path: '/jobs',
+        lazy: async () => {
+          const { JobsPage } = await import('@/routes/JobsPage')
+          return { Component: JobsPage }
+        },
+      },
+      {
+        path: '/jobs/:jobId',
+        lazy: async () => {
+          const { JobDetailPage } = await import('@/routes/JobDetailPage')
+          return { Component: JobDetailPage }
+        },
+      },
+      {
+        path: '/settings',
+        lazy: async () => {
+          const { SettingsPage } = await import('@/routes/SettingsPage')
+          return { Component: SettingsPage }
+        },
+      },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

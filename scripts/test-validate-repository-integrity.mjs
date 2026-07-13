@@ -73,6 +73,20 @@ test('reports missing required repository paths', async () => {
   })
 })
 
+test('rejects repository runtime state files', async () => {
+  await withFixture(async (root) => {
+    await mkdir(path.join(root, '.github'), { recursive: true })
+    await writeFile(path.join(root, '.github', 'latest-run-attempt.txt'), '1\n')
+
+    const errors = await validateRepositoryIntegrity({
+      root,
+      requiredPaths: REQUIRED_PATHS,
+      markdownRoots: ['README.md', 'docs'],
+    })
+    assert.ok(errors.includes('Forbidden repository runtime state path: .github/latest-run-attempt.txt'))
+  })
+})
+
 test('reports broken links from README and nested docs', async () => {
   await withFixture(async (root) => {
     await writeFile(path.join(root, 'README.md'), '[Missing](docs/missing.md)\n')

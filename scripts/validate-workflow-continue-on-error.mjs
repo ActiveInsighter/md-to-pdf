@@ -8,20 +8,9 @@ const ALLOWED_STEPS = new Map([
   [
     '.github/workflows/build-pdf-api.yml',
     new Map([
-      ['Delete source objects after success', { kind: 'best-effort' }],
-      ['Upload one-day debug artifact', { kind: 'best-effort', condition: 'always()' }],
-      ['Mark failed', { kind: 'best-effort', condition: 'failure()' }],
-    ]),
-  ],
-  [
-    '.github/workflows/build-pdf.yml',
-    new Map([
-      ['Commit run start', { kind: 'best-effort' }],
-      ['Build PDF queue', { kind: 'transaction', id: 'build_pdf', outcomeEnv: 'BUILD_OUTCOME' }],
-      ['Upload PDF artifact', { kind: 'transaction', id: 'upload_artifact', outcomeEnv: 'ARTIFACT_OUTCOME' }],
-      ['Publish output branch', { kind: 'transaction', id: 'publish_output', outcomeEnv: 'PUBLISH_OUTCOME' }],
-      ['Consume processed inbox jobs', { kind: 'transaction', id: 'consume_queue', outcomeEnv: 'CONSUME_OUTCOME' }],
-      ['Commit run finish', { kind: 'best-effort', condition: 'always()' }],
+      ['Delete source objects after success', {}],
+      ['Upload one-day debug artifact', { condition: 'always()' }],
+      ['Mark failed', { condition: 'failure()' }],
     ]),
   ],
 ])
@@ -108,57 +97,12 @@ function collectSteps(lines) {
   return steps
 }
 
-function entriesFromStep(step, property) {
-  const stepLines = step.text.split(/\r?\n/)
-  return propertyEntries(stepLines, 0, stepLines.length, step.propertyIndent, property)
-}
-
-function validateFailureGate(steps, policies, relativePath, errors) {
-  const transactionPolicies = policies.filter(({ policy }) => policy.kind === 'transaction')
-  if (transactionPolicies.length === 0) return
-
-  const gates = steps.filter((step) => step.name === 'Fail if transaction failed')
-  if (gates.length !== 1) {
-    errors.push(`${relativePath}: transactional continue-on-error steps require exactly one Fail if transaction failed step`)
-    return
-  }
-
-  const gate = gates[0]
-  const conditions = entriesFromStep(gate, 'if')
-  if (conditions.length !== 1 || conditions[0].value !== 'always()') {
-    errors.push(`${relativePath}:${gate.start + 1}: final transaction failure gate must use if: always()`)
-  }
-  if (/^\s*continue-on-error:/m.test(gate.text)) {
-    errors.push(`${relativePath}:${gate.start + 1}: final transaction failure gate must not use continue-on-error`)
-  }
-
-  for (const { step, policy } of transactionPolicies) {
-    const ids = entriesFromStep(step, 'id')
-    if (ids.length !== 1 || ids[0].value !== policy.id) {
-      errors.push(`${relativePath}:${step.start + 1}: ${step.name} must keep id: ${policy.id} for final outcome propagation`)
-    }
-
-    const outcomeBinding = `${policy.outcomeEnv}: \${{ steps.${policy.id}.outcome }}`
-    if (!gate.text.includes(outcomeBinding)) {
-      errors.push(`${relativePath}:${gate.start + 1}: final failure gate must bind ${outcomeBinding}`)
-    }
-    if (!gate.text.includes(`$${policy.outcomeEnv}`)) {
-      errors.push(`${relativePath}:${gate.start + 1}: final failure gate must inspect $${policy.outcomeEnv}`)
-    }
-  }
-
-  if (!gate.text.includes('exit 1')) {
-    errors.push(`${relativePath}:${gate.start + 1}: final transaction failure gate must exit non-zero on failure`)
-  }
-}
-
 export function validateContinueOnError(source, relativePath) {
   const normalizedPath = workflowPath(relativePath)
   const lines = source.split(/\r?\n/)
   const steps = collectSteps(lines)
   const allowed = ALLOWED_STEPS.get(normalizedPath) ?? new Map()
   const errors = []
-  const transactionPolicies = []
   const scopedLines = new Set()
 
   for (const step of steps) {
@@ -195,7 +139,6 @@ export function validateContinueOnError(source, relativePath) {
       }
     }
 
-    if (policy.kind === 'transaction') transactionPolicies.push({ step, policy })
   }
 
   lines.forEach((line, index) => {
@@ -204,7 +147,6 @@ export function validateContinueOnError(source, relativePath) {
     }
   })
 
-  validateFailureGate(steps, transactionPolicies, normalizedPath, errors)
   return errors
 }
 
