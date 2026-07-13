@@ -70,6 +70,7 @@ jobs:
         run: npm run validate:generated-files
 
       - name: Validate contributor documentation
+        shell: bash
         run: |
           set -euo pipefail
           test -s AGENTS.md
@@ -143,12 +144,14 @@ jobs:
             frontend/src/components/PdfUpload.tsx
             frontend/src/components/PdfJobHistory.tsx
             frontend/src/components/PdfJobStatus.tsx
+            frontend/src/components/FileDropField.tsx
             frontend/src/api/pdfJobs.ts
             frontend/src/types/pdfJob.ts
             frontend/src/types/upload.ts
             frontend/src/utils/pdfThemes.ts
             frontend/src/utils/submissionRecovery.ts
             frontend/src/utils/uploadFiles.ts
+            frontend/src/utils/markdownSource.ts
             frontend/src/utils/pdfJobStatus.ts
             frontend/src/utils/pdfJobUpdates.ts
           )
