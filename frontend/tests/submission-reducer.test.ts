@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { initialSubmissionState, submissionReducer, getSubmissionProgress } from '../src/features/pdf-builder/submissionReducer'
+import { initialSubmissionState, submissionReducer, getSubmissionProgress, getSubmissionLabel } from '../src/features/pdf-builder/submissionReducer'
 
 test('submission reducer separates source preparation from build submission', () => {
   const creating = submissionReducer(initialSubmissionState, { type: 'CREATING' })
@@ -11,6 +11,7 @@ test('submission reducer separates source preparation from build submission', ()
   assert.equal(getSubmissionProgress(assets), 70)
   const prepared = submissionReducer(assets, { type: 'PREPARED', jobId: 'job-1' })
   assert.deepEqual(prepared, { status: 'prepared', jobId: 'job-1', progress: 100 })
+  assert.equal(getSubmissionLabel(prepared), '文件已上传，等待生成 PDF')
   const starting = submissionReducer(prepared, { type: 'STARTING', jobId: 'job-1' })
   const submitted = submissionReducer(starting, { type: 'SUBMITTED', jobId: 'job-1' })
   assert.deepEqual(submitted, { status: 'submitted', jobId: 'job-1' })
