@@ -4,6 +4,7 @@ import { pdfJobKeys } from '../queryKeys'
 import { getJobDisplayStatus, isTerminalJob } from '../status'
 import type { JobFilters, PdfJob } from '../types'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { mergePdfJobHistory } from './cache'
 
 export function filterPdfJobs(jobs: PdfJob[], filters: JobFilters): PdfJob[] {
   const search = filters.search?.trim().toLowerCase() || ''
@@ -24,6 +25,7 @@ export function usePdfJobs(filters: JobFilters = { status: 'all', search: '' }) 
   return useQuery({
     queryKey: pdfJobKeys.list(filters),
     queryFn: listPdfJobs,
+    structuralSharing: (oldData, newData) => mergePdfJobHistory(oldData, newData),
     select: (jobs) => filterPdfJobs(jobs, filters),
     refetchInterval: (query) => {
       const jobs = query.state.data
