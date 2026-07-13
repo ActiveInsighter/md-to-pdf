@@ -87,6 +87,15 @@ jobs:
           grep -Fq 'AUTHENTICATED_WORKSPACE_SELECTOR' scripts/capture-deployed-ui.mjs
           grep -Fq '[data-ui-capture="authenticated-workspace"]' scripts/capture-deployed-ui.mjs
 
+      - name: Validate staged upload contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'async function prepare' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          grep -Fq 'async function submit' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          grep -Fq '粘贴剪切板并上传' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
+          grep -Fq '文件已上传，等待生成 PDF' frontend/src/features/pdf-builder/submissionReducer.ts
+
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci --prefer-offline --no-audit --no-fund
