@@ -37,13 +37,13 @@ jobs:
       - name: Test workflow security validators
         shell: bash
         run: |
-          set -o pipefail
+          set -euo pipefail
           npm run test:workflows 2>&1 | tee workflow-tests.log
 
       - name: Validate every workflow
         shell: bash
         run: |
-          set -o pipefail
+          set -euo pipefail
           npm run validate:workflows 2>&1 | tee workflow-validation.log
 
       - name: Upload workflow validation diagnostics
