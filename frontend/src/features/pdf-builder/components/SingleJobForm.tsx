@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { Archive, Bell, ClipboardPaste, FileText, LoaderCircle, RotateCcw, UploadCloud, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,7 +70,6 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
   }, [])
 
   const globalDrop = useGlobalUploadDrop({ disabled: submission.busy, onMarkdown: acceptMarkdown, onAssets: acceptAssets })
-  const sourceMode = form.watch('sourceMode')
 
   const submit = form.handleSubmit(async (values) => {
     setFileError('')
@@ -77,9 +77,26 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
       setFileError('请选择 Markdown 文件。')
       return
     }
+
+    let notificationsEnabled = values.notifyOnComplete
+    if (notificationsEnabled) {
+      if (!('Notification' in window)) {
+        notificationsEnabled = false
+        toast.warning('当前浏览器不支持通知，构建完成后仍可手动查看和下载。')
+      } else if (Notification.permission === 'default') {
+        notificationsEnabled = (await Notification.requestPermission()) === 'granted'
+        if (!notificationsEnabled) toast.warning('浏览器通知未获授权，已关闭本次通知选项。')
+      } else if (Notification.permission === 'denied') {
+        notificationsEnabled = false
+        toast.warning('浏览器已拒绝通知权限，请在浏览器设置中重新授权。')
+      }
+    }
+
     setTheme(values.theme as typeof theme)
     setAutoDownload(values.autoDownload)
-    setNotifyOnComplete(values.notifyOnComplete)
+    setNotifyOnComplete(notificationsEnabled)
+    form.setValue('notifyOnComplete', notificationsEnabled)
+
     await submission.submit({
       source: values.sourceMode === 'file'
         ? markdownFile ? { kind: 'file', file: markdownFile } : null
@@ -128,7 +145,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
               <TabsContent value="file">
                 <label className="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50/70 p-6 text-center transition hover:border-primary/50 hover:bg-primary/[0.03]">
                   <input className="sr-only" type="file" accept=".md,text/markdown,text/plain" disabled={submission.busy} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptMarkdown(file) }} />
-                  <FileText className="h-8 w-8 text-primary" /><strong className="mt-3">{markdownFile ? markdownFile.name : '选择或拖入 Markdown 文件'}</strong><span className="mt-1 text-sm text-muted-foreground">{markdownFile ? formatFileSize(markdownFile.size) : '最大 10 MiB，仅支持 .md'}</span>
+                  <FileText className="h-8 w-8 text-primary" /><strong className="mt-3 break-all">{markdownFile ? markdownFile.name : '选择或拖入 Markdown 文件'}</strong><span className="mt-1 text-sm text-muted-foreground">{markdownFile ? formatFileSize(markdownFile.size) : '最大 10 MiB，仅支持 .md'}</span>
                 </label>
               </TabsContent>
               <TabsContent value="text" className="space-y-3">
