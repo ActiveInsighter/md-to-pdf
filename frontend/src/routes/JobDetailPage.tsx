@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { JobActions } from '@/features/pdf-jobs/components/JobActions'
 import { JobProgress } from '@/features/pdf-jobs/components/JobProgress'
 import { JobStatusBadge } from '@/features/pdf-jobs/components/JobStatusBadge'
+import { JobTimeline } from '@/features/pdf-jobs/components/JobTimeline'
 import { usePdfJob } from '@/features/pdf-jobs/hooks/usePdfJob'
 import { useJobDelivery } from '@/features/pdf-jobs/hooks/useJobDelivery'
 import { canCancelJob } from '@/features/pdf-jobs/status'
@@ -35,8 +36,9 @@ export function JobDetailPage() {
       {canCancelJob(item) && <Alert variant="warning"><AlertTitle>未启动任务恢复</AlertTitle><AlertDescription>服务端保留了任务上下文，但浏览器无法恢复尚未上传的本地 File 对象。继续前请重新选择源文件。</AlertDescription><Button className="mt-3" onClick={() => { setSelectedJobId(item.id); navigate('/workspace') }}>返回工作台恢复</Button></Alert>}
 
       <Card><CardHeader><CardTitle>构建进度</CardTitle></CardHeader><CardContent className="space-y-5"><JobProgress job={item} /><JobActions job={item} /></CardContent></Card>
+      <Card><CardHeader><CardTitle>任务时间线</CardTitle></CardHeader><CardContent><JobTimeline job={item} /></CardContent></Card>
       <Card><CardHeader><CardTitle>任务详情</CardTitle></CardHeader><CardContent className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">{[
-        ['任务 ID', item.id], ['PDF 文件名', item.output_filename || `${item.document_name}.pdf`], ['主题', item.theme], ['创建时间', formatDateTime(item.created_at)], ['开始时间', formatDateTime(item.started_at)], ['完成时间', formatDateTime(item.completed_at)], ['过期时间', formatDateTime(item.expires_at)], ['尝试次数', String(item.attempt_count || 1)], ['资源包', item.has_assets ? '已包含' : '无'],
+        ['任务 ID', item.id], ['PDF 文件名', item.output_filename || `${item.document_name}.pdf`], ['主题', item.theme], ['创建时间', formatDateTime(item.created_at)], ['最近更新时间', formatDateTime(item.updated_at)], ['过期时间', formatDateTime(item.expires_at)], ['尝试次数', String(item.attempt_count || 1)], ['资源包', item.has_assets ? '已包含' : '无'],
       ].map(([label, value]) => <div key={label} className="min-w-0"><span className="block text-xs text-muted-foreground">{label}</span><strong className="mt-1 block break-all font-medium">{value}</strong></div>)}{item.github_run_url && <div><span className="block text-xs text-muted-foreground">GitHub Actions</span><a className="mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline" href={item.github_run_url} target="_blank" rel="noreferrer">Run {item.github_run_id}<ExternalLink className="h-3.5 w-3.5" /></a></div>}</CardContent></Card>
       <Separator />
     </PageContainer>
