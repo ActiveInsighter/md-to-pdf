@@ -71,3 +71,5 @@ jobs:
           git add -A
           git commit -m 'refactor: modernize frontend architecture and workspace'
           git push origin HEAD:agent/frontend-architecture-refactor
+
+# Triggered after the workflow was present on the branch.
