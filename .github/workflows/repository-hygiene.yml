@@ -97,15 +97,20 @@ jobs:
           grep -Fq 'getJobFlowSteps' frontend/src/features/pdf-jobs/components/JobProgress.tsx
           grep -Fq 'formatElapsedClock' frontend/src/features/pdf-jobs/components/JobProgress.tsx
           ! grep -Fq 'JobTimeline' frontend/src/routes/JobDetailPage.tsx
+          grep -Fq 'showProgress={false}' frontend/src/routes/WorkspacePage.tsx
 
-      - name: Validate staged upload contract
+      - name: Validate staged upload and source retention contract
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq 'async function prepare' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
           grep -Fq 'async function submit' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
-          grep -Fq '粘贴剪切板并上传' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
+          grep -Fq '粘贴剪切板' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
           grep -Fq '文件已上传，等待生成 PDF' frontend/src/features/pdf-builder/submissionReducer.ts
+          grep -Fq "kind === 'source'" supabase/functions/get-pdf-download/index.ts
+          grep -Fq 'ALLOWED_THEMES' supabase/functions/rebuild-pdf-job/index.ts
+          grep -Fq '用源稿重新构建' frontend/src/features/pdf-jobs/components/JobActions.tsx
+          ! grep -Fq '完成后的操作' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
 
       - name: Install frontend dependencies
         working-directory: frontend
