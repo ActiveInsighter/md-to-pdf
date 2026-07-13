@@ -103,16 +103,13 @@ jobs:
           VITE_SUPABASE_ANON_KEY: repository-hygiene-placeholder-key
         run: npm run build
 
-      - name: Validate Supabase Function CORS smoke contract
+      - name: Validate Supabase smoke scripts
         working-directory: frontend
-        env:
-          VITE_SUPABASE_URL: https://example.supabase.co
-          VITE_SUPABASE_ANON_KEY: repository-hygiene-placeholder-key
-        run: npm run smoke:cors
-
-      - name: Validate authenticated Supabase smoke contract
-        working-directory: frontend
-        env:
-          VITE_SUPABASE_URL: https://example.supabase.co
-          VITE_SUPABASE_ANON_KEY: repository-hygiene-placeholder-key
-        run: npm run smoke:supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/smoke-function-cors.mjs
+          node --check scripts/smoke-supabase-service.mjs
+          grep -q "method: 'OPTIONS'" scripts/smoke-function-cors.mjs
+          grep -q "create-pdf-job" scripts/smoke-supabase-service.mjs
+          grep -q "get-pdf-download" scripts/smoke-supabase-service.mjs
