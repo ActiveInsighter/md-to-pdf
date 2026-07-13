@@ -88,12 +88,11 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
   async function prepare(input: SubmissionInput): Promise<SubmissionRecovery | null> {
     if (operationRef.current) return recoveryRef.current
     operationRef.current = true
-    let targetJobId = recoveryRef.current?.jobId
+    const initialJobId = recoveryRef.current?.jobId
     try {
-      const target = await createAndUpload(input)
-      targetJobId = target.jobId
-      return target
+      return await createAndUpload(input)
     } catch (cause) {
+      const targetJobId = recoveryRef.current?.jobId || initialJobId
       dispatch({
         type: 'FAILED',
         jobId: targetJobId,
