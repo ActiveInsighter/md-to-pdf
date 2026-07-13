@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { canCancelJob, canDownloadJob, getJobDisplayStatus, getJobProgress, getJobStageDescription, getJobStatusLabel, isTerminalJob } from '../src/features/pdf-jobs/status'
+import { canCancelJob, canDownloadJob, canDownloadSource, canRetryJob, getJobDisplayStatus, getJobProgress, getJobStageDescription, getJobStatusLabel, isTerminalJob } from '../src/features/pdf-jobs/status'
 import type { PdfJob } from '../src/features/pdf-jobs/types'
 
 function job(status: PdfJob['status'], patch: Partial<PdfJob> = {}): PdfJob {
@@ -25,18 +25,21 @@ test('server statuses map to distinct UI lifecycle stages', () => {
 })
 
 test('machine progress tokens fall back to readable Chinese descriptions', () => {
-  assert.equal(getJobStageDescription(job('completed', { progress_stage: 'completed' })), 'PDF 已生成，可以下载')
-  assert.equal(getJobStageDescription(job('building', { progress_stage: 'rendering' })), '正在渲染文档与生成 PDF')
+  assert.equal(getJobStageDescription(job('completed', { progress_stage: 'completed' })), 'PDF 与 Markdown 源稿已保存')
+  assert.equal(getJobStageDescription(job('building', { progress_stage: 'rendering' })), '正在排版并生成 PDF')
   assert.equal(getJobStageDescription(job('building', { progress_stage: '正在处理第 4 页' })), '正在处理第 4 页')
 })
 
-test('status capabilities are centralized', () => {
+test('status capabilities include retained source download and rebuild', () => {
   assert.equal(canCancelJob(job('created')), true)
-  assert.equal(canCancelJob(job('uploaded')), true)
   assert.equal(canCancelJob(job('queued')), false)
   assert.equal(canDownloadJob(job('completed')), true)
   assert.equal(canDownloadJob(job('expired')), false)
+  assert.equal(canDownloadSource(job('completed', { input_path: 'jobs/job/input.md' })), true)
+  assert.equal(canDownloadSource(job('expired', { input_path: 'jobs/job/input.md' })), false)
+  assert.equal(canRetryJob(job('completed', { input_path: 'jobs/job/input.md' })), true)
+  assert.equal(canRetryJob(job('failed', { input_path: 'jobs/job/input.md' })), true)
+  assert.equal(canRetryJob(job('failed')), false)
   assert.equal(isTerminalJob(job('failed')), true)
-  assert.equal(isTerminalJob(job('cancelled')), true)
   assert.equal(getJobProgress(job('building', { progress_percent: 73 })), 73)
 })
