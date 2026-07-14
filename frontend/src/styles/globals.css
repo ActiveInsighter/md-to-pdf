@@ -4,58 +4,63 @@
 
 @layer base {
   :root {
-    --background: 42 24% 96%;
-    --foreground: 213 39% 15%;
-    --card: 42 33% 99%;
-    --card-foreground: 213 39% 15%;
-    --primary: 200 65% 30%;
-    --primary-foreground: 42 33% 99%;
-    --secondary: 42 18% 91%;
-    --secondary-foreground: 213 34% 20%;
-    --muted: 40 18% 93%;
-    --muted-foreground: 215 14% 39%;
-    --accent: 188 30% 89%;
-    --accent-foreground: 200 65% 23%;
-    --destructive: 3 68% 43%;
-    --destructive-foreground: 42 33% 99%;
-    --success: 153 48% 29%;
-    --success-foreground: 42 33% 99%;
-    --success-muted: 151 35% 90%;
-    --warning: 34 83% 34%;
-    --warning-foreground: 42 33% 99%;
-    --warning-muted: 38 62% 89%;
-    --info: 215 62% 39%;
-    --info-foreground: 42 33% 99%;
-    --info-muted: 213 45% 91%;
-    --border: 210 18% 82%;
-    --input: 210 18% 76%;
-    --ring: 200 65% 30%;
-    --radius: 0.75rem;
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 204 78% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 24% 95%;
+    --secondary-foreground: 222 35% 18%;
+    --muted: 210 22% 96%;
+    --muted-foreground: 215 16% 43%;
+    --accent: 204 48% 94%;
+    --accent-foreground: 204 78% 29%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 153 55% 31%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 151 42% 93%;
+    --warning: 35 88% 38%;
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 39 78% 93%;
+    --info: 215 72% 45%;
+    --info-foreground: 0 0% 100%;
+    --info-muted: 214 62% 94%;
+    --border: 214 24% 88%;
+    --input: 214 22% 84%;
+    --ring: 204 78% 38%;
+    --radius: 0.7rem;
   }
+
   * { @apply border-border; }
-  html { @apply bg-background; color-scheme: light; }
+
+  html {
+    @apply bg-background;
+    color-scheme: light;
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply min-w-0 bg-background font-sans text-foreground antialiased;
     min-height: 100dvh;
-    background-image:
-      radial-gradient(circle at 8% -10%, hsl(var(--info-muted) / 0.72), transparent 30rem),
-      radial-gradient(circle at 92% 4%, hsl(var(--warning-muted) / 0.48), transparent 28rem);
-    background-attachment: fixed;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
+
   #root { min-height: 100dvh; }
-  h1, h2 { @apply font-display; text-wrap: balance; }
+  h1, h2, h3 { @apply font-display; text-wrap: balance; }
   button, input, textarea, select { font: inherit; }
   button, [role='button'], a, label[for], select { touch-action: manipulation; }
   a { @apply rounded-sm outline-none; }
-  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
-  ::selection { @apply bg-primary/20 text-foreground; }
+  :focus-visible { @apply outline-none ring-2 ring-ring/60 ring-offset-2 ring-offset-background; }
+  ::selection { @apply bg-primary/15 text-foreground; }
 }
 
 @layer utilities {
   .break-anywhere { overflow-wrap: anywhere; }
   .text-balance { text-wrap: balance; }
   .paper-rule {
-    background-image: linear-gradient(to right, hsl(var(--border) / 0.58) 1px, transparent 1px);
+    background-image: linear-gradient(to right, hsl(var(--border) / 0.52) 1px, transparent 1px);
     background-size: 2rem 100%;
   }
 }
