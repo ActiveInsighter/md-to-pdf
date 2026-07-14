@@ -10,13 +10,14 @@ function requiredEnv(name) {
 
 const pagesUrl = new URL(requiredEnv('PAGES_URL'))
 const outputDirectory = path.resolve(requiredEnv('UI_CAPTURE_OUTPUT_DIR'))
-const sessionPath = path.resolve(requiredEnv('UI_CAPTURE_SESSION_PATH'))
+const credentialsPath = path.resolve(requiredEnv('UI_CAPTURE_CREDENTIALS_PATH'))
 const chromeExecutable = process.env.CHROME_EXECUTABLE_PATH?.trim() || '/usr/bin/google-chrome'
-const sessionPayload = JSON.parse(await readFile(sessionPath, 'utf8'))
+const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'))
 const commit = requiredEnv('GITHUB_SHA')
 const OVERVIEW_FILE = 'ui-overview.png'
 const VIEWPORT = { width: 1440, height: 1000, deviceScaleFactor: 1 }
 const SELECTORS = {
+  auth: '#auth-panel',
   workspace: '[data-ui-capture="authenticated-workspace"]',
   fileInput: '[data-ui-capture="markdown-file-input"]',
   uploadStatus: '[data-ui-capture="source-upload-status"]',
@@ -26,8 +27,8 @@ const SELECTORS = {
   settings: '[data-ui-capture="settings-page"]',
 }
 
-if (!sessionPayload.storageKey || !sessionPayload.session?.access_token) {
-  throw new Error('Temporary browser session is incomplete.')
+if (!credentials.email || !credentials.password) {
+  throw new Error('Temporary UI capture credentials are incomplete.')
 }
 
 await rm(outputDirectory, { recursive: true, force: true })
@@ -76,18 +77,31 @@ async function capture(page, file, label, route, selector) {
   captured.push({ file, label, route, viewport: '1440x1000', fullPage: true })
 }
 
-async function installSession(page) {
-  await page.goto(routeUrl('/'), { waitUntil: 'domcontentloaded' })
-  await page.evaluate(({ storageKey, session }) => {
-    window.localStorage.setItem(storageKey, JSON.stringify(session))
-  }, sessionPayload)
-  await navigate(page, '/workspace', SELECTORS.workspace)
+async function setInputValue(page, selector, value) {
+  await page.$eval(selector, (input, nextValue) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    if (!setter) throw new Error('Unable to resolve native input value setter.')
+    setter.call(input, nextValue)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  }, value)
+}
+
+async function login(page) {
+  await navigate(page, '/', SELECTORS.auth)
+  await setInputValue(page, `${SELECTORS.auth} input[type="email"]`, credentials.email)
+  await setInputValue(page, `${SELECTORS.auth} input[type="password"]`, credentials.password)
+  await page.waitForFunction((authSelector) => {
+    const button = document.querySelector(`${authSelector} button[type="submit"]`)
+    return button instanceof HTMLButtonElement && !button.disabled
+  }, {}, SELECTORS.auth)
+  await page.click(`${SELECTORS.auth} button[type="submit"]`)
+  await page.waitForSelector(SELECTORS.workspace, { visible: true, timeout: 35_000 })
+  await sleep(1_000)
 }
 
 async function captureBatchMode(page) {
   await navigate(page, '/workspace', SELECTORS.workspace)
-  const batchButton = await page.waitForSelector('button[role="tab"]', { visible: true, timeout: 20_000 })
-  if (!batchButton) throw new Error('Workspace tabs were not found.')
   const buttons = await page.$$('button[role="tab"]')
   let clicked = false
   for (const button of buttons) {
@@ -106,7 +120,7 @@ async function captureBatchMode(page) {
 }
 
 async function createSampleTask(page) {
-  const samplePath = path.join(outputDirectory, '.deployment-ui-sample.md')
+  const samplePath = path.join(outputDirectory, 'deployment-ui-sample.md')
   await writeFile(samplePath, [
     '# 部署界面检查',
     '',
@@ -125,10 +139,17 @@ async function createSampleTask(page) {
     const input = await page.waitForSelector(SELECTORS.fileInput, { timeout: 20_000 })
     if (!input) throw new Error('Markdown file input was not found.')
     await input.uploadFile(samplePath)
-    await page.waitForFunction((selector) => {
-      const text = document.querySelector(selector)?.textContent || ''
-      return /源文件已保存|文件已上传，等待生成 PDF/.test(text)
+    const result = await page.waitForFunction((statusSelector) => {
+      const statusText = document.querySelector(statusSelector)?.textContent || ''
+      if (/源文件已保存|文件已上传，等待生成 PDF/.test(statusText)) return 'ready'
+      const errorText = Array.from(document.querySelectorAll('[role="alert"]')).map((node) => node.textContent || '').join(' ')
+      if (errorText.trim()) return `error:${errorText.trim()}`
+      return false
     }, { timeout: 60_000 }, SELECTORS.uploadStatus)
+    const resultText = await result.jsonValue()
+    if (typeof resultText === 'string' && resultText.startsWith('error:')) {
+      throw new Error(resultText.slice('error:'.length))
+    }
     await sleep(800)
 
     await navigate(page, '/jobs', SELECTORS.jobs)
@@ -213,11 +234,13 @@ await page.setExtraHTTPHeaders({
 })
 page.on('pageerror', (error) => browserErrors.push(error.message.slice(0, 500)))
 page.on('requestfailed', (request) => {
-  if (request.url().includes('/assets/')) browserErrors.push(`Asset request failed: ${request.failure()?.errorText || 'unknown'}`)
+  if (request.url().includes('/assets/') || request.url().includes('/functions/v1/')) {
+    browserErrors.push(`Request failed: ${request.failure()?.errorText || 'unknown'} (${request.url().slice(0, 220)})`)
+  }
 })
 
 try {
-  await installSession(page)
+  await login(page)
   await capture(page, 'workspace-create-desktop.png', '创建任务 · 单文件', '/workspace', SELECTORS.workspace)
   await captureBatchMode(page)
   const detailRoute = await createSampleTask(page)
