@@ -46,8 +46,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: 'md-to-pdf-workspace',
-      partialize: ({ mode, selectedJobId, theme, autoDownload, notifyOnComplete, filters }) => ({
-        mode,
+      partialize: ({ selectedJobId, theme, autoDownload, notifyOnComplete, filters }) => ({
         selectedJobId,
         theme,
         autoDownload,
