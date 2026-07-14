@@ -180,6 +180,8 @@ jobs:
         shell: bash
         env:
           PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           CHROME_EXECUTABLE_PATH: /usr/bin/google-chrome
           UI_CAPTURE_CREDENTIALS_PATH: frontend/.tmp/deployment-auth/credentials.json
           UI_CAPTURE_OUTPUT_DIR: frontend/deployment-screenshots
