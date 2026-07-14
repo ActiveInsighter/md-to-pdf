@@ -161,7 +161,7 @@ jobs:
           node --check scripts/capture-deployed-desktop.mjs
           google-chrome --version
 
-      - name: Prepare authenticated UI session
+      - name: Prepare authenticated UI user
         id: prepare-auth
         working-directory: frontend
         shell: bash
@@ -174,14 +174,14 @@ jobs:
           set -euo pipefail
           node --check scripts/manage-ui-capture-user.mjs
           node scripts/manage-ui-capture-user.mjs prepare
-          test -s .tmp/deployment-auth/session.json
+          test -s .tmp/deployment-auth/credentials.json
 
       - name: Capture desktop application pages
         shell: bash
         env:
           PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
           CHROME_EXECUTABLE_PATH: /usr/bin/google-chrome
-          UI_CAPTURE_SESSION_PATH: frontend/.tmp/deployment-auth/session.json
+          UI_CAPTURE_CREDENTIALS_PATH: frontend/.tmp/deployment-auth/credentials.json
           UI_CAPTURE_OUTPUT_DIR: frontend/deployment-screenshots
         run: |
           set -euo pipefail
@@ -202,7 +202,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/manage-ui-capture-user.mjs cleanup
-          test ! -e .tmp/deployment-auth/session.json
+          test ! -e .tmp/deployment-auth/credentials.json
 
       - name: Upload deployed UI screenshots
         id: upload-ui-screenshots
