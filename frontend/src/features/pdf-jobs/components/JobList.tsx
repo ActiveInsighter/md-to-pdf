@@ -35,11 +35,11 @@ function groupJobsByAge(jobs: PdfJob[]): JobGroup[] {
 
   for (const job of jobs) {
     const createdAt = Date.parse(job.created_at)
-    if (createdAt >= start) buckets[0].jobs.push(job)
-    else if (createdAt >= start - 2 * DAY) buckets[1].jobs.push(job)
-    else if (createdAt >= start - 6 * DAY) buckets[2].jobs.push(job)
-    else if (createdAt >= start - 29 * DAY) buckets[3].jobs.push(job)
-    else buckets[4].jobs.push(job)
+    if (createdAt >= start) buckets[0]!.jobs.push(job)
+    else if (createdAt >= start - 2 * DAY) buckets[1]!.jobs.push(job)
+    else if (createdAt >= start - 6 * DAY) buckets[2]!.jobs.push(job)
+    else if (createdAt >= start - 29 * DAY) buckets[3]!.jobs.push(job)
+    else buckets[4]!.jobs.push(job)
   }
 
   return buckets.filter((group) => group.jobs.length > 0)
@@ -77,7 +77,7 @@ export function JobList({ jobs, loading, emptyMessage = '暂无任务。', group
               {group.jobs.map((job) => (
                 <article key={job.id} className={`grid ${DESKTOP_GRID} items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/20`}>
                   <Link to={`/jobs/${job.id}`} className="group flex min-w-0 items-center gap-3" title={job.document_name}>
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary"><FileText className="size-4" /></span>
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><FileText className="size-4" /></span>
                     <span className="min-w-0 flex-1">
                       <span className="flex min-w-0 items-center gap-2">
                         <strong className="truncate text-sm font-semibold group-hover:text-primary">{job.document_name}</strong>
