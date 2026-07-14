@@ -50,10 +50,6 @@ export function normalizeMarkdownForPdf(markdown: string): MarkdownNormalization
     .join('')
     .replace(/[ \t]+$/gmu, '')
     .replace(/\n{3,}/g, '\n\n')
-    .trimEnd()
 
-  return {
-    text: text ? `${text}\n` : '',
-    removedArtifactCount,
-  }
+  return { text, removedArtifactCount }
 }
