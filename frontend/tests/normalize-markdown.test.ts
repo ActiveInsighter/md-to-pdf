@@ -14,7 +14,7 @@ test('removes ChatGPT file citations from normal Markdown text', () => {
 test('removes broken tofu-style file citation text', () => {
   const result = normalizeMarkdownForPdf('正文 □filecite□turn0file2□ 后续。')
 
-  assert.equal(result.text, '正文  后续。\n')
+  assert.equal(result.text, '正文  后续。')
   assert.equal(result.removedArtifactCount, 1)
 })
 
@@ -30,5 +30,5 @@ test('preserves citation-looking text inside inline and fenced code', () => {
 test('normalizes line endings and trims excessive blank lines', () => {
   const result = normalizeMarkdownForPdf('\uFEFF# 标题\r\n\r\n\r\n正文\u2028下一行')
 
-  assert.equal(result.text, '# 标题\n\n正文\n下一行\n')
+  assert.equal(result.text, '# 标题\n\n正文\n下一行')
 })
