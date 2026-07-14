@@ -229,8 +229,6 @@ await page.setCacheEnabled(false)
 await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'light' }])
 await page.setExtraHTTPHeaders({
   'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.7',
-  'Cache-Control': 'no-cache, no-store, must-revalidate',
-  Pragma: 'no-cache',
 })
 page.on('pageerror', (error) => browserErrors.push(error.message.slice(0, 500)))
 page.on('requestfailed', (request) => {
