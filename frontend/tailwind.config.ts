@@ -4,7 +4,7 @@ export default {
   darkMode: ['class'],
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
-    container: { center: true, padding: '1.25rem', screens: { '2xl': '1440px' } },
+    container: { center: true, padding: '1.25rem', screens: { '2xl': '1320px' } },
     extend: {
       colors: {
         border: 'hsl(var(--border))',
@@ -35,20 +35,20 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Aptos', 'Segoe UI Variable', 'Noto Sans SC', 'Microsoft YaHei', 'sans-serif'],
-        display: ['Iowan Old Style', 'Noto Serif CJK SC', 'Songti SC', 'STSong', 'Georgia', 'serif'],
+        sans: ['Aptos', 'Segoe UI Variable', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', 'sans-serif'],
+        display: ['Aptos Display', 'Segoe UI Variable Display', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', 'sans-serif'],
         mono: ['Cascadia Code', 'SFMono-Regular', 'Consolas', 'monospace'],
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        panel: '0 1px 2px rgba(20, 35, 50, 0.05), 0 16px 42px rgba(20, 35, 50, 0.06)',
-        lifted: '0 24px 70px rgba(20, 35, 50, 0.12)',
-      }
-    }
+        panel: '0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.05)',
+        lifted: '0 18px 48px rgba(15, 23, 42, 0.12)',
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 } satisfies Config
