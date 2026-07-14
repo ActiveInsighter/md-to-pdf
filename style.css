@@ -70,10 +70,10 @@
 }
 
 /*
-  ChatGPT light refinements.
+  ChatGPT light layout refinements.
 
-  Keep fraction rules visually light, provide a little more breathing room around
-  formulas, and reduce quotes to the simple left rail used by ChatGPT.
+  Keep the original KaTeX metrics untouched. Only the surrounding document
+  rhythm and the plain blockquote appearance are adjusted here.
 */
 body.pdf-theme-chatgpt-light {
   --ky-line-height: 1.6;
@@ -81,7 +81,6 @@ body.pdf-theme-chatgpt-light {
   --ky-block-gap: 0.8em;
   --ky-tight-gap: 0.18em;
   --ky-list-gap: 0.12em;
-  --math-display-gap: 0.82em;
 }
 
 body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
@@ -113,20 +112,6 @@ body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blo
 
 body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blockquote:not(.callout) p {
   margin: 0.16em 0 !important;
-}
-
-body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) .katex .mfrac .frac-line {
-  min-height: 0 !important;
-  border-bottom-width: 0.032em !important;
-}
-
-body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) .katex-display {
-  padding-top: 0.36em !important;
-  padding-bottom: 0.48em !important;
-}
-
-body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) :is(p, li, td, th) > .katex {
-  vertical-align: -0.08em !important;
 }
 
 /*
