@@ -24,7 +24,7 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
   const operationRef = useRef(false)
   const recovery = localRecovery || serverRecovery
   const recoveryRef = useRef<SubmissionRecovery | null>(recovery)
-  const busy = ['creating', 'uploading-markdown', 'uploading-assets', 'starting', 'cancelling'].includes(state.status)
+  const busy = ['creating', 'uploading-markdown', 'uploading-assets', 'confirming-upload', 'starting', 'cancelling'].includes(state.status)
 
   useEffect(() => {
     recoveryRef.current = recovery
@@ -78,6 +78,11 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
         dispatch({ type: 'UPLOADING_ASSETS', jobId: target.jobId })
         await actions.uploadResources.mutateAsync({ path: target.assetsPath, file: input.assets })
       }
+
+      dispatch({ type: 'CONFIRMING_UPLOAD', jobId: target.jobId })
+      await actions.confirmUpload.mutateAsync(target.jobId)
+      target = { ...target, status: 'uploaded' }
+      rememberRecovery(target)
     }
 
     dispatch({ type: 'PREPARED', jobId: target.jobId })
