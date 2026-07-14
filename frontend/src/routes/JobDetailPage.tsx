@@ -31,7 +31,8 @@ export function JobDetailPage() {
 
   const item = job.data
   const themeName = PDF_THEMES.find((theme) => theme.id === item.theme)?.name || item.theme
-  const buildAttemptLabel = item.attempt_count > 0 ? `第 ${item.attempt_count} 次构建` : '尚未构建'
+  const attemptCount = item.attempt_count || 0
+  const buildAttemptLabel = attemptCount > 0 ? `第 ${attemptCount} 次构建` : '尚未构建'
   const details = [
     ['Markdown', item.source_filename],
     ['PDF', item.output_filename || `${item.document_name}.pdf`],
