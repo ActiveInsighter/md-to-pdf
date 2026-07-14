@@ -74,11 +74,12 @@ const requiredText = new Map([
   ['frontend/src/features/pdf-jobs/hooks/cache.ts', ['setQueryData', 'shouldApplyPdfJobUpdate']],
   ['frontend/src/features/pdf-jobs/hooks/PdfJobsRealtimeBridge.tsx', ['postgres_changes']],
   ['frontend/src/features/pdf-jobs/hooks/usePdfJob.ts', ['refetchInterval']],
-  ['frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts', ['submissionReducer', 'async function prepare', 'async function submit']],
+  ['frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts', ['submissionReducer', 'async function submit', 'await actions.uploadMarkdown.mutateAsync', 'await actions.start.mutateAsync']],
+  ['frontend/src/features/pdf-builder/components/SingleJobForm.tsx', ['const submit = form.handleSubmit', '点击生成后上传']],
   ['frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts', ['Math.min(3']],
   ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置']],
   ['frontend/src/styles/globals.css', ['@tailwind base']],
-  ['.github/workflows/deploy-pages.yml', ["push:", "branches:", "- main", "workflow_dispatch:"]],
+  ['.github/workflows/deploy-pages.yml', ['push:', 'branches:', '- main', 'workflow_dispatch:']],
 ])
 
 const errors = []
@@ -94,6 +95,14 @@ for (const [file, tokens] of requiredText) {
   for (const token of tokens) {
     if (!source.includes(token)) errors.push(`${file} must contain ${token}`)
   }
+}
+
+const submissionSource = fs.readFileSync('frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts', 'utf8')
+if (submissionSource.includes('async function prepare')) {
+  errors.push('usePdfSubmission must not expose automatic source preparation before Generate PDF is clicked')
+}
+if (fs.readFileSync('frontend/src/features/pdf-builder/components/SingleJobForm.tsx', 'utf8').includes('submission.prepare')) {
+  errors.push('SingleJobForm must not upload while selecting or pasting a source')
 }
 
 const pkg = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'))

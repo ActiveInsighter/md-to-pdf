@@ -94,6 +94,7 @@ jobs:
           grep -Fq "favorites-desktop.png" scripts/capture-deployed-desktop.mjs
           grep -Fq "settings-desktop.png" scripts/capture-deployed-desktop.mjs
           grep -Fq "const OVERVIEW_FILE = 'ui-overview.png'" scripts/capture-deployed-desktop.mjs
+          grep -Fq "manualGenerateFlow: true" scripts/capture-deployed-desktop.mjs
           ! grep -Fq 'mobile-390' .github/workflows/deploy-pages.yml
           grep -Fq 'desktop 1440x1000 only' .github/workflows/deploy-pages.yml
 
@@ -108,16 +109,22 @@ jobs:
           ! grep -Fq 'JobProgress' frontend/src/routes/WorkspacePage.tsx
           ! grep -Fq 'JobProgress' frontend/src/features/pdf-jobs/components/JobList.tsx
 
-      - name: Validate staged upload responsiveness and source retention
+      - name: Validate manual generate and source retention
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq 'async function prepare' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
-          grep -Fq 'async function submit' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          ! grep -Fq 'submission.prepare' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
+          ! grep -Fq 'async function prepare' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          grep -Fq 'const submit = form.handleSubmit' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
+          grep -Fq 'type="submit"' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
+          grep -Fq '点击生成后上传' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
+          grep -Fq 'await actions.create.mutateAsync' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          grep -Fq 'await actions.uploadMarkdown.mutateAsync' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          grep -Fq 'await actions.confirmUpload.mutateAsync' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
+          grep -Fq 'await actions.start.mutateAsync' frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts
           grep -Fq 'yieldToBrowser' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
           grep -Fq 'sourceIntent' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
           grep -Fq 'data-ui-capture="source-upload-status"' frontend/src/features/pdf-builder/components/SingleJobForm.tsx
-          grep -Fq '文件已上传，等待生成 PDF' frontend/src/features/pdf-builder/submissionReducer.ts
           grep -Fq "kind === 'source'" supabase/functions/get-pdf-download/index.ts
           grep -Fq 'ALLOWED_THEMES' supabase/functions/rebuild-pdf-job/index.ts
           grep -Fq '用源稿重新构建' frontend/src/features/pdf-jobs/components/JobActions.tsx

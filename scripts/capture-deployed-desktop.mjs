@@ -9,6 +9,8 @@ function requiredEnv(name) {
 }
 
 const pagesUrl = new URL(requiredEnv('PAGES_URL'))
+const supabaseUrl = new URL(requiredEnv('VITE_SUPABASE_URL'))
+const supabaseAnonKey = requiredEnv('VITE_SUPABASE_ANON_KEY')
 const outputDirectory = path.resolve(requiredEnv('UI_CAPTURE_OUTPUT_DIR'))
 const credentialsPath = path.resolve(requiredEnv('UI_CAPTURE_CREDENTIALS_PATH'))
 const chromeExecutable = process.env.CHROME_EXECUTABLE_PATH?.trim() || '/usr/bin/google-chrome'
@@ -16,6 +18,7 @@ const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'))
 const commit = requiredEnv('GITHUB_SHA')
 const OVERVIEW_FILE = 'ui-overview.png'
 const VIEWPORT = { width: 1440, height: 1000, deviceScaleFactor: 1 }
+const STORAGE_BUCKET = 'pdf-jobs'
 const SELECTORS = {
   auth: '#auth-panel',
   workspace: '[data-ui-capture="authenticated-workspace"]',
@@ -52,6 +55,54 @@ function routeUrl(route) {
   url.searchParams.set('deployment', commit)
   url.searchParams.set('captureAttempt', String(Date.now()))
   return url.href
+}
+
+function supabaseEndpoint(pathname) {
+  return new URL(pathname, supabaseUrl.origin).href
+}
+
+function authorizedHeaders(accessToken, contentType = 'application/json') {
+  return {
+    apikey: supabaseAnonKey,
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': contentType,
+  }
+}
+
+async function responseJson(response, label) {
+  const text = await response.text()
+  let body = null
+  try {
+    body = text ? JSON.parse(text) : null
+  } catch {
+    body = null
+  }
+  if (!response.ok) {
+    throw new Error(`${label} failed with HTTP ${response.status}: ${body?.error || text.slice(0, 300) || 'unknown error'}`)
+  }
+  return body
+}
+
+async function invokeFunction(name, body, accessToken) {
+  const response = await fetch(supabaseEndpoint(`/functions/v1/${name}`), {
+    method: 'POST',
+    headers: authorizedHeaders(accessToken),
+    body: JSON.stringify(body),
+  })
+  return responseJson(response, name)
+}
+
+async function uploadStorageObject(storagePath, bytes, accessToken) {
+  const encodedPath = storagePath.split('/').map(encodeURIComponent).join('/')
+  const response = await fetch(supabaseEndpoint(`/storage/v1/object/${encodeURIComponent(STORAGE_BUCKET)}/${encodedPath}`), {
+    method: 'POST',
+    headers: {
+      ...authorizedHeaders(accessToken, 'text/markdown; charset=utf-8'),
+      'x-upsert': 'true',
+    },
+    body: bytes,
+  })
+  await responseJson(response, 'temporary Markdown upload')
 }
 
 async function navigate(page, route, selector) {
@@ -95,9 +146,19 @@ async function login(page) {
     const button = document.querySelector(`${authSelector} button[type="submit"]`)
     return button instanceof HTMLButtonElement && !button.disabled
   }, {}, SELECTORS.auth)
+
+  const tokenResponsePromise = page.waitForResponse((response) => (
+    response.url().includes('/auth/v1/token')
+    && response.request().method() === 'POST'
+  ), { timeout: 30_000 })
   await page.click(`${SELECTORS.auth} button[type="submit"]`)
+  const tokenResponse = await tokenResponsePromise
+  const tokenPayload = await responseJson(tokenResponse, 'temporary UI login')
+  if (!tokenPayload?.access_token) throw new Error('Temporary UI login did not return an access token.')
+
   await page.waitForSelector(SELECTORS.workspace, { visible: true, timeout: 35_000 })
   await sleep(1_000)
+  return tokenPayload.access_token
 }
 
 async function captureBatchMode(page) {
@@ -119,7 +180,7 @@ async function captureBatchMode(page) {
   captured.push({ file: 'workspace-batch-desktop.png', label: '创建任务 · 批量', route: '/workspace#batch', viewport: '1440x1000', fullPage: true })
 }
 
-async function createSampleTask(page) {
+async function createSampleTask(page, accessToken) {
   const samplePath = path.join(outputDirectory, 'deployment-ui-sample.md')
   await writeFile(samplePath, [
     '# 部署界面检查',
@@ -139,23 +200,28 @@ async function createSampleTask(page) {
     const input = await page.waitForSelector(SELECTORS.fileInput, { timeout: 20_000 })
     if (!input) throw new Error('Markdown file input was not found.')
     await input.uploadFile(samplePath)
-    const result = await page.waitForFunction((statusSelector) => {
-      const statusText = document.querySelector(statusSelector)?.textContent || ''
-      if (/源文件已保存|文件已上传，等待生成 PDF/.test(statusText)) return 'ready'
-      const errorText = Array.from(document.querySelectorAll('[role="alert"]')).map((node) => node.textContent || '').join(' ')
-      if (errorText.trim()) return `error:${errorText.trim()}`
-      return false
-    }, { timeout: 60_000 }, SELECTORS.uploadStatus)
-    const resultText = await result.jsonValue()
-    if (typeof resultText === 'string' && resultText.startsWith('error:')) {
-      throw new Error(resultText.slice('error:'.length))
-    }
-    await sleep(800)
+    await page.waitForFunction(() => {
+      const submit = document.querySelector('button[type="submit"]')
+      return submit instanceof HTMLButtonElement
+        && !submit.disabled
+        && submit.textContent?.includes('生成 PDF')
+        && document.body.innerText.includes('deployment-ui-sample.md')
+    }, { timeout: 20_000 })
 
-    await navigate(page, '/jobs', SELECTORS.jobs)
-    const href = await page.$eval(`${SELECTORS.jobs} a[href^="/jobs/"]`, (link) => link.getAttribute('href') || '')
-    if (!/^\/jobs\/[0-9a-f-]{36}$/i.test(href)) throw new Error(`Invalid task detail route: ${href}`)
-    return href
+    const created = await invokeFunction('create-pdf-job', {
+      theme: 'chatgpt-light',
+      options: { breaks: true, toc: true },
+      hasAssets: false,
+      sourceFilename: path.basename(samplePath),
+      sourceName: path.basename(samplePath),
+    }, accessToken)
+    if (!created?.jobId || !created.inputPath) throw new Error('Temporary task creation returned incomplete data.')
+
+    await uploadStorageObject(created.inputPath, await readFile(samplePath), accessToken)
+    const confirmed = await invokeFunction('confirm-pdf-upload', { jobId: created.jobId }, accessToken)
+    if (confirmed?.status !== 'uploaded') throw new Error('Temporary task did not reach uploaded status.')
+
+    return `/jobs/${created.jobId}`
   } finally {
     await rm(samplePath, { force: true })
   }
@@ -255,17 +321,17 @@ page.on('requestfailed', (request) => {
 })
 
 try {
-  await login(page)
+  const accessToken = await login(page)
   await capture(page, 'workspace-create-desktop.png', '创建任务 · 单文件', '/workspace', SELECTORS.workspace)
   await captureBatchMode(page)
-  const detailRoute = await createSampleTask(page)
+  const detailRoute = await createSampleTask(page, accessToken)
   await capture(page, 'jobs-list-desktop.png', '任务列表', '/jobs', SELECTORS.jobs)
   await capture(page, 'job-detail-desktop.png', '任务详情与构建流程', detailRoute, SELECTORS.detail)
   await favoriteCurrentTask(page)
   await captureFavorites(page)
   await capture(page, 'settings-desktop.png', '设置', '/settings', SELECTORS.settings)
   await composeOverview()
-  diagnostics.push({ status: 'success', detailRoute, browserErrors })
+  diagnostics.push({ status: 'success', detailRoute, browserErrors, manualGenerateFlow: true })
 } catch (error) {
   captureError = error
   const diagnosticFile = 'diagnostic-desktop.png'
