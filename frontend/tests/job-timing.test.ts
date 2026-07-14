@@ -40,20 +40,15 @@ test('duration formatting is stable across time units', () => {
   assert.equal(formatElapsedClock(null), '--:--')
 })
 
-test('active jobs use the current time and terminal jobs use their terminal timestamp', () => {
+test('task timing covers the same lifecycle as milestone timing', () => {
   const active = job('building')
-  assert.equal(
-    getJobElapsedMilliseconds(active, Date.parse('2026-07-13T00:04:00.000Z')),
-    180_000,
-  )
-  assert.deepEqual(
-    getJobTimingSummary(active, Date.parse('2026-07-13T00:04:00.000Z')),
-    { label: '已用时', value: '3 分 00 秒' },
-  )
+  assert.equal(getJobElapsedMilliseconds(active, Date.parse('2026-07-13T00:04:00.000Z')), 240_000)
+  assert.deepEqual(getJobTimingSummary(active, Date.parse('2026-07-13T00:04:00.000Z')), { label: '已用时', value: '4 分 00 秒' })
 
   const completed = job('completed', { completed_at: '2026-07-13T00:05:10.000Z' })
-  assert.equal(getJobElapsedMilliseconds(completed), 250_000)
-  assert.deepEqual(getJobTimingSummary(completed), { label: '总耗时', value: '4 分 10 秒' })
+  assert.equal(getJobElapsedMilliseconds(completed), 310_000)
+  assert.deepEqual(getJobTimingSummary(completed), { label: '总耗时', value: '5 分 10 秒' })
+  assert.equal(getJobFlowSteps(completed).at(-1)?.elapsedMilliseconds, 310_000)
 })
 
 test('flow exposes every milestone with elapsed timestamps and states', () => {
@@ -64,15 +59,7 @@ test('flow exposes every milestone with elapsed timestamps and states', () => {
     uploading_at: '2026-07-13T00:03:00.000Z',
   }), Date.parse('2026-07-13T00:03:30.000Z'))
 
-  assert.deepEqual(steps.map((step) => step.key), [
-    'created',
-    'uploaded',
-    'queued',
-    'started',
-    'rendering',
-    'uploading',
-    'completed',
-  ])
+  assert.deepEqual(steps.map((step) => step.key), ['created', 'uploaded', 'queued', 'started', 'rendering', 'uploading', 'completed'])
   assert.equal(steps.find((step) => step.key === 'uploaded')?.elapsedMilliseconds, 30_000)
   assert.equal(steps.find((step) => step.key === 'uploading')?.elapsedMilliseconds, 180_000)
   assert.equal(steps.find((step) => step.key === 'uploading')?.state, 'active')

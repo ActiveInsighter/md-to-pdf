@@ -43,10 +43,10 @@ export function formatElapsedClock(milliseconds: number | null | undefined): str
 }
 
 export function getJobTimingStart(job: PdfJob): string | null {
-  return job.started_at
-    || job.queued_at
+  return job.created_at
     || job.uploaded_at
-    || job.created_at
+    || job.queued_at
+    || job.started_at
     || null
 }
 
@@ -102,7 +102,7 @@ export function getJobFlowSteps(job: PdfJob, now = Date.now()): JobFlowStep[] {
       : { key: 'completed', label: '交付完成', at: job.completed_at }
 
   const rawSteps = [...baseSteps, finalStep]
-  const start = toTimestamp(job.created_at) ?? toTimestamp(getJobTimingStart(job))
+  const start = toTimestamp(getJobTimingStart(job))
   const currentIndex = currentBaseStepIndex(job, baseSteps)
   const terminal = isTerminalJob(job)
 
