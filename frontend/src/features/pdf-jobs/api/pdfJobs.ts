@@ -20,6 +20,15 @@ type CreatePdfJobWireResponse = Partial<CreatePdfJobResponse> & {
   expiresAt?: string
 }
 
+type ConfirmPdfUploadResponse = {
+  jobId: string
+  status: 'uploaded'
+  uploaded_at?: string
+  progress_percent?: number
+  progress_stage?: string
+  idempotent: boolean
+}
+
 type RebuildPdfJobResponse = {
   jobId: string
   status: PdfJob['status']
@@ -79,6 +88,17 @@ export async function uploadAssets(path: string, file: File): Promise<void> {
     upsert: true,
   })
   if (error) throw new Error(`资源压缩包上传失败：${error.message}`)
+}
+
+export async function confirmPdfUpload(jobId: string): Promise<ConfirmPdfUploadResponse> {
+  const { data, error } = await supabase.functions.invoke<ConfirmPdfUploadResponse>('confirm-pdf-upload', {
+    body: { jobId },
+  })
+  if (error) throw new Error(error.message)
+  if (!data?.jobId || data.jobId !== jobId || data.status !== 'uploaded') {
+    throw new Error('源文件上传确认返回的数据不完整。')
+  }
+  return data
 }
 
 export async function startPdfJob(jobId: string): Promise<void> {
