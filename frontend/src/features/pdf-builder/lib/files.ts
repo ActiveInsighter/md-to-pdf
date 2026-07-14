@@ -1,5 +1,6 @@
 import type { CreatePdfJobResponse, PdfJob } from '@/features/pdf-jobs/types'
 import type { MarkdownSource, SubmissionRecovery } from '../types'
+import { normalizeMarkdownForPdf } from './normalizeMarkdown'
 
 export const MAX_MARKDOWN_BYTES = 10 * 1024 * 1024
 export const MAX_ASSETS_BYTES = 50 * 1024 * 1024
@@ -25,7 +26,8 @@ export function documentNameFromMarkdown(filename: string): string {
 }
 
 export function inferMarkdownDocumentName(markdown: string): string {
-  const lines = markdown.replace(/^\uFEFF/, '').split(/\r?\n/)
+  const normalizedMarkdown = normalizeMarkdownForPdf(markdown).text
+  const lines = normalizedMarkdown.split(/\r?\n/)
   let fence: '`' | '~' | null = null
   let bestLevel = 7
   let bestTitle = ''
@@ -107,7 +109,8 @@ export function markdownSourceToFile(source: MarkdownSource, documentName: strin
       ? source.file
       : new File([source.file], filename, { type: 'text/markdown', lastModified: source.file.lastModified })
   }
-  return new File([source.text], filename, { type: 'text/markdown' })
+  const normalizedMarkdown = normalizeMarkdownForPdf(source.text).text
+  return new File([normalizedMarkdown], filename, { type: 'text/markdown' })
 }
 
 export function createSubmissionRecovery(created: CreatePdfJobResponse, hasAssets: boolean): SubmissionRecovery {
