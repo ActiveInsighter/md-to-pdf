@@ -70,6 +70,66 @@
 }
 
 /*
+  ChatGPT light refinements.
+
+  Keep fraction rules visually light, provide a little more breathing room around
+  formulas, and reduce quotes to the simple left rail used by ChatGPT.
+*/
+body.pdf-theme-chatgpt-light {
+  --ky-line-height: 1.6;
+  --ky-para-gap: 0.4em;
+  --ky-block-gap: 0.8em;
+  --ky-tight-gap: 0.18em;
+  --ky-list-gap: 0.12em;
+  --math-display-gap: 0.82em;
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0.86em !important;
+  margin-bottom: 0.34em !important;
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blockquote:not(.callout) {
+  position: relative !important;
+  margin: 0.8em 0 !important;
+  padding: 0.18em 0 0.18em 1.05em !important;
+  color: var(--chatgpt-text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blockquote:not(.callout)::before {
+  content: "";
+  position: absolute;
+  top: 0.14em;
+  bottom: 0.14em;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.16);
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blockquote:not(.callout) p {
+  margin: 0.16em 0 !important;
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) .katex .mfrac .frac-line {
+  min-height: 0 !important;
+  border-bottom-width: 0.032em !important;
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) .katex-display {
+  padding-top: 0.36em !important;
+  padding-bottom: 0.48em !important;
+}
+
+body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) :is(p, li, td, th) > .katex {
+  vertical-align: -0.08em !important;
+}
+
+/*
   Print pagination overrides.
 
   Long tables, code blocks, quotes, and callouts must be allowed to continue on
