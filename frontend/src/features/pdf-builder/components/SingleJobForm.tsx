@@ -13,7 +13,7 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { formatFileSize } from '@/lib/utils'
 import { toUserMessage } from '@/lib/errors'
-import type { MarkdownSource, SubmissionRecovery } from '../types'
+import type { SubmissionRecovery } from '../types'
 import { PDF_THEMES } from '../types'
 import {
   documentNameFromMarkdown,
@@ -55,8 +55,12 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
     if (recovery?.documentName) form.setValue('documentName', recovery.documentName)
   }, [form, recovery?.documentName])
 
-  const sourceLocked = Boolean(submission.recovery) || submission.busy
-  const controlsDisabled = sourceLocked || Boolean(sourceIntent)
+  const uploadedRecovery = submission.recovery?.status === 'uploaded'
+  const createdRecovery = submission.recovery?.status === 'created'
+  const sourceUnavailable = uploadedRecovery || submission.busy
+  const inputDisabled = sourceUnavailable || Boolean(sourceIntent)
+  const optionsDisabled = Boolean(submission.recovery) || submission.busy || Boolean(sourceIntent)
+  const actionDisabled = submission.busy || Boolean(sourceIntent)
   const sourceMode = form.watch('sourceMode')
   const markdownText = form.watch('markdownText')
 
@@ -65,60 +69,41 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
     return nameCustomized && current ? current : fallback
   }, [form, nameCustomized])
 
-  const prepareSource = useCallback(async ({
-    source,
-    documentName,
-    selectedAssets,
-  }: {
-    source: MarkdownSource
-    documentName: string
-    selectedAssets: File | null
-  }) => {
-    setFileError('')
-    form.setValue('documentName', documentName, { shouldValidate: true })
-    await submission.prepare({
-      source,
-      assets: selectedAssets,
-      documentName,
-      theme: form.getValues('theme') as typeof defaultTheme,
-    })
-  }, [defaultTheme, form, submission])
-
-  const prepareMarkdownFile = useCallback(async (file: File, selectedAssets = assets) => {
+  const selectMarkdownFile = useCallback((file: File, selectedAssets = assets) => {
+    if (sourceUnavailable) return
     const error = validateMarkdownFile(file)
     if (error) {
       setFileError(error)
       return
     }
 
-    setSourceIntent('正在准备 Markdown')
+    const documentName = resolveDocumentName(documentNameFromMarkdown(file.name))
     setMarkdownFile(file)
     setAssets(selectedAssets)
+    setFileError('')
     form.setValue('sourceMode', 'file')
-    await yieldToBrowser()
+    form.setValue('documentName', documentName, { shouldValidate: true })
+    submission.reset()
+  }, [assets, form, resolveDocumentName, sourceUnavailable, submission])
 
-    const documentName = resolveDocumentName(documentNameFromMarkdown(file.name))
-    setSourceIntent(null)
-    await prepareSource({ source: { kind: 'file', file }, documentName, selectedAssets })
-  }, [assets, form, prepareSource, resolveDocumentName])
-
-  const prepareMarkdownText = useCallback(async (text: string) => {
-    if (!text.trim() || sourceLocked) return
+  const selectMarkdownText = useCallback(async (text: string) => {
+    if (!text.trim() || sourceUnavailable) return
 
     setMarkdownFile(null)
+    setFileError('')
     form.setValue('sourceMode', 'text')
     form.setValue('markdownText', text, { shouldValidate: true })
     setSourceIntent('正在分析 Markdown')
     await yieldToBrowser()
 
-    const documentName = resolveDocumentName(inferMarkdownDocumentName(text))
-    setSourceIntent(null)
-    await prepareSource({
-      source: { kind: 'text', text, filename: `${documentName}.md` },
-      documentName,
-      selectedAssets: assets,
-    })
-  }, [assets, form, prepareSource, resolveDocumentName, sourceLocked])
+    try {
+      const documentName = resolveDocumentName(inferMarkdownDocumentName(text))
+      form.setValue('documentName', documentName, { shouldValidate: true })
+      submission.reset()
+    } finally {
+      setSourceIntent(null)
+    }
+  }, [form, resolveDocumentName, sourceUnavailable, submission])
 
   const acceptAssets = useCallback((file: File) => {
     const error = validateAssetsFile(file)
@@ -134,11 +119,11 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
     if (!file) return
     const selectedAssets = droppedAssets || assets
     if (droppedAssets) setAssets(droppedAssets)
-    void prepareMarkdownFile(file, selectedAssets)
-  }, [assets, prepareMarkdownFile])
+    selectMarkdownFile(file, selectedAssets)
+  }, [assets, selectMarkdownFile])
 
   const globalDrop = useGlobalUploadDrop({
-    disabled: controlsDisabled,
+    disabled: inputDisabled,
     onFiles: acceptDroppedFiles,
   })
 
@@ -149,7 +134,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
       const text = await navigator.clipboard.readText()
       setSourceIntent(null)
       if (!text.trim()) throw new Error('剪切板中没有可用文本。')
-      await prepareMarkdownText(text)
+      await selectMarkdownText(text)
     } catch (cause) {
       setSourceIntent(null)
       setFileError(toUserMessage(cause, '无法读取剪切板，请检查浏览器权限。'))
@@ -158,17 +143,22 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
 
   const submit = form.handleSubmit(async (values) => {
     setFileError('')
-    if (!submission.recovery && values.sourceMode === 'file' && !markdownFile) {
+    const needsSource = !submission.recovery || submission.recovery.status === 'created'
+    if (needsSource && values.sourceMode === 'file' && !markdownFile) {
       setFileError('请选择 Markdown 文件。')
+      return
+    }
+    if (needsSource && values.sourceMode === 'text' && !values.markdownText.trim()) {
+      setFileError('请输入或粘贴 Markdown 文本。')
       return
     }
 
     await submission.submit({
-      source: submission.recovery
-        ? null
-        : values.sourceMode === 'file'
+      source: needsSource
+        ? values.sourceMode === 'file'
           ? markdownFile ? { kind: 'file', file: markdownFile } : null
-          : { kind: 'text', text: values.markdownText, filename: `${values.documentName}.md` },
+          : { kind: 'text', text: values.markdownText, filename: `${values.documentName}.md` }
+        : null,
       assets,
       documentName: values.documentName,
       theme: values.theme as typeof defaultTheme,
@@ -197,10 +187,14 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
   const markdownTextField = form.register('markdownText')
   const progress = getSubmissionProgress(submission.state)
   const message = fileError || globalDrop.error || (submission.state.status === 'failed' ? submission.state.message : '')
-  const prepared = Boolean(submission.recovery) && !submission.busy
-  const showPreparation = Boolean(sourceIntent) || submission.state.status !== 'idle' || Boolean(submission.recovery)
-  const preparationLabel = sourceIntent || (submission.recovery && submission.state.status === 'idle' ? '源文件已保存' : getSubmissionLabel(submission.state))
-  const preparationProgress = sourceIntent ? 4 : submission.recovery && submission.state.status === 'idle' ? 100 : progress
+  const showProgress = Boolean(sourceIntent) || submission.state.status !== 'idle' || Boolean(submission.recovery)
+  const recoveryIdle = Boolean(submission.recovery) && submission.state.status === 'idle'
+  const progressLabel = sourceIntent
+    || (recoveryIdle
+      ? createdRecovery ? '等待重新选择源文件' : '源文件已保存，等待生成 PDF'
+      : getSubmissionLabel(submission.state))
+  const progressValue = sourceIntent ? 4 : recoveryIdle ? createdRecovery ? 5 : 100 : progress
+  const hasLocalSource = Boolean(markdownFile) || Boolean(markdownText.trim())
 
   return (
     <>
@@ -208,7 +202,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 p-6 backdrop-blur-sm" role="status" aria-live="polite">
           <div className="rounded-2xl border border-background/50 bg-card p-8 text-center shadow-2xl">
             <UploadCloud className="mx-auto size-8 text-primary" />
-            <strong className="mt-3 block">松开后上传</strong>
+            <strong className="mt-3 block">松开后选择文件</strong>
           </div>
         </div>
       )}
@@ -216,7 +210,8 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
       <Card data-ui-capture="single-job-form">
         <CardContent className="p-4 sm:p-6">
           <form className="space-y-5" onSubmit={submit} noValidate>
-            {prepared && <Alert><CheckCircle2 className="size-4" /><AlertDescription>Markdown 已保存，点击“生成 PDF”开始构建。</AlertDescription></Alert>}
+            {uploadedRecovery && <Alert><CheckCircle2 className="size-4" /><AlertDescription>Markdown 已保存，点击“生成 PDF”开始构建。</AlertDescription></Alert>}
+            {createdRecovery && <Alert variant="warning"><FileText className="size-4" /><AlertDescription>上次任务尚未完成上传，请重新选择 Markdown 后再点击“生成 PDF”。</AlertDescription></Alert>}
 
             <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
               <div className="pt-2"><FieldLabel htmlFor="document-name">文件命名</FieldLabel></div>
@@ -225,7 +220,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                   id="document-name"
                   placeholder="自动使用文件名或 Markdown 标题"
                   autoComplete="off"
-                  disabled={controlsDisabled}
+                  disabled={optionsDisabled}
                   aria-invalid={Boolean(form.formState.errors.documentName)}
                   {...documentNameField}
                   onChange={(event) => {
@@ -240,17 +235,17 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
             <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
               <div className="grid gap-2">
                 <span className="text-sm font-semibold">文档内容</span>
-                <Button type="button" size="sm" variant={sourceMode === 'file' ? 'secondary' : 'outline'} disabled={controlsDisabled} onClick={() => form.setValue('sourceMode', 'file')}><FileText />上传文件</Button>
-                <Button type="button" size="sm" variant={sourceMode === 'text' ? 'secondary' : 'outline'} disabled={controlsDisabled} onClick={() => form.setValue('sourceMode', 'text')}><FileText />粘贴文本</Button>
-                <Button type="button" size="sm" variant="outline" disabled={controlsDisabled} onClick={() => void pasteClipboard()}><ClipboardPaste />粘贴剪切板</Button>
+                <Button type="button" size="sm" variant={sourceMode === 'file' ? 'secondary' : 'outline'} disabled={inputDisabled} onClick={() => form.setValue('sourceMode', 'file')}><FileText />上传文件</Button>
+                <Button type="button" size="sm" variant={sourceMode === 'text' ? 'secondary' : 'outline'} disabled={inputDisabled} onClick={() => form.setValue('sourceMode', 'text')}><FileText />粘贴文本</Button>
+                <Button type="button" size="sm" variant="outline" disabled={inputDisabled} onClick={() => void pasteClipboard()}><ClipboardPaste />粘贴剪切板</Button>
               </div>
 
               {sourceMode === 'file' ? (
                 <label className="group flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed bg-muted/15 p-5 text-center transition-colors hover:border-primary/50 hover:bg-accent/40 focus-within:ring-2 focus-within:ring-ring">
-                  <input data-ui-capture="markdown-file-input" className="sr-only" type="file" accept=".md,text/markdown,text/plain" disabled={controlsDisabled} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void prepareMarkdownFile(file) }} />
+                  <input data-ui-capture="markdown-file-input" className="sr-only" type="file" accept=".md,text/markdown,text/plain" disabled={inputDisabled} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) selectMarkdownFile(file) }} />
                   <FileText className="size-7 text-primary" />
-                  <strong className="mt-3 max-w-full break-all">{markdownFile?.name || (prepared ? submission.recovery?.sourceFilename || 'Markdown 已上传' : '选择或拖入 Markdown')}</strong>
-                  <span className="mt-1 text-xs text-muted-foreground">{markdownFile ? formatFileSize(markdownFile.size) : '最大 10 MiB'}</span>
+                  <strong className="mt-3 max-w-full break-all">{markdownFile?.name || (uploadedRecovery ? submission.recovery?.sourceFilename || 'Markdown 已上传' : createdRecovery ? '重新选择 Markdown' : '选择或拖入 Markdown')}</strong>
+                  <span className="mt-1 text-xs text-muted-foreground">{markdownFile ? `${formatFileSize(markdownFile.size)} · 点击生成后上传` : '最大 10 MiB'}</span>
                 </label>
               ) : (
                 <Field data-invalid={Boolean(form.formState.errors.markdownText)}>
@@ -258,12 +253,12 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                     id="markdown-text"
                     placeholder="# 标题"
                     className="min-h-52 resize-y font-mono text-sm leading-6"
-                    disabled={controlsDisabled}
+                    disabled={inputDisabled}
                     aria-invalid={Boolean(form.formState.errors.markdownText)}
                     {...markdownTextField}
                     onBlur={(event) => {
                       void markdownTextField.onBlur(event)
-                      if (event.currentTarget.value.trim()) void prepareMarkdownText(event.currentTarget.value)
+                      if (event.currentTarget.value.trim()) void selectMarkdownText(event.currentTarget.value)
                     }}
                     onPaste={(event) => {
                       const pasted = event.clipboardData.getData('text')
@@ -274,7 +269,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                       const end = event.currentTarget.selectionEnd || 0
                       const next = `${current.slice(0, start)}${pasted}${current.slice(end)}`
                       form.setValue('markdownText', next, { shouldValidate: true })
-                      void prepareMarkdownText(next)
+                      void selectMarkdownText(next)
                     }}
                   />
                   <FieldError>{form.formState.errors.markdownText?.message}</FieldError>
@@ -287,33 +282,33 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
                 <div className="flex min-h-11 items-center rounded-lg border bg-muted/10">
                   <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-3 py-2">
-                    <input className="sr-only" type="file" accept=".zip,application/zip" disabled={controlsDisabled} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptAssets(file) }} />
+                    <input className="sr-only" type="file" accept=".zip,application/zip" disabled={inputDisabled} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) acceptAssets(file) }} />
                     <Archive className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 truncate text-sm">{assets?.name || '可选 ZIP 资源包'}</span>
+                    <span className="min-w-0 truncate text-sm">{assets?.name || (createdRecovery && submission.recovery?.hasAssets ? '重新选择 ZIP 资源包' : '可选 ZIP 资源包')}</span>
                   </label>
-                  {assets && !controlsDisabled && <Button type="button" variant="ghost" size="icon" onClick={() => setAssets(null)} aria-label="移除 ZIP 资源包"><X /></Button>}
+                  {assets && !inputDisabled && <Button type="button" variant="ghost" size="icon" onClick={() => setAssets(null)} aria-label="移除 ZIP 资源包"><X /></Button>}
                 </div>
-                <Select aria-label="PDF 主题" disabled={controlsDisabled} {...form.register('theme')}>
+                <Select aria-label="PDF 主题" disabled={optionsDisabled} {...form.register('theme')}>
                   {PDF_THEMES.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </Select>
               </div>
             </div>
 
             {message && <Alert variant="destructive"><AlertDescription>{message}</AlertDescription></Alert>}
-            {showPreparation && (
+            {showProgress && (
               <div data-ui-capture="source-upload-status" className="space-y-2" aria-live="polite">
                 <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-2">{(sourceIntent || submission.busy) && <LoaderCircle className="size-3.5 animate-spin" />}{preparationLabel}</span>
-                  <strong className="tabular-nums text-foreground">{preparationProgress}%</strong>
+                  <span className="inline-flex items-center gap-2">{(sourceIntent || submission.busy) && <LoaderCircle className="size-3.5 animate-spin" />}{progressLabel}</span>
+                  <strong className="tabular-nums text-foreground">{progressValue}%</strong>
                 </div>
-                <Progress value={preparationProgress} aria-label="源文件准备进度" />
+                <Progress value={progressValue} aria-label="任务提交进度" />
               </div>
             )}
 
             <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" disabled={controlsDisabled} onClick={() => void clearTask()}><RotateCcw />{submission.recovery ? '清除上传' : '清空'}</Button>
-              <Button type="submit" disabled={controlsDisabled || (!submission.recovery && !markdownFile && !markdownText.trim())}>
-                {submission.state.status === 'starting' ? <LoaderCircle className="animate-spin" /> : <Play />}
+              <Button type="button" variant="outline" disabled={actionDisabled} onClick={() => void clearTask()}><RotateCcw />{submission.recovery ? '清除任务' : '清空'}</Button>
+              <Button type="submit" disabled={actionDisabled || (!submission.recovery && !hasLocalSource)}>
+                {submission.busy ? <LoaderCircle className="animate-spin" /> : <Play />}
                 生成 PDF
               </Button>
             </div>
