@@ -41,11 +41,12 @@ export function JobDetailPage() {
   ]
 
   return (
-    <PageContainer className="flex flex-col gap-5">
+    <PageContainer data-ui-capture="job-detail" className="flex flex-col gap-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="min-w-0">
           <Button variant="ghost" className="mb-2 -ml-3" asChild><Link to="/jobs"><ArrowLeft data-icon="inline-start" />任务列表</Link></Button>
           <div className="flex flex-wrap items-center gap-3"><h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">{item.document_name}</h1><JobStatusBadge job={item} /></div>
+          <p className="mt-1 break-all text-sm text-muted-foreground">{item.source_filename}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void job.refetch()} disabled={job.isFetching} aria-busy={job.isFetching}>
           {job.isFetching ? <Spinner data-icon="inline-start" /> : <RefreshCw data-icon="inline-start" />}
@@ -56,7 +57,7 @@ export function JobDetailPage() {
       {item.error_message && item.status !== 'cancelled' && <Alert variant="destructive"><AlertTitle>构建失败</AlertTitle><AlertDescription className="whitespace-pre-wrap break-words">{item.error_message}</AlertDescription></Alert>}
       {item.status === 'cancelled' && <Alert variant="warning"><AlertDescription>任务已取消，待上传文件会被清理。</AlertDescription></Alert>}
       {item.status === 'expired' && <Alert variant="warning"><AlertDescription>PDF 与 Markdown 源稿已超过保留期限。</AlertDescription></Alert>}
-      {canCancelJob(item) && <Alert variant="warning"><AlertDescription>该任务尚未开始构建。</AlertDescription><Button className="mt-3" onClick={() => { setSelectedJobId(item.id); navigate('/workspace') }}>返回创建页</Button></Alert>}
+      {canCancelJob(item) && <Alert variant="warning"><AlertDescription>源文件已保存，尚未开始构建。</AlertDescription><Button className="mt-3" onClick={() => { setSelectedJobId(item.id); navigate('/workspace') }}>返回创建页</Button></Alert>}
 
       <Card>
         <CardHeader className="flex-row items-center justify-between gap-3 border-b">

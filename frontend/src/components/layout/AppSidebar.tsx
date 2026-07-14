@@ -1,5 +1,5 @@
 import { CircleCheckBig, CircleX, FilePlus2, FileText, Files, Heart, LoaderCircle, LogOut, Settings, UserRound } from 'lucide-react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { toUserMessage } from '@/lib/errors'
@@ -21,6 +21,7 @@ const navigation: NavigationItem[] = [
   { label: '已完成', to: '/jobs?status=completed', icon: CircleCheckBig, count: 'completed' },
   { label: '失败', to: '/jobs?status=failed', icon: CircleX, count: 'failed' },
   { label: '收藏', to: '/jobs?status=favorite', icon: Heart, count: 'favorite' },
+  { label: '设置', to: '/settings', icon: Settings },
 ]
 
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -62,7 +63,6 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
       <Separator />
       <div className="space-y-2 p-3">
-        <NavLink to="/settings" onClick={onNavigate} className={({ isActive }) => cn('flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground', isActive && 'bg-accent text-accent-foreground')}><Settings className="size-4" />设置</NavLink>
         <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/20 px-3 py-2"><RealtimeIndicator /><span className="text-xs text-muted-foreground">任务同步</span></div>
         <div className="rounded-xl border bg-card p-3">
           <div className="flex min-w-0 items-center gap-3">

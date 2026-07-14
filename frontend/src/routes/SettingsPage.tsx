@@ -40,10 +40,10 @@ export function SettingsPage() {
   })
 
   return (
-    <PageContainer className="flex max-w-3xl flex-col gap-5">
+    <PageContainer data-ui-capture="settings-page" className="flex max-w-3xl flex-col gap-5">
       <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">设置</h1>
       <Card>
-        <CardHeader><CardTitle>默认构建与完成操作</CardTitle></CardHeader>
+        <CardHeader><CardTitle>默认选项</CardTitle></CardHeader>
         <form onSubmit={submit}>
           <CardContent>
             <FieldGroup>

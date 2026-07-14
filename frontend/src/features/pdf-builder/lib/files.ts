@@ -26,8 +26,10 @@ export function documentNameFromMarkdown(filename: string): string {
 
 export function inferMarkdownDocumentName(markdown: string): string {
   const lines = markdown.replace(/^\uFEFF/, '').split(/\r?\n/)
-  const headings: Array<{ index: number; level: number; title: string }> = []
   let fence: '`' | '~' | null = null
+  let bestLevel = 7
+  let bestTitle = ''
+  let firstContent = ''
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index] ?? ''
@@ -39,12 +41,22 @@ export function inferMarkdownDocumentName(markdown: string): string {
     }
     if (fence) continue
 
+    if (!firstContent) {
+      const candidate = cleanDocumentNameCandidate(line)
+      if (candidate && candidate !== '---') firstContent = candidate
+    }
+
     const atx = line.match(/^\s{0,3}(#{1,6})[\t ]+(.+?)\s*$/)
     const atxMarkers = atx?.[1] ?? ''
     const atxTitle = atx?.[2] ?? ''
     if (atxMarkers && atxTitle) {
       const title = cleanDocumentNameCandidate(atxTitle)
-      if (title) headings.push({ index, level: atxMarkers.length, title })
+      const level = atxMarkers.length
+      if (title && level < bestLevel) {
+        bestLevel = level
+        bestTitle = title
+        if (level === 1) return title
+      }
       continue
     }
 
@@ -52,20 +64,17 @@ export function inferMarkdownDocumentName(markdown: string): string {
     const setextMarker = next.match(/^\s{0,3}(=+|-+)\s*$/)?.[1] ?? ''
     const title = cleanDocumentNameCandidate(line)
     if (title && setextMarker) {
-      headings.push({ index, level: setextMarker[0] === '=' ? 1 : 2, title })
+      const level = setextMarker[0] === '=' ? 1 : 2
+      if (level < bestLevel) {
+        bestLevel = level
+        bestTitle = title
+        if (level === 1) return title
+      }
       index += 1
     }
   }
 
-  if (headings.length > 0) {
-    const highestLevel = Math.min(...headings.map((heading) => heading.level))
-    return headings.find((heading) => heading.level === highestLevel)?.title || '粘贴的 Markdown'
-  }
-
-  const firstContent = lines
-    .map((line) => cleanDocumentNameCandidate(line))
-    .find((line) => line && line !== '---')
-  return firstContent || '粘贴的 Markdown'
+  return bestTitle || firstContent || '粘贴的 Markdown'
 }
 
 export function markdownFilename(name: string): string {

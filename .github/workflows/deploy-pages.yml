@@ -7,7 +7,8 @@ on:
     paths:
       - 'frontend/**'
       - 'scripts/capture-deployed-ui.mjs'
-      - 'scripts/manage-ui-capture-user.mjs'
+      - 'scripts/capture-deployed-desktop.mjs'
+      - 'frontend/scripts/manage-ui-capture-user.mjs'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -157,7 +158,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci --prefer-offline --no-audit --no-fund
-          node --check scripts/capture-deployed-ui.mjs
+          node --check scripts/capture-deployed-desktop.mjs
           google-chrome --version
 
       - name: Prepare authenticated UI session
@@ -173,19 +174,19 @@ jobs:
           set -euo pipefail
           node --check scripts/manage-ui-capture-user.mjs
           node scripts/manage-ui-capture-user.mjs prepare
-          test -s .tmp/deployment-auth/credentials.json
+          test -s .tmp/deployment-auth/session.json
 
-      - name: Capture deployed UI screenshots
+      - name: Capture desktop application pages
         shell: bash
         env:
           PAGES_URL: https://${{ env.CLOUDFLARE_PAGES_PROJECT }}.pages.dev
           CHROME_EXECUTABLE_PATH: /usr/bin/google-chrome
-          UI_CAPTURE_CREDENTIALS_PATH: frontend/.tmp/deployment-auth/credentials.json
+          UI_CAPTURE_SESSION_PATH: frontend/.tmp/deployment-auth/session.json
           UI_CAPTURE_OUTPUT_DIR: frontend/deployment-screenshots
         run: |
           set -euo pipefail
-          node scripts/capture-deployed-ui.mjs
-          for file in ui-overview.png public-desktop-1440.png authenticated-desktop-1440.png public-mobile-390.png authenticated-mobile-390.png metadata.json; do
+          node scripts/capture-deployed-desktop.mjs
+          for file in ui-overview.png workspace-create-desktop.png workspace-batch-desktop.png jobs-list-desktop.png job-detail-desktop.png favorites-desktop.png settings-desktop.png metadata.json; do
             test -s "frontend/deployment-screenshots/$file"
           done
 
@@ -201,7 +202,7 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/manage-ui-capture-user.mjs cleanup
-          test ! -e .tmp/deployment-auth/credentials.json
+          test ! -e .tmp/deployment-auth/session.json
 
       - name: Upload deployed UI screenshots
         id: upload-ui-screenshots
@@ -222,13 +223,14 @@ jobs:
         run: |
           set -euo pipefail
           {
-            echo '## Cloudflare Pages UI capture'
+            echo '## Cloudflare Pages desktop UI capture'
             echo
             echo "- Production: $PAGES_URL"
             echo "- Commit: \`$GITHUB_SHA\`"
             echo "- Screenshots: ${ARTIFACT_URL:-not available}"
             echo '- Primary overview: ui-overview.png'
-            echo '- Source captures: public/authenticated desktop and mobile PNG files'
+            echo '- Pages: single create, batch create, task list, task detail, favorites, settings'
+            echo '- Viewport: desktop 1440x1000 only'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Pages deployment result
@@ -249,6 +251,6 @@ jobs:
               context: 'cloudflare-pages',
               target_url: state === 'success' ? pagesUrl : runUrl,
               description: state === 'success'
-                ? 'Cloudflare Pages deployment and UI capture completed'
+                ? 'Cloudflare Pages deployment and desktop UI capture completed'
                 : 'Cloudflare Pages deployment or UI capture failed',
             })
