@@ -164,9 +164,26 @@ async function createSampleTask(page) {
 async function favoriteCurrentTask(page) {
   const button = await page.waitForSelector('button[aria-label="收藏任务"]', { visible: true, timeout: 20_000 })
   if (!button) throw new Error('Favorite button was not found.')
-  await button.click()
+
+  const responsePromise = page.waitForResponse((response) => (
+    response.url().includes('/functions/v1/favorite-pdf-job')
+    && response.request().method() === 'POST'
+  ), { timeout: 30_000 })
+  const [, response] = await Promise.all([button.click(), responsePromise])
+  if (!response.ok()) throw new Error(`Favorite request failed with HTTP ${response.status()}.`)
+
   await page.waitForSelector('button[aria-label="取消收藏"]', { visible: true, timeout: 20_000 })
   await sleep(600)
+}
+
+async function captureFavorites(page) {
+  const route = '/jobs?status=favorite'
+  await navigate(page, route, SELECTORS.favorites)
+  await page.waitForSelector(`${SELECTORS.favorites} a[href^="/jobs/"]`, { visible: true, timeout: 30_000 })
+  await sleep(500)
+  const file = 'favorites-desktop.png'
+  await page.screenshot({ path: path.join(outputDirectory, file), fullPage: true })
+  captured.push({ file, label: '收藏任务', route, viewport: '1440x1000', fullPage: true })
 }
 
 async function composeOverview() {
@@ -245,7 +262,7 @@ try {
   await capture(page, 'jobs-list-desktop.png', '任务列表', '/jobs', SELECTORS.jobs)
   await capture(page, 'job-detail-desktop.png', '任务详情与构建流程', detailRoute, SELECTORS.detail)
   await favoriteCurrentTask(page)
-  await capture(page, 'favorites-desktop.png', '收藏任务', '/jobs?status=favorite', SELECTORS.favorites)
+  await captureFavorites(page)
   await capture(page, 'settings-desktop.png', '设置', '/settings', SELECTORS.settings)
   await composeOverview()
   diagnostics.push({ status: 'success', detailRoute, browserErrors })

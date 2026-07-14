@@ -40,6 +40,10 @@ const STAGES: Record<JobDisplayStatus, string> = {
 const MACHINE_STAGE_TOKENS = new Set([
   'created',
   'uploaded',
+  'input-ready',
+  'input_ready',
+  'source-uploaded',
+  'source_uploaded',
   'queued',
   'building',
   'running',

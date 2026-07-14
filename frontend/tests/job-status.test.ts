@@ -27,6 +27,7 @@ test('server statuses map to distinct UI lifecycle stages', () => {
 test('machine progress tokens fall back to readable Chinese descriptions', () => {
   assert.equal(getJobStageDescription(job('completed', { progress_stage: 'completed' })), 'PDF 与 Markdown 源稿已保存')
   assert.equal(getJobStageDescription(job('building', { progress_stage: 'rendering' })), '正在排版并生成 PDF')
+  assert.equal(getJobStageDescription(job('uploaded', { progress_stage: 'input-ready' })), '源文件已保存，等待生成')
   assert.equal(getJobStageDescription(job('building', { progress_stage: '正在处理第 4 页' })), '正在处理第 4 页')
 })
 

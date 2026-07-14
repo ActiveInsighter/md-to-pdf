@@ -31,6 +31,8 @@ export function JobDetailPage() {
 
   const item = job.data
   const themeName = PDF_THEMES.find((theme) => theme.id === item.theme)?.name || item.theme
+  const attemptCount = item.attempt_count || 0
+  const buildAttemptLabel = attemptCount > 0 ? `第 ${attemptCount} 次构建` : '尚未构建'
   const details = [
     ['Markdown', item.source_filename],
     ['PDF', item.output_filename || `${item.document_name}.pdf`],
@@ -62,7 +64,7 @@ export function JobDetailPage() {
       <Card>
         <CardHeader className="flex-row items-center justify-between gap-3 border-b">
           <CardTitle>构建进度</CardTitle>
-          <span className="text-xs text-muted-foreground">第 {item.attempt_count || 1} 次构建</span>
+          <span className="text-xs text-muted-foreground">{buildAttemptLabel}</span>
         </CardHeader>
         <CardContent className="pt-6"><JobProgress job={item} /></CardContent>
         <CardFooter className="border-t pt-5"><JobActions job={item} /></CardFooter>
