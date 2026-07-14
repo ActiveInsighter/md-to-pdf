@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   cancelPdfJob,
+  confirmPdfUpload,
   createPdfJob,
   getPdfDownload,
   getPdfJob,
@@ -27,6 +28,14 @@ export function usePdfJobActions() {
   const create = useMutation({ mutationFn: (input: { hasAssets: boolean; sourceFilename: string; theme: PdfThemeId }) => createPdfJob(input.hasAssets, input.sourceFilename, input.theme) })
   const uploadMarkdown = useMutation({ mutationFn: (input: { path: string; file: File }) => uploadInput(input.path, input.file) })
   const uploadResources = useMutation({ mutationFn: (input: { path: string; file: File }) => uploadAssets(input.path, input.file) })
+  const confirmUpload = useMutation({
+    mutationFn: confirmPdfUpload,
+    onSuccess: async (_, jobId) => {
+      const job = await getPdfJob(jobId)
+      mergeJobIntoCache(queryClient, job)
+      await queryClient.invalidateQueries({ queryKey: pdfJobKeys.list(job.user_id) })
+    },
+  })
   const start = useMutation({
     mutationFn: startPdfJob,
     onSuccess: async (_, jobId) => {
@@ -81,5 +90,5 @@ export function usePdfJobActions() {
   const download = useMutation({ mutationFn: getPdfDownload, onError: (error) => toast.error(toUserMessage(error, 'PDF 下载地址生成失败。')) })
   const downloadSource = useMutation({ mutationFn: getSourceDownload, onError: (error) => toast.error(toUserMessage(error, 'Markdown 下载地址生成失败。')) })
 
-  return { create, uploadMarkdown, uploadResources, start, cancel, rebuild, favorite, download, downloadSource }
+  return { create, uploadMarkdown, uploadResources, confirmUpload, start, cancel, rebuild, favorite, download, downloadSource }
 }
