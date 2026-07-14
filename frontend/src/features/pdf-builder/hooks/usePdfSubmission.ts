@@ -56,7 +56,7 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
       throw new Error('该待启动任务需要原资源压缩包，请重新选择 ZIP 文件。')
     }
     if (target?.status === 'created' && !target.hasAssets && input.assets) {
-      throw new Error('该待启动任务创建时未包含资源包，请先清空任务再重新选择。')
+      throw new Error('该待启动任务创建时未包含资源包，请清除该任务后重新选择。')
     }
 
     if (!target) {
@@ -90,34 +90,13 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
     return target
   }
 
-  async function prepare(input: SubmissionInput): Promise<SubmissionRecovery | null> {
-    if (operationRef.current) return recoveryRef.current
-    operationRef.current = true
-    const initialJobId = recoveryRef.current?.jobId
-    try {
-      return await createAndUpload(input)
-    } catch (cause) {
-      const targetJobId = recoveryRef.current?.jobId || initialJobId
-      dispatch({
-        type: 'FAILED',
-        jobId: targetJobId,
-        message: `${toUserMessage(cause)}${targetJobId ? ' 待启动任务已保留，可重新选择所需文件后重试。' : ''}`,
-        recoverable: Boolean(targetJobId),
-      })
-      await queryClient.invalidateQueries({ queryKey: pdfJobKeys.all })
-      return null
-    } finally {
-      operationRef.current = false
-    }
-  }
-
   async function submit(input: SubmissionInput): Promise<void> {
     if (operationRef.current) return
     operationRef.current = true
     let target = recoveryRef.current
     let targetJobId = target?.jobId
     try {
-      if (!target) {
+      if (!target || target.status === 'created') {
         target = await createAndUpload(input)
         targetJobId = target.jobId
       }
@@ -132,7 +111,7 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
       dispatch({
         type: 'FAILED',
         jobId: targetJobId,
-        message: `${toUserMessage(cause)}${targetJobId ? ' 文件仍保留在私有存储中，可以再次点击生成。' : ''}`,
+        message: `${toUserMessage(cause)}${targetJobId ? ' 已创建的任务会保留，可修正文件后再次点击生成。' : ''}`,
         recoverable: Boolean(targetJobId),
       })
       await queryClient.invalidateQueries({ queryKey: pdfJobKeys.all })
@@ -168,7 +147,6 @@ export function usePdfSubmission(serverRecovery: SubmissionRecovery | null, onSu
     state,
     busy,
     recovery,
-    prepare,
     submit,
     cancelRecovery,
     reset: () => dispatch({ type: 'RESET' }),
