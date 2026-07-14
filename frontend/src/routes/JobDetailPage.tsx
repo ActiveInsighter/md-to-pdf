@@ -43,14 +43,14 @@ export function JobDetailPage() {
   const attemptCount = item.attempt_count || 0
   const buildAttemptLabel = attemptCount > 0 ? `第 ${attemptCount} 次构建` : '尚未构建'
   const fileDetails = [
-    ['Markdown', item.source_filename],
-    ['PDF', item.output_filename || `${item.document_name}.pdf`],
-    ['PDF 主题', themeName],
+    { label: 'Markdown', value: item.source_filename },
+    { label: 'PDF', value: item.output_filename || `${item.document_name}.pdf` },
+    { label: 'PDF 主题', value: themeName },
   ]
   const taskDetails = [
-    ['创建时间', formatDateTime(item.created_at)],
-    ['文件保留', item.is_favorite ? '已收藏，持续保留' : formatDateTime(item.expires_at)],
-    ['资源包', item.has_assets ? '已包含 ZIP 资源包' : '无资源包'],
+    { label: '创建时间', value: formatDateTime(item.created_at) },
+    { label: '文件保留', value: item.is_favorite ? '已收藏，持续保留' : formatDateTime(item.expires_at) },
+    { label: '资源包', value: item.has_assets ? '已包含 ZIP 资源包' : '无资源包' },
   ]
 
   return (
@@ -94,7 +94,7 @@ export function JobDetailPage() {
           <CardHeader className="border-b"><CardTitle>文件信息</CardTitle></CardHeader>
           <CardContent className="p-5">
             <dl className="grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              {fileDetails.map(([label, value]) => <div key={label} className="sm:px-5 sm:first:pl-0 sm:last:pr-0"><DetailItem label={label} value={value} /></div>)}
+              {fileDetails.map((detail) => <div key={detail.label} className="sm:px-5 sm:first:pl-0 sm:last:pr-0"><DetailItem label={detail.label} value={detail.value} /></div>)}
             </dl>
           </CardContent>
         </Card>
@@ -103,7 +103,7 @@ export function JobDetailPage() {
           <CardHeader className="border-b"><CardTitle>任务信息</CardTitle></CardHeader>
           <CardContent className="p-5">
             <dl className="divide-y">
-              {taskDetails.map(([label, value]) => <DetailItem key={label} label={label} value={value} />)}
+              {taskDetails.map((detail) => <DetailItem key={detail.label} label={detail.label} value={detail.value} />)}
             </dl>
             <details className="mt-4 rounded-lg border bg-muted/15 px-4 py-3 text-sm">
               <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground">技术详情</summary>
