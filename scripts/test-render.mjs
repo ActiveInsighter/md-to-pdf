@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import puppeteer from 'puppeteer';
 import { validateMarkdownForRender } from './lib/render-preflight.mjs';
 
 const projectRoot = process.cwd();
@@ -47,6 +49,89 @@ async function assertFile(filePath, minimumBytes) {
     throw new Error(`${relative(filePath)} is too small: ${stat.size} bytes`);
   }
   return stat.size;
+}
+
+async function inspectChineseFractionRendering(htmlPath) {
+  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  };
+
+  if (executablePath) launchOptions.executablePath = executablePath;
+
+  const browser = await puppeteer.launch(launchOptions);
+
+  try {
+    const page = await browser.newPage();
+    const timeout = Number(process.env.PUPPETEER_TIMEOUT_MS || 180000);
+    page.setDefaultTimeout(timeout);
+    page.setDefaultNavigationTimeout(timeout);
+    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'networkidle0', timeout });
+    await page.emulateMediaType('print');
+    await page.evaluate(() => document.fonts.ready);
+
+    const metrics = await page.evaluate(() => {
+      const fractions = [...document.querySelectorAll('.katex-display .mfrac')];
+      const fraction = fractions.find((node) => node.querySelector('.cjk_fallback'));
+      if (!fraction) throw new Error('Chinese display fraction was not rendered');
+
+      const line = fraction.querySelector('.frac-line');
+      if (!line) throw new Error('Chinese display fraction is missing .frac-line');
+
+      const style = getComputedStyle(line);
+      const lineRect = line.getBoundingClientRect();
+      const matrix = style.transform === 'none' ? null : new DOMMatrixReadOnly(style.transform);
+      const lineCenter = (lineRect.top + lineRect.bottom) / 2;
+      const textRects = [...fraction.querySelectorAll('.cjk_fallback')]
+        .map((node) => node.getBoundingClientRect())
+        .filter((rect) => rect.width > 0 && rect.height > 0);
+      const numeratorRects = textRects.filter((rect) => (rect.top + rect.bottom) / 2 < lineCenter);
+      const denominatorRects = textRects.filter((rect) => (rect.top + rect.bottom) / 2 > lineCenter);
+      const numeratorBottom = numeratorRects.length > 0
+        ? Math.max(...numeratorRects.map((rect) => rect.bottom))
+        : null;
+      const denominatorTop = denominatorRects.length > 0
+        ? Math.min(...denominatorRects.map((rect) => rect.top))
+        : null;
+
+      return {
+        text: fraction.textContent?.replace(/\s+/g, '') || '',
+        border_bottom_width: style.borderBottomWidth,
+        background_color: style.backgroundColor,
+        transform: style.transform,
+        transform_origin: style.transformOrigin,
+        scale_y: matrix?.m22 ?? 1,
+        layout_height_px: line.offsetHeight,
+        rendered_height_px: lineRect.height,
+        numerator_gap_px: numeratorBottom == null ? null : lineRect.top - numeratorBottom,
+        denominator_gap_px: denominatorTop == null ? null : denominatorTop - lineRect.bottom
+      };
+    });
+
+    if (!metrics.text.includes('目标字数') || !metrics.text.includes('单片字数')) {
+      throw new Error(`Unexpected Chinese fraction text: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.border_bottom_width !== '0px') {
+      throw new Error(`Fraction border must be disabled: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.background_color === 'transparent' || metrics.background_color === 'rgba(0, 0, 0, 0)') {
+      throw new Error(`Fraction painted rule is transparent: ${JSON.stringify(metrics)}`);
+    }
+    if (Math.abs(metrics.scale_y - 0.64) > 0.02) {
+      throw new Error(`Unexpected fraction rule scale: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.layout_height_px < 1 || metrics.rendered_height_px <= 0 || metrics.rendered_height_px >= metrics.layout_height_px * 0.8) {
+      throw new Error(`Fraction rule was not visually thinned while preserving layout height: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.numerator_gap_px == null || metrics.denominator_gap_px == null || metrics.numerator_gap_px <= 0 || metrics.denominator_gap_px <= 0) {
+      throw new Error(`Fraction rule overlaps Chinese numerator or denominator: ${JSON.stringify(metrics)}`);
+    }
+
+    return metrics;
+  } finally {
+    await browser.close();
+  }
 }
 
 function samplingDocument() {
@@ -114,6 +199,7 @@ async function main() {
   const quality = JSON.parse(await fs.readFile(outputQuality, 'utf8'));
   const samplingReport = JSON.parse(await fs.readFile(samplingQuality, 'utf8'));
   const index = JSON.parse(await fs.readFile(outputIndex, 'utf8'));
+  const fractionRendering = await inspectChineseFractionRendering(outputHtml);
 
   const requiredHtmlMarkers = [
     'class="katex',
@@ -121,7 +207,9 @@ async function main() {
     '<table>',
     'render-regression.svg',
     '<blockquote>',
-    '[!NOTE]'
+    '[!NOTE]',
+    'cjk_fallback',
+    'frac-line'
   ];
 
   for (const marker of requiredHtmlMarkers) {
@@ -165,6 +253,7 @@ async function main() {
     pages: quality.pdf.pages,
     selected_preview_pages: quality.preview.selected_pages,
     quality_status: quality.status,
+    fraction_rendering: fractionRendering,
     sampling: {
       pdf: relative(samplingPdf),
       preview: relative(samplingPreview),
