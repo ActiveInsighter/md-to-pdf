@@ -81,11 +81,30 @@ body.pdf-theme-chatgpt-light {
   --ky-block-gap: 0.8em;
   --ky-tight-gap: 0.18em;
   --ky-list-gap: 0.12em;
+  --math-frac-rule-scale: 0.64;
 }
 
 body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) :is(h1, h2, h3, h4, h5, h6) {
   margin-top: 0.86em !important;
   margin-bottom: 0.34em !important;
+}
+
+/*
+  Render fraction rules as a visually thinner painted line without changing
+  KaTeX's layout metrics. Chromium rounds very small border widths to a full
+  device pixel when printing, so changing only border-bottom-width does not
+  reliably make the rule lighter. Keeping the original 1px layout box and
+  scaling its painted background avoids baseline and numerator/denominator
+  shifts while preserving Chrome's anti-disappearing-line safeguard.
+*/
+body.pdf-theme-chatgpt-light
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex .mfrac .frac-line {
+  min-height: 1px !important;
+  border-bottom-width: 0 !important;
+  background-color: currentColor !important;
+  transform: scaleY(var(--math-frac-rule-scale));
+  transform-origin: 50% 100%;
 }
 
 body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blockquote:not(.callout) {
