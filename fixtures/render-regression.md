@@ -39,6 +39,45 @@ F'(x)&=\sqrt{\ln(1+x)}\,\mathrm e^{\ln(1+x)}\frac{1}{1+x}\\
 \frac{\text{目标字长}}{\text{单片字长}}
 \]
 
+带编号的宽矩阵公式不得与编号重叠：
+
+\[
+AA^{-1}=I,
+\qquad
+A\begin{bmatrix}x_1&\cdots&x_n\end{bmatrix}
+=
+\begin{bmatrix}e_1&\cdots&e_n\end{bmatrix},
+\qquad
+A\begin{bmatrix}x_1&x_2&x_3\end{bmatrix}
+=
+\begin{bmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1
+\end{bmatrix}.
+\tag{2.19}
+\]
+
+超宽未编号公式应在页面宽度内自动缩放：
+
+\[
+\begin{bmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1
+\end{bmatrix}
+\begin{bmatrix}x_1\\x_2\\x_3\end{bmatrix}
++
+\begin{bmatrix}
+2&-1&4\\
+0&3&5\\
+7&2&1
+\end{bmatrix}
+\begin{bmatrix}y_1\\y_2\\y_3\end{bmatrix}
+=
+\begin{bmatrix}b_1\\b_2\\b_3\end{bmatrix}
+\]
+
 ## 提示块
 
 > [!NOTE] 渲染检查
@@ -118,6 +157,8 @@ for (const example of examples) {
 | 29 | 表格 | 长文本 | 合理折行 |
 | 30 | 整体 | 回归测试 | 构建成功 |
 | 31 | 公式 | 中文长分式 | 细线且布局稳定 |
+| 32 | 公式 | 宽矩阵与编号 | 编号不重叠 |
+| 33 | 公式 | 超宽表达式 | 自动缩放到页内 |
 
 ## 列表
 
