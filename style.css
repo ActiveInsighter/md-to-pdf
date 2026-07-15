@@ -107,6 +107,72 @@ body.pdf-theme-chatgpt-light
   transform-origin: 50% 100%;
 }
 
+/*
+  Wide display-formula protection.
+
+  KaTeX positions equation tags absolutely inside the formula box. For long
+  matrices and chained equalities this can make the tag overlap the last matrix.
+  The renderer moves a visual copy of the tag into a dedicated grid column and
+  scales only formulas that exceed their available print width.
+*/
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display.katex-display-tagged {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-rows: auto;
+  align-items: center !important;
+  column-gap: 0.72em !important;
+  text-align: initial !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display.katex-display-tagged > .katex:not(.katex-outside-tag) {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  min-width: 0 !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display .katex-source-tag {
+  display: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display.katex-display-tagged > .katex-outside-tag {
+  grid-column: 2;
+  grid-row: 1;
+  position: static !important;
+  display: inline-block !important;
+  align-self: center !important;
+  justify-self: end;
+  max-width: none !important;
+  white-space: nowrap !important;
+  line-height: normal !important;
+  font-size: 1em !important;
+}
+
+/* KaTeX's original absolute tag carries a vertical alignment strut. It is only
+   needed inside the original equation row and would push the relocated tag down. */
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display.katex-display-tagged > .katex-outside-tag .strut {
+  display: none !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display.katex-display-tagged > .katex-outside-tag > .tag {
+  position: static !important;
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+}
+
+:is(.print, .markdown-preview-view, .markdown-rendered)
+.katex-display.katex-display-overflow {
+  outline: 0 !important;
+}
+
 body.pdf-theme-chatgpt-light :is(.markdown-preview-view, .markdown-rendered) blockquote:not(.callout) {
   position: relative !important;
   margin: 0.8em 0 !important;

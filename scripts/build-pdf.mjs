@@ -372,7 +372,126 @@ ${renderedMarkdown}
       });
     }
 
+    function visibleFormulaRect(katex) {
+      const html = katex.querySelector(':scope > .katex-html') || katex.querySelector('.katex-html');
+      const bases = html
+        ? [...html.children].filter((node) => node.classList?.contains('base'))
+        : [];
+      const rects = (bases.length > 0 ? bases : [html || katex])
+        .map((node) => node?.getBoundingClientRect())
+        .filter((rect) => rect && rect.width > 0 && rect.height > 0);
+
+      if (rects.length === 0) return katex.getBoundingClientRect();
+
+      const left = Math.min(...rects.map((rect) => rect.left));
+      const right = Math.max(...rects.map((rect) => rect.right));
+      const top = Math.min(...rects.map((rect) => rect.top));
+      const bottom = Math.max(...rects.map((rect) => rect.bottom));
+      return { left, right, top, bottom, width: right - left, height: bottom - top };
+    }
+
+    async function stabilizeMathLayout() {
+      await document.fonts.ready;
+
+      const minimumScale = 0.68;
+      const displays = [...document.querySelectorAll('.katex-display')];
+      const entries = [];
+
+      for (const display of displays) {
+        display.querySelector(':scope > .katex-outside-tag')?.remove();
+        display.classList.remove('katex-display-tagged', 'katex-display-fitted', 'katex-display-overflow');
+
+        const katex = display.querySelector(':scope > .katex') || display.querySelector('.katex');
+        if (!katex) continue;
+
+        katex.style.removeProperty('font-size');
+        const html = katex.querySelector(':scope > .katex-html') || katex.querySelector('.katex-html');
+        const sourceTag = html?.querySelector(':scope > .tag') || html?.querySelector('.tag');
+        sourceTag?.classList.remove('katex-source-tag');
+
+        if (sourceTag) {
+          display.classList.add('katex-display-tagged');
+          sourceTag.classList.add('katex-source-tag');
+
+          const outsideTag = document.createElement('span');
+          outsideTag.className = 'katex katex-outside-tag';
+          outsideTag.setAttribute('aria-hidden', 'true');
+          const tagClone = sourceTag.cloneNode(true);
+          tagClone.classList.remove('katex-source-tag');
+          outsideTag.append(tagClone);
+          display.append(outsideTag);
+        }
+
+        entries.push({ display, katex, tagged: Boolean(sourceTag) });
+      }
+
+      void document.body.offsetWidth;
+
+      const measurements = entries.map((entry) => {
+        const outsideTag = entry.display.querySelector(':scope > .katex-outside-tag');
+        const displayStyle = getComputedStyle(entry.display);
+        const gap = outsideTag ? Number.parseFloat(displayStyle.columnGap) || 12 : 0;
+        const tagWidth = outsideTag?.getBoundingClientRect().width || 0;
+        const availableWidth = Math.max(1, entry.display.clientWidth - tagWidth - gap);
+        const formulaWidth = visibleFormulaRect(entry.katex).width;
+        const requestedScale = formulaWidth > 0 ? (availableWidth - 1) / formulaWidth : 1;
+        const scale = Math.min(1, Math.max(minimumScale, requestedScale));
+        return { ...entry, outsideTag, gap, availableWidth, formulaWidth, scale };
+      });
+
+      for (const measurement of measurements) {
+        if (measurement.scale < 0.995) {
+          measurement.display.classList.add('katex-display-fitted');
+          measurement.katex.style.setProperty('font-size', measurement.scale + 'em', 'important');
+        }
+      }
+
+      void document.body.offsetWidth;
+
+      let fitted = 0;
+      let unresolved = 0;
+      let collisions = 0;
+      let minimumAppliedScale = 1;
+
+      for (const measurement of measurements) {
+        if (measurement.scale < 0.995) {
+          fitted += 1;
+          minimumAppliedScale = Math.min(minimumAppliedScale, measurement.scale);
+        }
+
+        const displayRect = measurement.display.getBoundingClientRect();
+        const formulaRect = visibleFormulaRect(measurement.katex);
+        const outsideTag = measurement.display.querySelector(':scope > .katex-outside-tag');
+        const tagRect = outsideTag?.getBoundingClientRect() || null;
+        const rightLimit = tagRect ? tagRect.left - measurement.gap : displayRect.right;
+        const overflows = formulaRect.left < displayRect.left - 1 || formulaRect.right > rightLimit + 1;
+        const verticallyIntersectsTag = tagRect
+          ? formulaRect.bottom > tagRect.top && formulaRect.top < tagRect.bottom
+          : false;
+        const collidesWithTag = tagRect
+          ? verticallyIntersectsTag && formulaRect.right > tagRect.left - 1
+          : false;
+
+        if (overflows) {
+          unresolved += 1;
+          measurement.display.classList.add('katex-display-overflow');
+        }
+        if (collidesWithTag) collisions += 1;
+      }
+
+      return {
+        total: measurements.length,
+        tagged: measurements.filter((item) => item.tagged).length,
+        fitted,
+        unresolved,
+        collisions,
+        minimum_scale: fitted > 0 ? Number(minimumAppliedScale.toFixed(3)) : 1
+      };
+    }
+
     enhanceCallouts();
+    window.__stabilizeMathLayout = stabilizeMathLayout;
+    window.__mathLayoutReady = stabilizeMathLayout();
   </script>
 </body>
 </html>`;
@@ -426,6 +545,14 @@ async function main() {
     page.setDefaultNavigationTimeout(PUPPETEER_TIMEOUT_MS);
     await page.goto(pathToFileURL(outputHtmlPath).href, { waitUntil: 'networkidle0', timeout: PUPPETEER_TIMEOUT_MS });
     await page.emulateMediaType('print');
+    const mathLayout = await page.evaluate(async () => {
+      await document.fonts.ready;
+      if (typeof window.__stabilizeMathLayout === 'function') {
+        return window.__stabilizeMathLayout();
+      }
+      return null;
+    });
+    console.log(`Math layout: ${JSON.stringify(mathLayout)}`);
     await page.pdf({
       path: outputPdfPath,
       format: 'A4',

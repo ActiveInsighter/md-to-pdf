@@ -51,7 +51,7 @@ async function assertFile(filePath, minimumBytes) {
   return stat.size;
 }
 
-async function inspectChineseFractionRendering(htmlPath) {
+async function inspectFormulaRendering(htmlPath) {
   const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
   const launchOptions = {
     headless: true,
@@ -71,7 +71,11 @@ async function inspectChineseFractionRendering(htmlPath) {
     await page.emulateMediaType('print');
     await page.evaluate(() => document.fonts.ready);
 
-    const metrics = await page.evaluate(() => {
+    const metrics = await page.evaluate(async () => {
+      const layout = typeof window.__stabilizeMathLayout === 'function'
+        ? await window.__stabilizeMathLayout()
+        : null;
+
       const fractions = [...document.querySelectorAll('.katex-display .mfrac')];
       const fraction = fractions.find((node) => node.querySelector('.cjk_fallback'));
       if (!fraction) throw new Error('Chinese display fraction was not rendered');
@@ -95,37 +99,94 @@ async function inspectChineseFractionRendering(htmlPath) {
         ? Math.min(...denominatorRects.map((rect) => rect.top))
         : null;
 
+      const taggedDisplay = [...document.querySelectorAll('.katex-display-tagged')]
+        .find((node) => node.querySelector(':scope > .katex-outside-tag')?.textContent?.includes('2.19'));
+      if (!taggedDisplay) throw new Error('Wide tagged matrix regression formula was not found');
+
+      const taggedFormula = taggedDisplay.querySelector(':scope > .katex');
+      const outsideTag = taggedDisplay.querySelector(':scope > .katex-outside-tag');
+      const sourceTag = taggedFormula?.querySelector('.katex-source-tag');
+      if (!taggedFormula || !outsideTag || !sourceTag) {
+        throw new Error('Tagged formula was not split into formula and outside tag columns');
+      }
+
+      const taggedDisplayRect = taggedDisplay.getBoundingClientRect();
+      const taggedFormulaRect = taggedFormula.getBoundingClientRect();
+      const outsideTagRect = outsideTag.getBoundingClientRect();
+      const verticalOverlap = taggedFormulaRect.bottom > outsideTagRect.top && taggedFormulaRect.top < outsideTagRect.bottom;
+      const tagGap = outsideTagRect.left - taggedFormulaRect.right;
+
       return {
-        text: fraction.textContent?.replace(/\s+/g, '') || '',
-        border_bottom_width: style.borderBottomWidth,
-        background_color: style.backgroundColor,
-        transform: style.transform,
-        transform_origin: style.transformOrigin,
-        scale_y: matrix?.m22 ?? 1,
-        layout_height_px: line.offsetHeight,
-        rendered_height_px: lineRect.height,
-        numerator_gap_px: numeratorBottom == null ? null : lineRect.top - numeratorBottom,
-        denominator_gap_px: denominatorTop == null ? null : denominatorTop - lineRect.bottom
+        layout,
+        fraction: {
+          text: fraction.textContent?.replace(/\s+/g, '') || '',
+          border_bottom_width: style.borderBottomWidth,
+          background_color: style.backgroundColor,
+          transform: style.transform,
+          transform_origin: style.transformOrigin,
+          scale_y: matrix?.m22 ?? 1,
+          layout_height_px: line.offsetHeight,
+          rendered_height_px: lineRect.height,
+          numerator_gap_px: numeratorBottom == null ? null : lineRect.top - numeratorBottom,
+          denominator_gap_px: denominatorTop == null ? null : denominatorTop - lineRect.bottom
+        },
+        tagged: {
+          text: taggedDisplay.textContent?.replace(/\s+/g, '') || '',
+          source_tag_display: getComputedStyle(sourceTag).display,
+          outside_tag_text: outsideTag.textContent?.replace(/\s+/g, '') || '',
+          display_left_px: taggedDisplayRect.left,
+          display_right_px: taggedDisplayRect.right,
+          formula_left_px: taggedFormulaRect.left,
+          formula_right_px: taggedFormulaRect.right,
+          tag_left_px: outsideTagRect.left,
+          tag_right_px: outsideTagRect.right,
+          tag_gap_px: tagGap,
+          vertical_overlap: verticalOverlap,
+          formula_font_size_px: Number.parseFloat(getComputedStyle(taggedFormula).fontSize)
+        }
       };
     });
 
-    if (!metrics.text.includes('目标字数') || !metrics.text.includes('单片字数')) {
+    const fractionMetrics = metrics.fraction;
+    if (!fractionMetrics.text.includes('目标字数') || !fractionMetrics.text.includes('单片字数')) {
       throw new Error(`Unexpected Chinese fraction text: ${JSON.stringify(metrics)}`);
     }
-    if (metrics.border_bottom_width !== '0px') {
+    if (fractionMetrics.border_bottom_width !== '0px') {
       throw new Error(`Fraction border must be disabled: ${JSON.stringify(metrics)}`);
     }
-    if (metrics.background_color === 'transparent' || metrics.background_color === 'rgba(0, 0, 0, 0)') {
+    if (fractionMetrics.background_color === 'transparent' || fractionMetrics.background_color === 'rgba(0, 0, 0, 0)') {
       throw new Error(`Fraction painted rule is transparent: ${JSON.stringify(metrics)}`);
     }
-    if (Math.abs(metrics.scale_y - 0.64) > 0.02) {
+    if (Math.abs(fractionMetrics.scale_y - 0.64) > 0.02) {
       throw new Error(`Unexpected fraction rule scale: ${JSON.stringify(metrics)}`);
     }
-    if (metrics.layout_height_px < 1 || metrics.rendered_height_px <= 0 || metrics.rendered_height_px >= metrics.layout_height_px * 0.8) {
+    if (fractionMetrics.layout_height_px < 1 || fractionMetrics.rendered_height_px <= 0 || fractionMetrics.rendered_height_px >= fractionMetrics.layout_height_px * 0.8) {
       throw new Error(`Fraction rule was not visually thinned while preserving layout height: ${JSON.stringify(metrics)}`);
     }
-    if (metrics.numerator_gap_px == null || metrics.denominator_gap_px == null || metrics.numerator_gap_px <= 0 || metrics.denominator_gap_px <= 0) {
+    if (fractionMetrics.numerator_gap_px == null || fractionMetrics.denominator_gap_px == null || fractionMetrics.numerator_gap_px <= 0 || fractionMetrics.denominator_gap_px <= 0) {
       throw new Error(`Fraction rule overlaps Chinese numerator or denominator: ${JSON.stringify(metrics)}`);
+    }
+
+    if (!metrics.layout || metrics.layout.tagged < 1) {
+      throw new Error(`Wide-formula layout did not detect a tagged formula: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.layout.collisions !== 0 || metrics.layout.unresolved !== 0) {
+      throw new Error(`Wide-formula layout still has overflow or tag collisions: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.tagged.source_tag_display !== 'none') {
+      throw new Error(`Original KaTeX tag must be hidden after relocation: ${JSON.stringify(metrics)}`);
+    }
+    if (!metrics.tagged.outside_tag_text.includes('2.19')) {
+      throw new Error(`Outside equation tag is incorrect: ${JSON.stringify(metrics)}`);
+    }
+    if (!metrics.tagged.vertical_overlap) {
+      throw new Error(`Equation tag is not vertically aligned with the formula: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.tagged.tag_gap_px < 1) {
+      throw new Error(`Equation tag overlaps the wide matrix formula: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.tagged.formula_left_px < metrics.tagged.display_left_px - 1 || metrics.tagged.tag_right_px > metrics.tagged.display_right_px + 1) {
+      throw new Error(`Tagged formula exceeds its display container: ${JSON.stringify(metrics)}`);
     }
 
     return metrics;
@@ -139,7 +200,7 @@ function samplingDocument() {
     const pageNumber = index + 1;
     const pageBreak = index === 0 ? '' : '<div class="page-break"></div>\n\n';
     const title = index === 0 ? '# PDF 随机预览抽样回归\n\n' : '';
-    return `${pageBreak}${title}## 第 ${pageNumber} 页\n\n这是用于验证超过四页时随机抽取四页的第 ${pageNumber} 页。\n\n\\[\n${pageNumber}^2 = ${pageNumber ** 2}\n\\]\n`;
+    return `${pageBreak}${title}## 第 ${pageNumber} 页\n\n这是用于验证超过四页时随机抽取四页的第 ${pageNumber} 页。\n\n\[\n${pageNumber}^2 = ${pageNumber ** 2}\n\]\n`;
   }).join('\n');
 }
 
@@ -199,7 +260,7 @@ async function main() {
   const quality = JSON.parse(await fs.readFile(outputQuality, 'utf8'));
   const samplingReport = JSON.parse(await fs.readFile(samplingQuality, 'utf8'));
   const index = JSON.parse(await fs.readFile(outputIndex, 'utf8'));
-  const fractionRendering = await inspectChineseFractionRendering(outputHtml);
+  const formulaRendering = await inspectFormulaRendering(outputHtml);
 
   const requiredHtmlMarkers = [
     'class="katex',
@@ -209,7 +270,8 @@ async function main() {
     '<blockquote>',
     '[!NOTE]',
     'cjk_fallback',
-    'frac-line'
+    'frac-line',
+    '2.19'
   ];
 
   for (const marker of requiredHtmlMarkers) {
@@ -253,7 +315,7 @@ async function main() {
     pages: quality.pdf.pages,
     selected_preview_pages: quality.preview.selected_pages,
     quality_status: quality.status,
-    fraction_rendering: fractionRendering,
+    formula_rendering: formulaRendering,
     sampling: {
       pdf: relative(samplingPdf),
       preview: relative(samplingPreview),
