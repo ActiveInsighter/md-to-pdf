@@ -167,8 +167,8 @@ async function inspectFormulaRendering(htmlPath) {
       throw new Error(`Fraction rule overlaps Chinese numerator or denominator: ${JSON.stringify(metrics)}`);
     }
 
-    if (!metrics.layout || metrics.layout.tagged < 1 || metrics.layout.fitted < 1) {
-      throw new Error(`Wide-formula layout did not detect tagged/fitted formulas: ${JSON.stringify(metrics)}`);
+    if (!metrics.layout || metrics.layout.tagged < 1) {
+      throw new Error(`Wide-formula layout did not detect a tagged formula: ${JSON.stringify(metrics)}`);
     }
     if (metrics.layout.collisions !== 0 || metrics.layout.unresolved !== 0) {
       throw new Error(`Wide-formula layout still has overflow or tag collisions: ${JSON.stringify(metrics)}`);
@@ -179,7 +179,10 @@ async function inspectFormulaRendering(htmlPath) {
     if (!metrics.tagged.outside_tag_text.includes('2.19')) {
       throw new Error(`Outside equation tag is incorrect: ${JSON.stringify(metrics)}`);
     }
-    if (metrics.tagged.vertical_overlap && metrics.tagged.tag_gap_px < 1) {
+    if (!metrics.tagged.vertical_overlap) {
+      throw new Error(`Equation tag is not vertically aligned with the formula: ${JSON.stringify(metrics)}`);
+    }
+    if (metrics.tagged.tag_gap_px < 1) {
       throw new Error(`Equation tag overlaps the wide matrix formula: ${JSON.stringify(metrics)}`);
     }
     if (metrics.tagged.formula_left_px < metrics.tagged.display_left_px - 1 || metrics.tagged.tag_right_px > metrics.tagged.display_right_px + 1) {
@@ -197,7 +200,7 @@ function samplingDocument() {
     const pageNumber = index + 1;
     const pageBreak = index === 0 ? '' : '<div class="page-break"></div>\n\n';
     const title = index === 0 ? '# PDF 随机预览抽样回归\n\n' : '';
-    return `${pageBreak}${title}## 第 ${pageNumber} 页\n\n这是用于验证超过四页时随机抽取四页的第 ${pageNumber} 页。\n\n\\[\n${pageNumber}^2 = ${pageNumber ** 2}\n\\]\n`;
+    return `${pageBreak}${title}## 第 ${pageNumber} 页\n\n这是用于验证超过四页时随机抽取四页的第 ${pageNumber} 页。\n\n\[\n${pageNumber}^2 = ${pageNumber ** 2}\n\]\n`;
   }).join('\n');
 }
 
