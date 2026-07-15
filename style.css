@@ -119,14 +119,16 @@ body.pdf-theme-chatgpt-light
 .katex-display.katex-display-tagged {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-rows: auto;
   align-items: center !important;
   column-gap: 0.72em !important;
   text-align: initial !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered)
-.katex-display.katex-display-tagged > .katex {
+.katex-display.katex-display-tagged > .katex:not(.katex-outside-tag) {
   grid-column: 1;
+  grid-row: 1;
   justify-self: center;
   min-width: 0 !important;
 }
@@ -137,8 +139,9 @@ body.pdf-theme-chatgpt-light
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered)
-.katex-display > .katex-outside-tag {
+.katex-display.katex-display-tagged > .katex-outside-tag {
   grid-column: 2;
+  grid-row: 1;
   position: static !important;
   display: inline-block !important;
   align-self: center !important;
@@ -152,12 +155,12 @@ body.pdf-theme-chatgpt-light
 /* KaTeX's original absolute tag carries a vertical alignment strut. It is only
    needed inside the original equation row and would push the relocated tag down. */
 :is(.print, .markdown-preview-view, .markdown-rendered)
-.katex-display > .katex-outside-tag .strut {
+.katex-display.katex-display-tagged > .katex-outside-tag .strut {
   display: none !important;
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered)
-.katex-display > .katex-outside-tag > .tag {
+.katex-display.katex-display-tagged > .katex-outside-tag > .tag {
   position: static !important;
   display: inline-block !important;
   width: auto !important;
