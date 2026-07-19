@@ -78,7 +78,7 @@ const requiredText = new Map([
   ['frontend/src/app/providers.tsx', ['QueryClientProvider']],
   ['frontend/src/stores/workspaceStore.ts', ['persist(', 'partialize:', 'resetSession']],
   ['frontend/src/components/layout/PageContainer.tsx', ['box-border w-full min-w-0']],
-  ['frontend/src/components/layout/ProtectedLayout.tsx', ['min-w-0 overflow-x-clip']],
+  ['frontend/src/components/layout/ProtectedLayout.tsx', ['overflow-x-hidden', 'lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]', 'sticky top-0']],
   ['frontend/src/components/ui/select.tsx', ['min-w-0 max-w-full']],
   ['frontend/src/components/ui/tabs.tsx', ['min-w-0 max-w-full']],
   ['frontend/src/features/pdf-jobs/hooks/cache.ts', ['setQueryData', 'shouldApplyPdfJobUpdate']],
@@ -89,7 +89,7 @@ const requiredText = new Map([
   ['frontend/src/features/pdf-builder/components/BuilderFormSection.tsx', ['grid min-w-0 max-w-full']],
   ['frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts', ['Math.min(3']],
   ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置', 'sidebar-accent']],
-  ['frontend/src/styles/globals.css', ['@tailwind base', '--sidebar:', '--popover:', 'overflow-x: clip']],
+  ['frontend/src/styles/globals.css', ['@tailwind base', '--sidebar:', '--popover:', 'overflow-x: hidden', 'overscroll-behavior-x: none', 'text-size-adjust: 100%']],
   ['.github/workflows/deploy-pages.yml', ['push:', 'branches:', '- main', 'workflow_dispatch:']],
 ])
 
@@ -114,6 +114,19 @@ if (submissionSource.includes('async function prepare')) {
 }
 if (fs.readFileSync('frontend/src/features/pdf-builder/components/SingleJobForm.tsx', 'utf8').includes('submission.prepare')) {
   errors.push('SingleJobForm must not upload while selecting or pasting a source')
+}
+
+const protectedLayoutSource = fs.readFileSync('frontend/src/components/layout/ProtectedLayout.tsx', 'utf8')
+if (protectedLayoutSource.includes('lg:pl-72') || protectedLayoutSource.includes('fixed inset-y-0 left-0')) {
+  errors.push('ProtectedLayout must use one shrink-safe desktop grid instead of a fixed sidebar plus matching content padding')
+}
+
+const globalStylesSource = fs.readFileSync('frontend/src/styles/globals.css', 'utf8')
+if (globalStylesSource.includes('scrollbar-gutter: stable')) {
+  errors.push('Root scrollbar-gutter must not reserve fractional inline space on tablet Chromium')
+}
+if (globalStylesSource.includes('overflow-x: clip')) {
+  errors.push('Root overflow must use hidden for compatibility with Chromium viewport scrolling')
 }
 
 const pkg = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'))

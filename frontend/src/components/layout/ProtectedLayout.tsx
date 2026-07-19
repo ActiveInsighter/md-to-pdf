@@ -38,14 +38,14 @@ export function ProtectedLayout() {
         跳到主要内容
       </a>
       <JobDeliveryCoordinator />
-      <div className="min-h-dvh min-w-0 overflow-x-clip bg-background">
-        <div className="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-hidden border-r border-sidebar-border bg-sidebar lg:block">
+      <div className="min-h-dvh min-w-0 overflow-x-hidden bg-background lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <div className="sticky top-0 z-40 hidden h-dvh min-w-0 overflow-hidden border-r border-sidebar-border bg-sidebar lg:block">
           <AppSidebar />
         </div>
         <div className="fixed left-3 top-3 z-50 rounded-xl border bg-card shadow-panel lg:hidden">
           <MobileNavigation />
         </div>
-        <div className="min-h-dvh min-w-0 overflow-x-clip pt-14 lg:pl-72 lg:pt-0">
+        <div className="min-h-dvh min-w-0 overflow-x-hidden pt-14 lg:pt-0">
           <Outlet />
         </div>
       </div>
