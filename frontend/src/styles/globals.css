@@ -49,18 +49,27 @@
 
   html {
     @apply bg-background;
+    max-width: 100%;
+    overflow-x: hidden;
     color-scheme: light;
     scrollbar-gutter: stable;
   }
 
   body {
     @apply min-w-0 bg-background font-sans text-foreground antialiased;
+    width: 100%;
+    max-width: 100%;
     min-height: 100dvh;
+    overflow-x: clip;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   #root {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     min-height: 100dvh;
+    overflow-x: clip;
   }
 
   h1,

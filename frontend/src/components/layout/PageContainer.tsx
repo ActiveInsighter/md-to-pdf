@@ -6,7 +6,7 @@ export function PageContainer({ className, id = 'main-content', tabIndex = -1, .
     <main
       id={id}
       tabIndex={tabIndex}
-      className={cn('mx-auto w-full max-w-[1320px] p-4 outline-none sm:p-6 lg:p-8', className)}
+      className={cn('mx-auto box-border w-full min-w-0 max-w-[1320px] p-4 outline-none sm:p-6 lg:p-8', className)}
       {...props}
     />
   )
