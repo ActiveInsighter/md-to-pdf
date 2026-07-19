@@ -306,6 +306,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
 
             {message && <Alert variant="destructive"><AlertDescription>{message}</AlertDescription></Alert>}
             <SubmissionStatus
+              data-ui-capture="source-upload-status"
               visible={showProgress}
               busy={Boolean(sourceIntent) || submission.busy}
               label={progressLabel}
