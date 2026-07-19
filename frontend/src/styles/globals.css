@@ -4,36 +4,48 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 220 20% 99%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    --primary: 204 78% 38%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 24% 95%;
+    --secondary: 220 20% 96%;
     --secondary-foreground: 222 35% 18%;
-    --muted: 210 22% 96%;
-    --muted-foreground: 215 16% 43%;
-    --accent: 204 48% 94%;
-    --accent-foreground: 204 78% 29%;
-    --destructive: 0 72% 45%;
+    --muted: 220 18% 96%;
+    --muted-foreground: 215 16% 42%;
+    --accent: 221 100% 96%;
+    --accent-foreground: 222 78% 36%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
-    --success: 153 55% 31%;
+    --success: 153 55% 34%;
     --success-foreground: 0 0% 100%;
-    --success-muted: 151 42% 93%;
-    --warning: 35 88% 38%;
+    --success-muted: 151 42% 94%;
+    --warning: 35 88% 40%;
     --warning-foreground: 0 0% 100%;
-    --warning-muted: 39 78% 93%;
-    --info: 215 72% 45%;
+    --warning-muted: 39 78% 94%;
+    --info: 215 72% 48%;
     --info-foreground: 0 0% 100%;
-    --info-muted: 214 62% 94%;
-    --border: 214 24% 88%;
-    --input: 214 22% 84%;
-    --ring: 204 78% 38%;
-    --radius: 0.7rem;
+    --info-muted: 214 62% 95%;
+    --border: 217 23% 90%;
+    --input: 217 23% 86%;
+    --ring: 221 83% 53%;
+    --sidebar: 220 24% 98%;
+    --sidebar-foreground: 222 32% 19%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 221 100% 96%;
+    --sidebar-accent-foreground: 222 78% 36%;
+    --sidebar-border: 217 23% 90%;
+    --sidebar-ring: 221 83% 53%;
+    --radius: 0.75rem;
   }
 
-  * { @apply border-border; }
+  * {
+    @apply border-border;
+  }
 
   html {
     @apply bg-background;
@@ -47,18 +59,68 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
-  #root { min-height: 100dvh; }
-  h1, h2, h3 { @apply font-display; text-wrap: balance; }
-  button, input, textarea, select { font: inherit; }
-  button, [role='button'], a, label[for], select { touch-action: manipulation; }
-  a { @apply rounded-sm outline-none; }
-  :focus-visible { @apply outline-none ring-2 ring-ring/60 ring-offset-2 ring-offset-background; }
-  ::selection { @apply bg-primary/15 text-foreground; }
+  #root {
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button,
+  [role='button'],
+  a,
+  label[for],
+  select {
+    touch-action: manipulation;
+  }
+
+  a {
+    @apply rounded-sm outline-none;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring/60 ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    @apply bg-primary/15 text-foreground;
+  }
+}
+
+@layer components {
+  .app-panel {
+    @apply rounded-xl border bg-card text-card-foreground shadow-panel;
+  }
+
+  .app-panel-muted {
+    @apply rounded-xl border bg-muted/35 text-foreground;
+  }
+
+  .section-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground;
+  }
 }
 
 @layer utilities {
-  .break-anywhere { overflow-wrap: anywhere; }
-  .text-balance { text-wrap: balance; }
+  .break-anywhere {
+    overflow-wrap: anywhere;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
   .paper-rule {
     background-image: linear-gradient(to right, hsl(var(--border) / 0.52) 1px, transparent 1px);
     background-size: 2rem 100%;
@@ -66,7 +128,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
