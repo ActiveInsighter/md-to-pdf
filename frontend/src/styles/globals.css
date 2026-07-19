@@ -49,10 +49,13 @@
 
   html {
     @apply bg-background;
+    width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    overscroll-behavior-x: none;
     color-scheme: light;
-    scrollbar-gutter: stable;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -60,7 +63,8 @@
     width: 100%;
     max-width: 100%;
     min-height: 100dvh;
-    overflow-x: clip;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
@@ -69,7 +73,7 @@
     min-width: 0;
     max-width: 100%;
     min-height: 100dvh;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
 
   h1,
