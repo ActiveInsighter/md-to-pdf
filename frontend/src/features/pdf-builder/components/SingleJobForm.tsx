@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { formatFileSize } from '@/lib/utils'
@@ -26,6 +25,8 @@ import { usePdfSubmission } from '../hooks/usePdfSubmission'
 import { useGlobalUploadDrop } from '../hooks/useGlobalUploadDrop'
 import { getSubmissionLabel, getSubmissionProgress } from '../submissionReducer'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { BuilderFormSection } from './BuilderFormSection'
+import { SubmissionStatus } from './SubmissionStatus'
 
 function yieldToBrowser(): Promise<void> {
   return new Promise((resolve) => window.requestAnimationFrame(() => resolve()))
@@ -201,20 +202,23 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
       {globalDrop.active && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 p-6 backdrop-blur-sm" role="status" aria-live="polite">
           <div className="rounded-2xl border border-background/50 bg-card p-8 text-center shadow-2xl">
-            <UploadCloud className="mx-auto size-8 text-primary" />
-            <strong className="mt-3 block">松开后选择文件</strong>
+            <span className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary"><UploadCloud className="size-6" /></span>
+            <strong className="mt-4 block text-lg">松开后选择文件</strong>
+            <span className="mt-1 block text-sm text-muted-foreground">支持 Markdown 与可选 ZIP 资源包</span>
           </div>
         </div>
       )}
 
-      <Card data-ui-capture="single-job-form">
+      <Card data-ui-capture="single-job-form" className="shadow-panel">
         <CardContent className="p-4 sm:p-6">
           <form className="space-y-5" onSubmit={submit} noValidate>
             {uploadedRecovery && <Alert><CheckCircle2 className="size-4" /><AlertDescription>Markdown 已保存，点击“生成 PDF”开始构建。</AlertDescription></Alert>}
             {createdRecovery && <Alert variant="warning"><FileText className="size-4" /><AlertDescription>上次任务尚未完成上传，请重新选择 Markdown 后再点击“生成 PDF”。</AlertDescription></Alert>}
 
-            <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
-              <div className="pt-2"><FieldLabel htmlFor="document-name">文件命名</FieldLabel></div>
+            <BuilderFormSection
+              title={<FieldLabel htmlFor="document-name">文件命名</FieldLabel>}
+              description="默认读取 Markdown 文件名或首个一级标题。"
+            >
               <Field data-invalid={Boolean(form.formState.errors.documentName)}>
                 <Input
                   id="document-name"
@@ -230,20 +234,23 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                 />
                 <FieldError>{form.formState.errors.documentName?.message}</FieldError>
               </Field>
-            </div>
+            </BuilderFormSection>
 
-            <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
-              <div className="grid gap-2">
-                <span className="text-sm font-semibold">文档内容</span>
-                <Button type="button" size="sm" variant={sourceMode === 'file' ? 'secondary' : 'outline'} disabled={inputDisabled} onClick={() => form.setValue('sourceMode', 'file')}><FileText />上传文件</Button>
-                <Button type="button" size="sm" variant={sourceMode === 'text' ? 'secondary' : 'outline'} disabled={inputDisabled} onClick={() => form.setValue('sourceMode', 'text')}><FileText />粘贴文本</Button>
-                <Button type="button" size="sm" variant="outline" disabled={inputDisabled} onClick={() => void pasteClipboard()}><ClipboardPaste />粘贴剪切板</Button>
-              </div>
-
+            <BuilderFormSection
+              title="文档内容"
+              description="选择文件或粘贴文本，内容会在提交前保留在本地。"
+              actions={(
+                <div className="grid gap-2">
+                  <Button type="button" size="sm" variant={sourceMode === 'file' ? 'secondary' : 'outline'} disabled={inputDisabled} onClick={() => form.setValue('sourceMode', 'file')}><FileText />上传文件</Button>
+                  <Button type="button" size="sm" variant={sourceMode === 'text' ? 'secondary' : 'outline'} disabled={inputDisabled} onClick={() => form.setValue('sourceMode', 'text')}><FileText />粘贴文本</Button>
+                  <Button type="button" size="sm" variant="outline" disabled={inputDisabled} onClick={() => void pasteClipboard()}><ClipboardPaste />粘贴剪切板</Button>
+                </div>
+              )}
+            >
               {sourceMode === 'file' ? (
-                <label className="group flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed bg-muted/15 p-5 text-center transition-colors hover:border-primary/50 hover:bg-accent/40 focus-within:ring-2 focus-within:ring-ring">
+                <label className="group flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed bg-muted/15 p-5 text-center transition-colors hover:border-primary/50 hover:bg-accent/40 focus-within:ring-2 focus-within:ring-ring">
                   <input data-ui-capture="markdown-file-input" className="sr-only" type="file" accept=".md,text/markdown,text/plain" disabled={inputDisabled} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) selectMarkdownFile(file) }} />
-                  <FileText className="size-7 text-primary" />
+                  <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><FileText className="size-5" /></span>
                   <strong className="mt-3 max-w-full break-all">{markdownFile?.name || (uploadedRecovery ? submission.recovery?.sourceFilename || 'Markdown 已上传' : createdRecovery ? '重新选择 Markdown' : '选择或拖入 Markdown')}</strong>
                   <span className="mt-1 text-xs text-muted-foreground">{markdownFile ? `${formatFileSize(markdownFile.size)} · 点击生成后上传` : '最大 10 MiB'}</span>
                 </label>
@@ -252,7 +259,7 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                   <Textarea
                     id="markdown-text"
                     placeholder="# 标题"
-                    className="min-h-52 resize-y font-mono text-sm leading-6"
+                    className="min-h-56 resize-y bg-muted/10 font-mono text-sm leading-6"
                     disabled={inputDisabled}
                     aria-invalid={Boolean(form.formState.errors.markdownText)}
                     {...markdownTextField}
@@ -275,10 +282,13 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                   <FieldError>{form.formState.errors.markdownText?.message}</FieldError>
                 </Field>
               )}
-            </div>
+            </BuilderFormSection>
 
-            <div className="grid gap-3 border-t pt-5 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
-              <div className="pt-2"><span className="text-sm font-semibold">构建选项</span></div>
+            <BuilderFormSection
+              title="构建选项"
+              description="资源包可包含 Markdown 引用的本地图片与附件。"
+              divided
+            >
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
                 <div className="flex min-h-11 items-center rounded-lg border bg-muted/10">
                   <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-3 py-2">
@@ -292,18 +302,16 @@ export function SingleJobForm({ recovery }: { recovery: SubmissionRecovery | nul
                   {PDF_THEMES.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </Select>
               </div>
-            </div>
+            </BuilderFormSection>
 
             {message && <Alert variant="destructive"><AlertDescription>{message}</AlertDescription></Alert>}
-            {showProgress && (
-              <div data-ui-capture="source-upload-status" className="space-y-2" aria-live="polite">
-                <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-2">{(sourceIntent || submission.busy) && <LoaderCircle className="size-3.5 animate-spin" />}{progressLabel}</span>
-                  <strong className="tabular-nums text-foreground">{progressValue}%</strong>
-                </div>
-                <Progress value={progressValue} aria-label="任务提交进度" />
-              </div>
-            )}
+            <SubmissionStatus
+              data-ui-capture="source-upload-status"
+              visible={showProgress}
+              busy={Boolean(sourceIntent) || submission.busy}
+              label={progressLabel}
+              value={progressValue}
+            />
 
             <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" disabled={actionDisabled} onClick={() => void clearTask()}><RotateCcw />{submission.recovery ? '清除任务' : '清空'}</Button>

@@ -1,6 +1,7 @@
 import { FilePlus2, Search } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useShallow } from 'zustand/react/shallow'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,8 +23,9 @@ const titles: Record<NonNullable<JobFilters['status']>, string> = {
 
 export function JobsPage() {
   const [params, setParams] = useSearchParams()
-  const storedFilters = useWorkspaceStore((state) => state.filters)
-  const setFilters = useWorkspaceStore((state) => state.setFilters)
+  const { storedFilters, setFilters } = useWorkspaceStore(
+    useShallow((state) => ({ storedFilters: state.filters, setFilters: state.setFilters })),
+  )
   const statusParam = params.get('status') || storedFilters.status || 'all'
   const searchParam = params.get('q')
   const filters: JobFilters = {
@@ -44,16 +46,17 @@ export function JobsPage() {
   }
 
   return (
-    <PageContainer data-ui-capture={marker} className="flex flex-col gap-5">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <PageContainer data-ui-capture={marker} className="flex flex-col gap-6">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{titles[filters.status || 'all']}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">共 {jobs.data?.length ?? 0} 条任务</p>
+          <span className="section-kicker">任务中心</span>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{titles[filters.status || 'all']}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">共 {jobs.data?.length ?? 0} 条任务，可按状态和文档名筛选。</p>
         </div>
         <Button asChild size="sm"><Link to="/workspace"><FilePlus2 />创建任务</Link></Button>
       </header>
 
-      <div className="flex flex-col gap-2 rounded-xl border bg-card p-2 shadow-sm sm:flex-row">
+      <section className="app-panel flex flex-col gap-2 p-2 sm:flex-row" aria-label="任务筛选">
         <div className="relative min-w-0 flex-1">
           <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input aria-label="搜索任务" className="border-transparent bg-muted/45 pl-9 shadow-none focus-visible:bg-background" value={filters.search || ''} placeholder="搜索文档名或源文件" onChange={(event) => updateParams({ ...filters, search: event.target.value })} />
@@ -65,7 +68,7 @@ export function JobsPage() {
           <option value="failed">失败、取消与过期</option>
           <option value="favorite">已收藏</option>
         </Select>
-      </div>
+      </section>
 
       {jobs.error && <Alert variant="destructive"><AlertDescription>{jobs.error instanceof Error ? jobs.error.message : '任务加载失败。'}</AlertDescription></Alert>}
       <JobList jobs={jobs.data || []} loading={jobs.isLoading} emptyMessage="没有符合当前条件的任务。" grouped />

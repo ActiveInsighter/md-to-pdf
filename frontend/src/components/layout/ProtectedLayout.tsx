@@ -34,18 +34,18 @@ export function ProtectedLayout() {
 
   return (
     <PdfJobsRealtimeBridge>
-      <a href="#main-content" className="fixed left-4 top-3 z-[100] -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lifted transition-transform focus:translate-y-0">
+      <a href="#main-content" className="fixed left-4 top-3 z-[100] -translate-y-20 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lifted transition-transform focus:translate-y-0">
         跳到主要内容
       </a>
       <JobDeliveryCoordinator />
       <div className="min-h-dvh bg-background">
-        <div className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r bg-card lg:block">
+        <div className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-sidebar-border bg-sidebar lg:block">
           <AppSidebar />
         </div>
-        <div className="fixed left-3 top-3 z-50 rounded-lg border bg-card shadow-panel lg:hidden">
+        <div className="fixed left-3 top-3 z-50 rounded-xl border bg-card shadow-panel lg:hidden">
           <MobileNavigation />
         </div>
-        <div className="min-h-dvh pt-14 lg:pl-64 lg:pt-0">
+        <div className="min-h-dvh pt-14 lg:pl-72 lg:pt-0">
           <Outlet />
         </div>
       </div>

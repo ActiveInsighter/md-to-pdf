@@ -25,6 +25,8 @@ const requiredFiles = [
   'frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts',
   'frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts',
   'frontend/src/features/pdf-builder/schemas/builderSchema.ts',
+  'frontend/src/features/pdf-builder/components/BuilderFormSection.tsx',
+  'frontend/src/features/pdf-builder/components/SubmissionStatus.tsx',
   'frontend/src/routes/LoginPage.tsx',
   'frontend/src/routes/WorkspacePage.tsx',
   'frontend/src/routes/JobsPage.tsx',
@@ -70,15 +72,15 @@ const removedFiles = [
 const requiredText = new Map([
   ['frontend/src/app/router.tsx', ['createBrowserRouter']],
   ['frontend/src/app/providers.tsx', ['QueryClientProvider']],
-  ['frontend/src/stores/workspaceStore.ts', ['persist(']],
+  ['frontend/src/stores/workspaceStore.ts', ['persist(', 'partialize:', 'resetSession']],
   ['frontend/src/features/pdf-jobs/hooks/cache.ts', ['setQueryData', 'shouldApplyPdfJobUpdate']],
   ['frontend/src/features/pdf-jobs/hooks/PdfJobsRealtimeBridge.tsx', ['postgres_changes']],
   ['frontend/src/features/pdf-jobs/hooks/usePdfJob.ts', ['refetchInterval']],
   ['frontend/src/features/pdf-builder/hooks/usePdfSubmission.ts', ['submissionReducer', 'async function submit', 'await actions.uploadMarkdown.mutateAsync', 'await actions.start.mutateAsync']],
-  ['frontend/src/features/pdf-builder/components/SingleJobForm.tsx', ['const submit = form.handleSubmit', '点击生成后上传']],
+  ['frontend/src/features/pdf-builder/components/SingleJobForm.tsx', ['const submit = form.handleSubmit', '点击生成后上传', 'BuilderFormSection', 'SubmissionStatus']],
   ['frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts', ['Math.min(3']],
-  ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置']],
-  ['frontend/src/styles/globals.css', ['@tailwind base']],
+  ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置', 'sidebar-accent']],
+  ['frontend/src/styles/globals.css', ['@tailwind base', '--sidebar:', '--popover:']],
   ['.github/workflows/deploy-pages.yml', ['push:', 'branches:', '- main', 'workflow_dispatch:']],
 ])
 
