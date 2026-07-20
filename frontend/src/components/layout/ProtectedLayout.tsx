@@ -15,9 +15,24 @@ export function ProtectedLayout() {
 
   useEffect(() => {
     if (auth.status !== 'ready' || !auth.session) return
-    const frame = window.requestAnimationFrame(() => document.getElementById('main-content')?.focus())
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('main-content')?.focus({ preventScroll: true })
+
+      const scrollContainer = document.getElementById('app-main-scroll')
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0
+        scrollContainer.scrollLeft = 0
+      }
+
+      document.documentElement.scrollTop = 0
+      document.documentElement.scrollLeft = 0
+      document.body.scrollTop = 0
+      document.body.scrollLeft = 0
+    })
+
     return () => window.cancelAnimationFrame(frame)
-  }, [auth.session?.user.id, auth.status, location.pathname])
+  }, [auth.session?.user.id, auth.status, location.pathname, location.search])
 
   if (auth.status === 'loading') return <RouteLoading />
   if (auth.status === 'error') {
@@ -38,14 +53,17 @@ export function ProtectedLayout() {
         跳到主要内容
       </a>
       <JobDeliveryCoordinator />
-      <div className="min-h-dvh min-w-0 overflow-x-hidden bg-background lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <div className="sticky top-0 z-40 hidden h-dvh min-w-0 overflow-hidden border-r border-sidebar-border bg-sidebar lg:block">
+      <div className="min-h-dvh min-w-0 overflow-x-hidden bg-background lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[18rem_minmax(0,1fr)] lg:overflow-hidden">
+        <div className="z-40 hidden min-h-0 min-w-0 overflow-hidden border-r border-sidebar-border bg-sidebar lg:block">
           <AppSidebar />
         </div>
         <div className="fixed left-3 top-3 z-50 rounded-xl border bg-card shadow-panel lg:hidden">
           <MobileNavigation />
         </div>
-        <div className="min-h-dvh min-w-0 overflow-x-hidden pt-14 lg:pt-0">
+        <div
+          id="app-main-scroll"
+          className="min-h-dvh min-w-0 overflow-x-hidden pt-14 lg:h-dvh lg:min-h-0 lg:overflow-y-auto lg:overscroll-y-contain lg:pt-0 lg:[scrollbar-gutter:stable]"
+        >
           <Outlet />
         </div>
       </div>

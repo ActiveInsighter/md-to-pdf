@@ -78,7 +78,7 @@ const requiredText = new Map([
   ['frontend/src/app/providers.tsx', ['QueryClientProvider']],
   ['frontend/src/stores/workspaceStore.ts', ['persist(', 'partialize:', 'resetSession']],
   ['frontend/src/components/layout/PageContainer.tsx', ['box-border w-full min-w-0']],
-  ['frontend/src/components/layout/ProtectedLayout.tsx', ['overflow-x-hidden', 'lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]', 'sticky top-0']],
+  ['frontend/src/components/layout/ProtectedLayout.tsx', ['overflow-x-hidden', 'lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[18rem_minmax(0,1fr)] lg:overflow-hidden', 'id="app-main-scroll"', 'lg:overflow-y-auto']],
   ['frontend/src/components/ui/select.tsx', ['min-w-0 max-w-full']],
   ['frontend/src/components/ui/tabs.tsx', ['min-w-0 max-w-full']],
   ['frontend/src/features/pdf-jobs/hooks/cache.ts', ['setQueryData', 'shouldApplyPdfJobUpdate']],
@@ -88,7 +88,7 @@ const requiredText = new Map([
   ['frontend/src/features/pdf-builder/components/SingleJobForm.tsx', ['const submit = form.handleSubmit', '点击生成后上传', 'BuilderFormSection', 'SubmissionStatus']],
   ['frontend/src/features/pdf-builder/components/BuilderFormSection.tsx', ['grid min-w-0 max-w-full']],
   ['frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts', ['Math.min(3']],
-  ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置', 'sidebar-accent']],
+  ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置', 'sidebar-accent', 'min-h-0 flex-1', 'overscroll-contain']],
   ['frontend/src/styles/globals.css', ['@tailwind base', '--sidebar:', '--popover:', 'overflow-x: hidden', 'overscroll-behavior-x: none', 'text-size-adjust: 100%']],
   ['.github/workflows/deploy-pages.yml', ['push:', 'branches:', '- main', 'workflow_dispatch:']],
 ])
@@ -117,8 +117,12 @@ if (fs.readFileSync('frontend/src/features/pdf-builder/components/SingleJobForm.
 }
 
 const protectedLayoutSource = fs.readFileSync('frontend/src/components/layout/ProtectedLayout.tsx', 'utf8')
-if (protectedLayoutSource.includes('lg:pl-72') || protectedLayoutSource.includes('fixed inset-y-0 left-0')) {
-  errors.push('ProtectedLayout must use one shrink-safe desktop grid instead of a fixed sidebar plus matching content padding')
+if (
+  protectedLayoutSource.includes('lg:pl-72')
+  || protectedLayoutSource.includes('fixed inset-y-0 left-0')
+  || protectedLayoutSource.includes('sticky top-0')
+) {
+  errors.push('ProtectedLayout must use a viewport-height desktop grid with an independently scrolling main content region')
 }
 
 const globalStylesSource = fs.readFileSync('frontend/src/styles/globals.css', 'utf8')
