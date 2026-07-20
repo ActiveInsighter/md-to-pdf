@@ -67,18 +67,24 @@ export function usePdfJobActions() {
   const favorite = useMutation({
     mutationFn: ({ jobId, isFavorite }: { jobId: string; isFavorite: boolean }) => setPdfJobFavorite(jobId, isFavorite),
     onMutate: async ({ jobId, isFavorite }) => {
-      if (!userId) return { previous: undefined }
+      if (!userId) return undefined
       const detailKey = pdfJobKeys.detail(userId, jobId)
       const listKey = pdfJobKeys.list(userId)
       await queryClient.cancelQueries({ queryKey: listKey })
       await queryClient.cancelQueries({ queryKey: detailKey })
-      const previous = queryClient.getQueryData<PdfJob>(detailKey)
+      const previousDetail = queryClient.getQueryData<PdfJob>(detailKey)
+      const previousList = queryClient.getQueryData<PdfJob[]>(listKey)
       queryClient.setQueryData<PdfJob>(detailKey, (job) => job ? { ...job, is_favorite: isFavorite } : job)
       queryClient.setQueryData<PdfJob[]>(listKey, (jobs) => jobs?.map((job) => job.id === jobId ? { ...job, is_favorite: isFavorite } : job))
-      return { previous }
+      return { previousDetail, previousList }
     },
     onError: (error, input, context) => {
-      if (context?.previous) mergeJobIntoCache(queryClient, context.previous)
+      if (userId && context) {
+        const detailKey = pdfJobKeys.detail(userId, input.jobId)
+        const listKey = pdfJobKeys.list(userId)
+        queryClient.setQueryData<PdfJob | undefined>(detailKey, context.previousDetail)
+        queryClient.setQueryData<PdfJob[] | undefined>(listKey, context.previousList)
+      }
       toast.error(toUserMessage(error))
     },
     onSettled: async (_, __, input) => {
