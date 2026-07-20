@@ -20,8 +20,8 @@ import { useBatchSubmission } from '../hooks/useBatchSubmission'
 export function BatchQueue() {
   const batch = useBatchSubmission()
   const jobsQuery = usePdfJobs({ status: 'all', search: '' })
-  const theme = useWorkspaceStore((state) => state.theme)
-  const setTheme = useWorkspaceStore((state) => state.setTheme)
+  const defaultTheme = useWorkspaceStore((state) => state.theme)
+  const [theme, setTheme] = useState(defaultTheme)
   const [assets, setAssets] = useState<File | null>(null)
   const [assetsError, setAssetsError] = useState('')
   const jobMap = useMemo(() => new Map((jobsQuery.data || []).map((job) => [job.id, job])), [jobsQuery.data])
