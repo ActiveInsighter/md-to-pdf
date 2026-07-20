@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { SingleJobForm } from '@/features/pdf-builder/components/SingleJobForm'
@@ -48,7 +48,7 @@ export function WorkspacePage() {
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">创建任务</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">选择 Markdown、检查文件名和构建选项，仅在点击“生成 PDF”后上传并启动任务。</p>
         </div>
-        <Button asChild variant="outline" size="sm"><Link to="/jobs"><Files />全部任务</Link></Button>
+        <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to="/jobs"><Files />全部任务</Link>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-3" aria-label="任务概览">
@@ -75,7 +75,7 @@ export function WorkspacePage() {
             <h2 id="recent-jobs-title" className="mt-1 text-lg font-semibold">最近任务</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">仅显示最近 5 条，不展示构建流程</p>
           </div>
-          <Button asChild variant="ghost" size="sm"><Link to="/jobs">查看全部</Link></Button>
+          <Link className={buttonVariants({ variant: 'ghost', size: 'sm' })} to="/jobs">查看全部</Link>
         </div>
         <JobList jobs={(jobs.data || []).slice(0, 5)} loading={jobs.isLoading} />
       </section>
