@@ -1,0 +1,77 @@
+name: Refresh GitHub Actions once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-github-actions-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'chore/upgrade-github-actions-20260720'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout action upgrade branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+
+      - name: Pin current stable GitHub Actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          replacements = {
+              'actions/checkout': ('9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0', 'v7.0.0'),
+              'actions/setup-node': ('820762786026740c76f36085b0efc47a31fe5020', 'v7.0.0'),
+              'actions/cache': ('55cc8345863c7cc4c66a329aec7e433d2d1c52a9', 'v6.1.0'),
+              'actions/github-script': ('3a2844b7e9c422d3c10d287c895573f7108da1b3', 'v9.0.0'),
+          }
+
+          counts = {name: 0 for name in replacements}
+          for path in sorted(Path('.github/workflows').glob('*.y*ml')):
+              source = path.read_text(encoding='utf-8')
+              updated = source
+              for name, (sha, version) in replacements.items():
+                  pattern = re.compile(rf'(?m)^(\s*uses:\s*{re.escape(name)}@)[0-9a-f]{{40}}(?:\s*#.*)?$')
+                  updated, count = pattern.subn(rf'\g<1>{sha} # {version}', updated)
+                  counts[name] += count
+              if updated != source:
+                  path.write_text(updated, encoding='utf-8')
+
+          for name, count in counts.items():
+              if count == 0:
+                  raise SystemExit(f'No immutable references found for {name}')
+              print(f'{name}: updated {count} reference(s)')
+          PY
+
+      - name: Commit workflow dependency updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows
+          if git diff --cached --quiet; then
+            echo 'GitHub Actions are already current.'
+            exit 0
+          fi
+          git commit -m 'chore(ci): upgrade GitHub Actions to latest stable releases'
+          git push origin HEAD:${{ github.head_ref }}
