@@ -25,13 +25,13 @@
     "test:cleanup-branches": "node --test scripts/test-cleanup-merged-branches.mjs"
   },
   "devDependencies": {
-    "deno": "2.9.2",
-    "js-yaml": "^4.1.0",
-    "katex": "^0.16.22",
-    "markdown-it": "^14.1.0",
-    "markdown-it-anchor": "^9.2.0",
+    "deno": "2.9.3",
+    "js-yaml": "^5.2.1",
+    "katex": "^0.18.1",
+    "markdown-it": "^14.3.0",
+    "markdown-it-anchor": "^9.2.1",
     "markdown-it-task-lists": "^2.1.1",
-    "puppeteer": "^24.11.2",
+    "puppeteer": "^25.3.0",
     "shiki": "^4.3.1"
   }
 }
