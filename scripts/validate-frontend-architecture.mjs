@@ -78,7 +78,7 @@ const requiredText = new Map([
   ['frontend/src/app/providers.tsx', ['QueryClientProvider']],
   ['frontend/src/stores/workspaceStore.ts', ['persist(', 'partialize:', 'resetSession']],
   ['frontend/src/components/layout/PageContainer.tsx', ['box-border w-full min-w-0']],
-  ['frontend/src/components/layout/ProtectedLayout.tsx', ['overflow-x-hidden', 'lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[18rem_minmax(0,1fr)] lg:overflow-hidden', 'id="app-main-scroll"', 'lg:overflow-y-auto']],
+  ['frontend/src/components/layout/ProtectedLayout.tsx', ['overflow-x-hidden', 'lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[18rem_minmax(0,1fr)] lg:overflow-hidden', 'id="app-main-scroll"', 'lg:overflow-y-auto', 'const jobStatusFilter', 'window.requestAnimationFrame(resetAppScroll)']],
   ['frontend/src/components/ui/select.tsx', ['min-w-0 max-w-full']],
   ['frontend/src/components/ui/tabs.tsx', ['min-w-0 max-w-full']],
   ['frontend/src/features/pdf-jobs/hooks/cache.ts', ['setQueryData', 'shouldApplyPdfJobUpdate']],
@@ -123,6 +123,9 @@ if (
   || protectedLayoutSource.includes('sticky top-0')
 ) {
   errors.push('ProtectedLayout must use a viewport-height desktop grid with an independently scrolling main content region')
+}
+if (protectedLayoutSource.includes('location.pathname, location.search')) {
+  errors.push('ProtectedLayout must not steal focus or reset scroll for every task-search keystroke')
 }
 
 const globalStylesSource = fs.readFileSync('frontend/src/styles/globals.css', 'utf8')
