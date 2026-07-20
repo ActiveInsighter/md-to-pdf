@@ -119,8 +119,8 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   ))
 
   return (
-    <aside className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="flex h-16 items-center gap-3 px-4">
+    <aside className="flex h-full min-h-0 flex-col bg-sidebar text-sidebar-foreground">
+      <div className="flex h-16 shrink-0 items-center gap-3 px-4">
         <div className="relative flex size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
           <FileText className="size-[18px]" />
           <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-sidebar bg-success" />
@@ -130,9 +130,9 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
           <span className="block truncate text-[11px] text-sidebar-foreground/55">文档转换工作台</span>
         </div>
       </div>
-      <Separator className="bg-sidebar-border" />
+      <Separator className="shrink-0 bg-sidebar-border" />
 
-      <nav aria-label="任务导航" className="flex flex-1 flex-col gap-5 overflow-y-auto p-3">
+      <nav aria-label="任务导航" className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain p-3">
         <section aria-labelledby="workspace-nav-label">
           <h2 id="workspace-nav-label" className="section-kicker px-2 pb-2 text-sidebar-foreground/50">工作区</h2>
           <div className="space-y-1">{renderNavigation(workspaceNavigation)}</div>
@@ -144,8 +144,8 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         </section>
       </nav>
 
-      <Separator className="bg-sidebar-border" />
-      <div className="space-y-2 p-3">
+      <Separator className="shrink-0 bg-sidebar-border" />
+      <div className="shrink-0 space-y-2 p-3">
         <div className="flex h-9 items-center justify-between gap-2 px-2">
           <RealtimeIndicator />
           <span className="text-[11px] text-sidebar-foreground/55">实时同步</span>
