@@ -2,7 +2,7 @@ import { ArrowLeft, ExternalLink, RefreshCw } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -12,7 +12,7 @@ import { JobProgress } from '@/features/pdf-jobs/components/JobProgress'
 import { JobStatusBadge } from '@/features/pdf-jobs/components/JobStatusBadge'
 import { usePdfJob } from '@/features/pdf-jobs/hooks/usePdfJob'
 import { canCancelJob } from '@/features/pdf-jobs/status'
-import { formatDateTime } from '@/lib/utils'
+import { cn, formatDateTime } from '@/lib/utils'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
 
 function DetailItem({ label, value }: { label: string; value: string }) {
@@ -35,7 +35,7 @@ export function JobDetailPage() {
   }
 
   if (job.error || !job.data) {
-    return <PageContainer><Alert variant="destructive"><AlertTitle>任务无法打开</AlertTitle><AlertDescription>{job.error instanceof Error ? job.error.message : '任务不存在或当前账号没有访问权限。'}</AlertDescription><Button className="mt-4" variant="outline" asChild><Link to="/jobs">返回任务列表</Link></Button></Alert></PageContainer>
+    return <PageContainer><Alert variant="destructive"><AlertTitle>任务无法打开</AlertTitle><AlertDescription>{job.error instanceof Error ? job.error.message : '任务不存在或当前账号没有访问权限。'}</AlertDescription><Link className={cn(buttonVariants({ variant: 'outline' }), 'mt-4')} to="/jobs">返回任务列表</Link></Alert></PageContainer>
   }
 
   const item = job.data
@@ -56,7 +56,7 @@ export function JobDetailPage() {
   return (
     <PageContainer data-ui-capture="job-detail" className="flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" className="-ml-2" asChild><Link to="/jobs"><ArrowLeft />任务列表</Link></Button>
+        <Link className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), '-ml-2')} to="/jobs"><ArrowLeft />任务列表</Link>
         <Button variant="outline" size="sm" onClick={() => void job.refetch()} disabled={job.isFetching} aria-busy={job.isFetching}>
           {job.isFetching ? <Spinner /> : <RefreshCw />}
           刷新
