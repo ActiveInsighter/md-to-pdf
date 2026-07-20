@@ -110,7 +110,6 @@ test('session cleanup removes pdf job caches and selection but keeps preferences
   useWorkspaceStore.getState().setSelectedJobId(userA.id)
   useWorkspaceStore.getState().setTheme('academic')
   useWorkspaceStore.getState().setAutoDownload(true)
-  useWorkspaceStore.getState().setFilters({ status: 'failed', search: 'private-document-name' })
 
   await clearAuthenticatedWorkspaceState(queryClient)
 
@@ -120,7 +119,7 @@ test('session cleanup removes pdf job caches and selection but keeps preferences
   assert.equal(useWorkspaceStore.getState().selectedJobId, null)
   assert.equal(useWorkspaceStore.getState().theme, 'academic')
   assert.equal(useWorkspaceStore.getState().autoDownload, true)
-  assert.deepEqual(useWorkspaceStore.getState().filters, { status: 'failed', search: '' })
+  assert.equal('filters' in useWorkspaceStore.getState(), false)
 })
 
 test('an authoritative list response removes rows missing before the request began', () => {
