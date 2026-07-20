@@ -9,7 +9,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider delayDuration={250}>
+        <TooltipProvider delay={250}>
           {children}
           <Toaster richColors position="top-right" closeButton visibleToasts={3} />
         </TooltipProvider>
