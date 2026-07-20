@@ -9,10 +9,8 @@ export function MobileNavigation() {
   const setOpen = useWorkspaceStore((state) => state.setSidebarOpen)
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="打开导航">
-          <Menu />
-        </Button>
+      <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="打开导航" />}>
+        <Menu />
       </SheetTrigger>
       <SheetContent className="p-0">
         <SheetHeader className="sr-only"><SheetTitle>主导航与账号</SheetTitle></SheetHeader>

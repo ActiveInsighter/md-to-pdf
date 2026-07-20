@@ -1,11 +1,11 @@
 import { Fragment } from 'react'
 import { FileText, Heart, MoreHorizontal } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatDateTime } from '@/lib/utils'
+import { cn, formatDateTime } from '@/lib/utils'
 import type { PdfJob } from '../types'
 import { JobStatusBadge } from './JobStatusBadge'
 
@@ -91,9 +91,7 @@ export function JobList({ jobs, loading, emptyMessage = '暂无任务。', group
                     <span className="block font-medium text-foreground">{formatDateTime(job.created_at)}</span>
                     <span className="mt-0.5 block">{buildCountLabel(job)}</span>
                   </div>
-                  <Button asChild variant="ghost" size="icon" className="size-9">
-                    <Link to={`/jobs/${job.id}`} aria-label={`打开任务 ${job.document_name}`}><MoreHorizontal /></Link>
-                  </Button>
+                  <Link className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-9')} to={`/jobs/${job.id}`} aria-label={`打开任务 ${job.document_name}`}><MoreHorizontal /></Link>
                 </article>
               ))}
             </div>
@@ -118,7 +116,7 @@ export function JobList({ jobs, loading, emptyMessage = '暂无任务。', group
                     </div>
                     <div className="flex items-center justify-between gap-2 border-t pt-3 text-xs text-muted-foreground">
                       <span><span className="block text-foreground">{formatDateTime(job.created_at)}</span><span>{buildCountLabel(job)}</span></span>
-                      <Button asChild variant="outline" size="sm"><Link to={`/jobs/${job.id}`}>查看</Link></Button>
+                      <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} to={`/jobs/${job.id}`}>查看</Link>
                     </div>
                   </CardContent>
                 </Card>

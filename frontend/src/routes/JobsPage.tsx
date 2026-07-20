@@ -1,7 +1,7 @@
 import { FilePlus2, Search } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -43,7 +43,7 @@ export function JobsPage() {
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{titles[filters.status || 'all']}</h1>
           <p className="mt-1 text-sm text-muted-foreground">共 {jobs.data?.length ?? 0} 条任务，可按状态和文档名筛选。</p>
         </div>
-        <Button asChild size="sm"><Link to="/workspace"><FilePlus2 />创建任务</Link></Button>
+        <Link className={buttonVariants({ size: 'sm' })} to="/workspace"><FilePlus2 />创建任务</Link>
       </header>
 
       <section className="app-panel flex flex-col gap-2 p-2 sm:flex-row" aria-label="任务筛选">

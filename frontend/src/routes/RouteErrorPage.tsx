@@ -1,6 +1,6 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 
 export function RouteErrorPage() {
@@ -15,7 +15,7 @@ export function RouteErrorPage() {
         <EmptyMedia><AlertTriangle /></EmptyMedia>
         <EmptyTitle>这个页面暂时打不开</EmptyTitle>
         <EmptyDescription>{message}</EmptyDescription>
-        <EmptyContent><Button asChild><Link to="/workspace">返回工作台</Link></Button></EmptyContent>
+        <EmptyContent><Link className={buttonVariants()} to="/workspace">返回工作台</Link></EmptyContent>
       </Empty>
     </main>
   )
