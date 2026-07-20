@@ -5,7 +5,6 @@ import { useWorkspaceStore } from '../../../stores/workspaceStore'
 export async function clearAuthenticatedWorkspaceState(queryClient: QueryClient): Promise<void> {
   const workspace = useWorkspaceStore.getState()
   workspace.setSelectedJobId(null)
-  workspace.setFilters({ ...workspace.filters, search: '' })
 
   try {
     await queryClient.cancelQueries({ queryKey: pdfJobKeys.all })
