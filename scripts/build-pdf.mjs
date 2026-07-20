@@ -406,7 +406,7 @@ ${renderedMarkdown}
 
         katex.style.removeProperty('font-size');
         const html = katex.querySelector(':scope > .katex-html') || katex.querySelector('.katex-html');
-        const sourceTag = html?.querySelector(':scope > .tag') || html?.querySelector('.tag');
+        const sourceTag = html?.querySelector(':scope > .tag, :scope > .katex-tag') || html?.querySelector('.tag, .katex-tag');
         sourceTag?.classList.remove('katex-source-tag');
 
         if (sourceTag) {

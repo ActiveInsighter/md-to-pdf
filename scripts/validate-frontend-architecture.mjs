@@ -7,6 +7,7 @@ const requiredFiles = [
   'frontend/tsconfig.app.json',
   'frontend/vite.config.ts',
   'frontend/tailwind.config.ts',
+  'frontend/postcss.config.js',
   'frontend/src/app/App.tsx',
   'frontend/src/app/router.tsx',
   'frontend/src/app/providers.tsx',
@@ -89,7 +90,8 @@ const requiredText = new Map([
   ['frontend/src/features/pdf-builder/components/BuilderFormSection.tsx', ['grid min-w-0 max-w-full']],
   ['frontend/src/features/pdf-builder/hooks/useBatchSubmission.ts', ['Math.min(3']],
   ['frontend/src/components/layout/AppSidebar.tsx', ['当前账号', '设置', 'sidebar-accent', 'min-h-0 flex-1', 'overscroll-contain']],
-  ['frontend/src/styles/globals.css', ['@tailwind base', '--sidebar:', '--popover:', 'overflow-x: hidden', 'overscroll-behavior-x: none', 'text-size-adjust: 100%']],
+  ['frontend/src/styles/globals.css', ['@config "../../tailwind.config.ts"', '@import "tailwindcss"', '--sidebar:', '--popover:', 'overflow-x: hidden', 'overscroll-behavior-x: none', 'text-size-adjust: 100%']],
+  ['frontend/postcss.config.js', ["'@tailwindcss/postcss': {}"]],
   ['.github/workflows/deploy-pages.yml', ['push:', 'branches:', '- main', 'workflow_dispatch:']],
 ])
 
@@ -139,9 +141,15 @@ if (globalStylesSource.includes('overflow-x: clip')) {
 const pkg = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'))
 const lock = JSON.parse(fs.readFileSync('frontend/package-lock.json', 'utf8'))
 if (pkg.scripts?.test !== 'node --import tsx --test tests/*.test.*') errors.push('Unexpected frontend test command')
-if (pkg.devDependencies?.wrangler !== '4.110.0') errors.push('frontend wrangler must be pinned to 4.110.0')
-if (lock.packages?.['']?.devDependencies?.wrangler !== '4.110.0') errors.push('frontend lockfile root must pin wrangler 4.110.0')
-if (lock.packages?.['node_modules/wrangler']?.version !== '4.110.0') errors.push('frontend lockfile must resolve wrangler 4.110.0')
+if (pkg.devDependencies?.['@tailwindcss/postcss'] !== '4.3.3') errors.push('frontend @tailwindcss/postcss must be pinned to 4.3.3')
+if (pkg.devDependencies?.tailwindcss !== '4.3.3') errors.push('frontend tailwindcss must be pinned to 4.3.3')
+if (pkg.devDependencies?.wrangler !== '4.112.0') errors.push('frontend wrangler must be pinned to 4.112.0')
+if (lock.packages?.['']?.devDependencies?.['@tailwindcss/postcss'] !== '4.3.3') errors.push('frontend lockfile root must pin @tailwindcss/postcss 4.3.3')
+if (lock.packages?.['']?.devDependencies?.tailwindcss !== '4.3.3') errors.push('frontend lockfile root must pin tailwindcss 4.3.3')
+if (lock.packages?.['']?.devDependencies?.wrangler !== '4.112.0') errors.push('frontend lockfile root must pin wrangler 4.112.0')
+if (lock.packages?.['node_modules/@tailwindcss/postcss']?.version !== '4.3.3') errors.push('frontend lockfile must resolve @tailwindcss/postcss 4.3.3')
+if (lock.packages?.['node_modules/tailwindcss']?.version !== '4.3.3') errors.push('frontend lockfile must resolve tailwindcss 4.3.3')
+if (lock.packages?.['node_modules/wrangler']?.version !== '4.112.0') errors.push('frontend lockfile must resolve wrangler 4.112.0')
 
 for (const workflow of [
   '.github/workflows/frontend-ci.yml',
