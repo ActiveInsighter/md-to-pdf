@@ -1,0 +1,65 @@
+name: Diagnose renderer once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnose-renderer-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    if: github.head_ref == 'chore/upgrade-dependencies-20260720'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PDF_POSTPROCESS_STRICT: 'true'
+      PDF_PREVIEW_DPI: '110'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install renderer dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk poppler-utils
+          fc-cache -f
+          npm ci --prefer-offline --no-audit --no-fund
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME_PATH"
+          echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+
+      - name: Run renderer test with diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee renderer-test.log
+
+      - name: Upload renderer diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: renderer-test-log-${{ github.run_id }}
+          path: renderer-test.log
+          if-no-files-found: error
+          retention-days: 3
