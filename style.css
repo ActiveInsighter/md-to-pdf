@@ -160,7 +160,7 @@ body.pdf-theme-chatgpt-light
 }
 
 :is(.print, .markdown-preview-view, .markdown-rendered)
-.katex-display.katex-display-tagged > .katex-outside-tag > .tag {
+.katex-display.katex-display-tagged > .katex-outside-tag > :is(.tag, .katex-tag) {
   position: static !important;
   display: inline-block !important;
   width: auto !important;
