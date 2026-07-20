@@ -43,14 +43,19 @@ export function SettingsPage() {
 
   const submit = form.handleSubmit(async (values) => {
     let notifications = values.notifyOnComplete
-    if (notifications && 'Notification' in window && Notification.permission === 'default') {
-      notifications = (await Notification.requestPermission()) === 'granted'
+    if (notifications && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        await Notification.requestPermission()
+      }
+      notifications = Notification.permission === 'granted'
       if (!notifications) toast.warning('浏览器通知未获授权。')
     }
+
     if (notifications && !('Notification' in window)) {
       notifications = false
       toast.warning('当前浏览器不支持通知。')
     }
+
     settings.setTheme(values.theme as typeof settings.theme)
     settings.setAutoDownload(values.autoDownload)
     settings.setNotifyOnComplete(notifications)
