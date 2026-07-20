@@ -1,0 +1,68 @@
+name: Prepare Base UI lockfile
+
+on:
+  push:
+    branches:
+      - feat/shadcn-base-ui
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/prepare-base-ui-lock.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prepare-base-ui-lock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Regenerate lockfile
+        working-directory: frontend
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Test
+        working-directory: frontend
+        run: npm test
+
+      - name: Build
+        working-directory: frontend
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: frontend-ci-placeholder-key
+        run: npm run build
+
+      - name: Commit lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- frontend/package-lock.json; then
+            echo "Lockfile already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/package-lock.json
+          git commit -m "chore(frontend): update Base UI lockfile"
+          git push
