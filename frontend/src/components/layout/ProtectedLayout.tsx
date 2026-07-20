@@ -9,30 +9,40 @@ import { JobDeliveryCoordinator } from '@/features/pdf-jobs/components/JobDelive
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
+function resetAppScroll() {
+  const scrollContainer = document.getElementById('app-main-scroll')
+  if (scrollContainer) {
+    scrollContainer.scrollTop = 0
+    scrollContainer.scrollLeft = 0
+  }
+
+  document.documentElement.scrollTop = 0
+  document.documentElement.scrollLeft = 0
+  document.body.scrollTop = 0
+  document.body.scrollLeft = 0
+}
+
 export function ProtectedLayout() {
   const auth = useAuth()
   const location = useLocation()
+  const jobStatusFilter = new URLSearchParams(location.search).get('status') ?? 'all'
 
   useEffect(() => {
     if (auth.status !== 'ready' || !auth.session) return
 
     const frame = window.requestAnimationFrame(() => {
       document.getElementById('main-content')?.focus({ preventScroll: true })
-
-      const scrollContainer = document.getElementById('app-main-scroll')
-      if (scrollContainer) {
-        scrollContainer.scrollTop = 0
-        scrollContainer.scrollLeft = 0
-      }
-
-      document.documentElement.scrollTop = 0
-      document.documentElement.scrollLeft = 0
-      document.body.scrollTop = 0
-      document.body.scrollLeft = 0
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [auth.session?.user.id, auth.status, location.pathname, location.search])
+  }, [auth.session?.user.id, auth.status, location.pathname])
+
+  useEffect(() => {
+    if (auth.status !== 'ready' || !auth.session) return
+
+    const frame = window.requestAnimationFrame(resetAppScroll)
+    return () => window.cancelAnimationFrame(frame)
+  }, [auth.session?.user.id, auth.status, jobStatusFilter, location.pathname])
 
   if (auth.status === 'loading') return <RouteLoading />
   if (auth.status === 'error') {
