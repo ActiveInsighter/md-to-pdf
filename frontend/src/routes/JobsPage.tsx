@@ -1,7 +1,5 @@
 import { FilePlus2, Search } from 'lucide-react'
-import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useShallow } from 'zustand/react/shallow'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { JobList } from '@/features/pdf-jobs/components/JobList'
 import { usePdfJobs } from '@/features/pdf-jobs/hooks/usePdfJobs'
 import type { JobFilters } from '@/features/pdf-jobs/types'
-import { useWorkspaceStore } from '@/stores/workspaceStore'
 
 const validStatuses = new Set(['all', 'active', 'completed', 'failed', 'favorite'])
 const titles: Record<NonNullable<JobFilters['status']>, string> = {
@@ -23,26 +20,19 @@ const titles: Record<NonNullable<JobFilters['status']>, string> = {
 
 export function JobsPage() {
   const [params, setParams] = useSearchParams()
-  const { storedFilters, setFilters } = useWorkspaceStore(
-    useShallow((state) => ({ storedFilters: state.filters, setFilters: state.setFilters })),
-  )
-  const statusParam = params.get('status') || storedFilters.status || 'all'
-  const searchParam = params.get('q')
+  const statusParam = params.get('status') || 'all'
   const filters: JobFilters = {
     status: validStatuses.has(statusParam) ? statusParam as JobFilters['status'] : 'all',
-    search: searchParam ?? storedFilters.search ?? '',
+    search: params.get('q') ?? '',
   }
   const jobs = usePdfJobs(filters)
   const marker = filters.status === 'favorite' ? 'favorites-list' : 'jobs-list'
-
-  useEffect(() => { setFilters(filters) }, [filters.search, filters.status, setFilters])
 
   const updateParams = (nextFilters: JobFilters) => {
     const next = new URLSearchParams(params)
     if (!nextFilters.status || nextFilters.status === 'all') next.delete('status'); else next.set('status', nextFilters.status)
     if (!nextFilters.search?.trim()) next.delete('q'); else next.set('q', nextFilters.search)
     setParams(next, { replace: true })
-    setFilters(nextFilters)
   }
 
   return (
