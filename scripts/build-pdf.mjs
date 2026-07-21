@@ -179,16 +179,12 @@ function protectMath(markdown) {
 }
 
 function restoreMath(html, mathItems) {
-  let restored = html;
+  const htmlByIndex = mathItems.map((item) => item.html);
+  const restoreToken = (match, rawIndex) => htmlByIndex[Number(rawIndex)] ?? match;
 
-  for (const item of mathItems) {
-    const token = escapeHtml(item.token);
-    const paragraphPattern = new RegExp(`<p>\\s*${escapeRegExp(token)}\\s*</p>`, 'g');
-    restored = restored.replace(paragraphPattern, item.html);
-    restored = restored.replaceAll(token, item.html);
-  }
-
-  return restored;
+  return html
+    .replace(/<p>\s*MATHPLACEHOLDER(\d+)TOKEN\s*<\/p>/g, restoreToken)
+    .replace(/MATHPLACEHOLDER(\d+)TOKEN/g, restoreToken);
 }
 
 function rewriteKatexCssUrls(katexCss) {
@@ -547,6 +543,9 @@ async function main() {
     await page.emulateMediaType('print');
     const mathLayout = await page.evaluate(async () => {
       await document.fonts.ready;
+      if (window.__mathLayoutReady) {
+        return window.__mathLayoutReady;
+      }
       if (typeof window.__stabilizeMathLayout === 'function') {
         return window.__stabilizeMathLayout();
       }
