@@ -74,4 +74,4 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://example.supabase.co
           VITE_SUPABASE_ANON_KEY: frontend-ci-placeholder-key
-        run: npm run build
+        run: npm run build:bundle
