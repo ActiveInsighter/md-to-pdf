@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run typecheck && npm run build:bundle",
+    "build:bundle": "vite build",
     "typecheck": "tsc -b --pretty false",
+    "typecheck:watch": "tsc -b --watch --pretty false",
     "test": "node --import tsx --test tests/*.test.*",
     "preview": "vite preview",
     "smoke:cors": "node scripts/smoke-function-cors.mjs",
