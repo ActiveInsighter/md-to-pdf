@@ -91,7 +91,7 @@ jobs:
           ./node_modules/.bin/wrangler --version
           npm run typecheck
           npm test
-          npm run build
+          npm run build:bundle
           test -s dist/index.html
 
       - name: Ensure Pages project exists
