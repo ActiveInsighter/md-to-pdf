@@ -1,0 +1,41 @@
+name: One-time encrypted Supabase key export
+
+on:
+  workflow_dispatch:
+    inputs:
+      public_key_b64:
+        description: Base64-encoded RSA public key used only for this run
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - name: Encrypt Supabase key
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          trap 'rm -f public.pem secret.bin encrypted.bin' EXIT
+          test -n "${SUPABASE_SECRET_KEY:-}"
+          printf '%s' '${{ inputs.public_key_b64 }}' | base64 --decode > public.pem
+          test -s public.pem
+          printf '%s' "$SUPABASE_SECRET_KEY" > secret.bin
+          openssl pkeyutl -encrypt \
+            -pubin -inkey public.pem \
+            -in secret.bin -out encrypted.bin \
+            -pkeyopt rsa_padding_mode:oaep \
+            -pkeyopt rsa_oaep_md:sha256 \
+            -pkeyopt rsa_mgf1_md:sha256
+          encrypted="$(base64 --wrap=0 encrypted.bin)"
+          test -n "$encrypted"
+          echo 'MDTO_PDF_SUPABASE_SERVICE_KEY_ENCRYPTED_BEGIN'
+          echo "$encrypted"
+          echo 'MDTO_PDF_SUPABASE_SERVICE_KEY_ENCRYPTED_END'
