@@ -80,13 +80,21 @@ jobs:
           perl -0pi -e "s/output: 'htmlAndMathml'/output: 'html'/g" scripts/build-pdf-combined.bench.mjs
           perl -0pi -e 's/font-weight:500/font-weight:400/g' scripts/build-pdf-combined.bench.mjs
 
-      - name: Render baseline and structural variants
+      - name: Render text-heavy baseline and structural variants
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/build-pdf.mjs notes.md dist/size-benchmark/01-baseline.pdf --theme size-benchmark
-          node scripts/build-pdf-no-accessibility.bench.mjs notes.md dist/size-benchmark/02-no-tagged-outline.pdf --theme size-benchmark
-          node scripts/build-pdf-katex-html.bench.mjs notes.md dist/size-benchmark/03-katex-html-only.pdf --theme size-benchmark
+          node scripts/build-pdf.mjs notes.md dist/size-benchmark/01-text-baseline.pdf --theme size-benchmark
+          node scripts/build-pdf-no-accessibility.bench.mjs notes.md dist/size-benchmark/02-text-no-tagged-outline.pdf --theme size-benchmark
+          node scripts/build-pdf-katex-html.bench.mjs notes.md dist/size-benchmark/03-text-katex-html-only.pdf --theme size-benchmark
+
+      - name: Render formula and SVG variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-pdf.mjs fixtures/render-regression.md dist/size-benchmark/10-formula-baseline.pdf --theme size-benchmark
+          node scripts/build-pdf-no-accessibility.bench.mjs fixtures/render-regression.md dist/size-benchmark/11-formula-no-tagged-outline.pdf --theme size-benchmark
+          node scripts/build-pdf-katex-html.bench.mjs fixtures/render-regression.md dist/size-benchmark/12-formula-katex-html-only.pdf --theme size-benchmark
 
       - name: Render compact-font and combined variants
         shell: bash
@@ -95,8 +103,9 @@ jobs:
           cp themes/base.css themes/base.css.benchmark-original
           perl -0pi -e 's/font-weight:\s*500\b/font-weight: 400/g; s/font-weight:\s*(?:600|620|650|680|700|720|760|800)\b/font-weight: 700/g' themes/base.css
 
-          node scripts/build-pdf.mjs notes.md dist/size-benchmark/04-compact-font-weights.pdf --theme size-benchmark
-          node scripts/build-pdf-combined.bench.mjs notes.md dist/size-benchmark/05-combined.pdf --theme size-benchmark
+          node scripts/build-pdf.mjs notes.md dist/size-benchmark/04-text-compact-font-weights.pdf --theme size-benchmark
+          node scripts/build-pdf-combined.bench.mjs notes.md dist/size-benchmark/05-text-combined.pdf --theme size-benchmark
+          node scripts/build-pdf-combined.bench.mjs fixtures/render-regression.md dist/size-benchmark/13-formula-combined.pdf --theme size-benchmark
 
           mv themes/base.css.benchmark-original themes/base.css
 
@@ -108,25 +117,24 @@ jobs:
             --object-streams=generate \
             --recompress-flate \
             --compression-level=9 \
-            dist/size-benchmark/05-combined.pdf \
-            dist/size-benchmark/06-qpdf-lossless.pdf
+            dist/size-benchmark/05-text-combined.pdf \
+            dist/size-benchmark/06-text-qpdf-lossless.pdf
 
           qpdf \
             --object-streams=generate \
             --recompress-flate \
             --compression-level=9 \
             --optimize-images \
-            --jpeg-quality=85 \
-            dist/size-benchmark/05-combined.pdf \
-            dist/size-benchmark/07-qpdf-image-opt.pdf
+            dist/size-benchmark/05-text-combined.pdf \
+            dist/size-benchmark/07-text-qpdf-image-opt.pdf
 
           gs \
             -sDEVICE=pdfwrite \
             -dCompatibilityLevel=1.7 \
             -dNOPAUSE -dQUIET -dBATCH \
             -dDetectDuplicateImages=true \
-            -sOutputFile=dist/size-benchmark/08-ghostscript-default.pdf \
-            dist/size-benchmark/05-combined.pdf
+            -sOutputFile=dist/size-benchmark/08-text-ghostscript-default.pdf \
+            dist/size-benchmark/05-text-combined.pdf
 
           gs \
             -sDEVICE=pdfwrite \
@@ -134,8 +142,24 @@ jobs:
             -dPDFSETTINGS=/ebook \
             -dNOPAUSE -dQUIET -dBATCH \
             -dDetectDuplicateImages=true \
-            -sOutputFile=dist/size-benchmark/09-ghostscript-ebook.pdf \
-            dist/size-benchmark/05-combined.pdf
+            -sOutputFile=dist/size-benchmark/09-text-ghostscript-ebook.pdf \
+            dist/size-benchmark/05-text-combined.pdf
+
+          qpdf \
+            --object-streams=generate \
+            --recompress-flate \
+            --compression-level=9 \
+            dist/size-benchmark/13-formula-combined.pdf \
+            dist/size-benchmark/14-formula-qpdf-lossless.pdf
+
+          gs \
+            -sDEVICE=pdfwrite \
+            -dCompatibilityLevel=1.7 \
+            -dPDFSETTINGS=/ebook \
+            -dNOPAUSE -dQUIET -dBATCH \
+            -dDetectDuplicateImages=true \
+            -sOutputFile=dist/size-benchmark/15-formula-ghostscript-ebook.pdf \
+            dist/size-benchmark/13-formula-combined.pdf
 
       - name: Collect size and resource metrics
         shell: bash
@@ -156,16 +180,6 @@ jobs:
             pdfimages -list "$pdf" > "dist/size-benchmark/${name}-images.txt"
             pdfinfo "$pdf" > "dist/size-benchmark/${name}-pdfinfo.txt"
           done
-
-          baseline="$(awk -F '\t' '$1=="01-baseline" {print $2}' "$REPORT")"
-          {
-            echo
-            echo -e 'variant\treduction_vs_baseline'
-            tail -n +2 "$REPORT" | while IFS=$'\t' read -r name bytes mib pages fonts images; do
-              reduction="$(awk -v b="$baseline" -v n="$bytes" 'BEGIN { printf "%.2f%%", (b-n)*100/b }')"
-              printf '%s\t%s\n' "$name" "$reduction"
-            done
-          } >> "$REPORT"
 
           cat "$REPORT"
 
