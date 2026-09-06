@@ -102,6 +102,9 @@ jobs:
           if ! command -v pdfinfo >/dev/null 2>&1; then
             packages+=(poppler-utils)
           fi
+          if ! command -v qpdf >/dev/null 2>&1; then
+            packages+=(qpdf)
+          fi
 
           if (( ${#packages[@]} > 0 )); then
             sudo apt-get update
@@ -240,6 +243,10 @@ jobs:
         shell: bash
         run: node scripts/build-pdf.mjs work/source/input.md dist/output.pdf --theme "$PDF_THEME"
 
+      - name: Optimize PDF losslessly
+        shell: bash
+        run: bash scripts/optimize-pdf.sh dist/output.pdf
+
       - name: Mark output validation
         env:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
@@ -256,6 +263,7 @@ jobs:
             echo "Invalid PDF header"
             exit 1
           }
+          qpdf --check dist/output.pdf >/dev/null
           pdfinfo dist/output.pdf | tee dist/pdfinfo.txt
 
       - name: Mark uploading
