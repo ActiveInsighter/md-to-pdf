@@ -1,0 +1,133 @@
+name: PDF optimizer regression
+
+on:
+  push:
+    branches:
+      - test/pdf-size-optimization
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pdf-optimizer-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --prefer-offline --no-audit --no-fund
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk poppler-utils qpdf
+          fc-cache -f
+
+      - name: Resolve Chrome executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME_PATH"
+          echo "PUPPETEER_EXECUTABLE_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          "$CHROME_PATH" --version
+
+      - name: Render baseline PDFs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/optimizer-regression
+          cat > themes/optimizer-regression.css <<'CSS'
+          /* Intentionally empty: use shared base.css exactly as production rendering does. */
+          CSS
+          node scripts/build-pdf.mjs notes.md dist/optimizer-regression/text-before.pdf --theme optimizer-regression
+          node scripts/build-pdf.mjs fixtures/render-regression.md dist/optimizer-regression/formula-before.pdf --theme optimizer-regression
+          cp dist/optimizer-regression/text-before.pdf dist/optimizer-regression/text-after.pdf
+          cp dist/optimizer-regression/formula-before.pdf dist/optimizer-regression/formula-after.pdf
+
+      - name: Run production optimizer
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/optimize-pdf.sh dist/optimizer-regression/text-after.pdf
+          bash scripts/optimize-pdf.sh dist/optimizer-regression/formula-after.pdf
+
+      - name: Verify structure text pixels and size
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/optimizer-regression/raster
+
+          for fixture in text formula; do
+            before="dist/optimizer-regression/${fixture}-before.pdf"
+            after="dist/optimizer-regression/${fixture}-after.pdf"
+
+            qpdf --check "$before" >/dev/null
+            qpdf --check "$after" >/dev/null
+
+            before_pages="$(pdfinfo "$before" | awk '/^Pages:/ {print $2; exit}')"
+            after_pages="$(pdfinfo "$after" | awk '/^Pages:/ {print $2; exit}')"
+            [[ "$before_pages" == "$after_pages" ]]
+
+            before_bytes="$(stat -c '%s' "$before")"
+            after_bytes="$(stat -c '%s' "$after")"
+            (( after_bytes < before_bytes )) || {
+              echo "Expected optimized ${fixture} PDF to be smaller: ${before_bytes} -> ${after_bytes}" >&2
+              exit 1
+            }
+
+            pdftotext "$before" "dist/optimizer-regression/${fixture}-before.txt"
+            pdftotext "$after" "dist/optimizer-regression/${fixture}-after.txt"
+            cmp "dist/optimizer-regression/${fixture}-before.txt" "dist/optimizer-regression/${fixture}-after.txt"
+
+            before_fonts="$(pdffonts "$before" | awk 'NR > 2 && NF {n++} END {print n+0}')"
+            after_fonts="$(pdffonts "$after" | awk 'NR > 2 && NF {n++} END {print n+0}')"
+            [[ "$before_fonts" == "$after_fonts" ]] || {
+              echo "Font resource count changed for ${fixture}: ${before_fonts} -> ${after_fonts}" >&2
+              exit 1
+            }
+
+            mkdir -p "dist/optimizer-regression/raster/${fixture}-before" "dist/optimizer-regression/raster/${fixture}-after"
+            pdftoppm -r 72 "$before" "dist/optimizer-regression/raster/${fixture}-before/page" >/dev/null
+            pdftoppm -r 72 "$after" "dist/optimizer-regression/raster/${fixture}-after/page" >/dev/null
+
+            before_count="$(find "dist/optimizer-regression/raster/${fixture}-before" -type f -name 'page-*' | wc -l)"
+            after_count="$(find "dist/optimizer-regression/raster/${fixture}-after" -type f -name 'page-*' | wc -l)"
+            [[ "$before_count" == "$after_count" ]]
+
+            while IFS= read -r before_page; do
+              name="$(basename "$before_page")"
+              cmp "$before_page" "dist/optimizer-regression/raster/${fixture}-after/${name}"
+            done < <(find "dist/optimizer-regression/raster/${fixture}-before" -type f -name 'page-*' | sort)
+
+            saved_percent="$(awk -v before="$before_bytes" -v after="$after_bytes" 'BEGIN { printf "%.1f", (before-after)*100/before }')"
+            echo "${fixture}: ${before_bytes} -> ${after_bytes} bytes (${saved_percent}% smaller), pages=${before_pages}, fonts=${before_fonts}, text/pixels identical"
+          done
+
+      - name: Upload regression artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pdf-optimizer-regression-${{ github.run_id }}
+          path: dist/optimizer-regression
+          if-no-files-found: ignore
+          retention-days: 7
