@@ -1,9 +1,19 @@
 name: PDF optimizer regression
 
 on:
-  push:
+  pull_request:
     branches:
-      - test/pdf-size-optimization
+      - main
+    paths:
+      - '.github/workflows/build-pdf-api.yml'
+      - '.github/workflows/pdf-optimizer-regression.yml'
+      - 'scripts/build-pdf.mjs'
+      - 'scripts/optimize-pdf.sh'
+      - 'themes/**'
+      - 'fixtures/render-regression.md'
+      - 'notes.md'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 
 permissions:
