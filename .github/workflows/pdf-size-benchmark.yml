@@ -63,30 +63,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist/size-benchmark scripts/.pdf-size-benchmark
+          mkdir -p dist/size-benchmark
 
           cat > themes/size-benchmark.css <<'CSS'
           /* Intentionally empty. The shared base.css remains the baseline. */
           CSS
 
-          cp scripts/build-pdf.mjs scripts/.pdf-size-benchmark/no-accessibility.mjs
-          perl -0pi -e 's/outline: true,/outline: false,\n      tagged: false,/' scripts/.pdf-size-benchmark/no-accessibility.mjs
+          cp scripts/build-pdf.mjs scripts/build-pdf-no-accessibility.bench.mjs
+          perl -0pi -e 's/outline: true,/outline: false,\n      tagged: false,/' scripts/build-pdf-no-accessibility.bench.mjs
 
-          cp scripts/build-pdf.mjs scripts/.pdf-size-benchmark/katex-html.mjs
-          perl -0pi -e "s/output: 'htmlAndMathml'/output: 'html'/g" scripts/.pdf-size-benchmark/katex-html.mjs
+          cp scripts/build-pdf.mjs scripts/build-pdf-katex-html.bench.mjs
+          perl -0pi -e "s/output: 'htmlAndMathml'/output: 'html'/g" scripts/build-pdf-katex-html.bench.mjs
 
-          cp scripts/build-pdf.mjs scripts/.pdf-size-benchmark/combined.mjs
-          perl -0pi -e 's/outline: true,/outline: false,\n      tagged: false,/' scripts/.pdf-size-benchmark/combined.mjs
-          perl -0pi -e "s/output: 'htmlAndMathml'/output: 'html'/g" scripts/.pdf-size-benchmark/combined.mjs
-          perl -0pi -e 's/font-weight:500/font-weight:400/g' scripts/.pdf-size-benchmark/combined.mjs
+          cp scripts/build-pdf.mjs scripts/build-pdf-combined.bench.mjs
+          perl -0pi -e 's/outline: true,/outline: false,\n      tagged: false,/' scripts/build-pdf-combined.bench.mjs
+          perl -0pi -e "s/output: 'htmlAndMathml'/output: 'html'/g" scripts/build-pdf-combined.bench.mjs
+          perl -0pi -e 's/font-weight:500/font-weight:400/g' scripts/build-pdf-combined.bench.mjs
 
       - name: Render baseline and structural variants
         shell: bash
         run: |
           set -euo pipefail
           node scripts/build-pdf.mjs notes.md dist/size-benchmark/01-baseline.pdf --theme size-benchmark
-          node scripts/.pdf-size-benchmark/no-accessibility.mjs notes.md dist/size-benchmark/02-no-tagged-outline.pdf --theme size-benchmark
-          node scripts/.pdf-size-benchmark/katex-html.mjs notes.md dist/size-benchmark/03-katex-html-only.pdf --theme size-benchmark
+          node scripts/build-pdf-no-accessibility.bench.mjs notes.md dist/size-benchmark/02-no-tagged-outline.pdf --theme size-benchmark
+          node scripts/build-pdf-katex-html.bench.mjs notes.md dist/size-benchmark/03-katex-html-only.pdf --theme size-benchmark
 
       - name: Render compact-font and combined variants
         shell: bash
@@ -96,7 +96,7 @@ jobs:
           perl -0pi -e 's/font-weight:\s*500\b/font-weight: 400/g; s/font-weight:\s*(?:600|620|650|680|700|720|760|800)\b/font-weight: 700/g' themes/base.css
 
           node scripts/build-pdf.mjs notes.md dist/size-benchmark/04-compact-font-weights.pdf --theme size-benchmark
-          node scripts/.pdf-size-benchmark/combined.mjs notes.md dist/size-benchmark/05-combined.pdf --theme size-benchmark
+          node scripts/build-pdf-combined.bench.mjs notes.md dist/size-benchmark/05-combined.pdf --theme size-benchmark
 
           mv themes/base.css.benchmark-original themes/base.css
 
